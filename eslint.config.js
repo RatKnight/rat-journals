@@ -12,6 +12,7 @@ export default tseslint.config(
     },
     rules: {
       ...solid.configs['flat/typescript'].rules,
+      complexity: ['warn', { max: 15, variant: 'classic' }],
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
@@ -19,6 +20,12 @@ export default tseslint.config(
           varsIgnorePattern: '^_',
         },
       ],
+    },
+  },
+  {
+    files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx'],
+    rules: {
+      complexity: 'off',
     },
   },
   {

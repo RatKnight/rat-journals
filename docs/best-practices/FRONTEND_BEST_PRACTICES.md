@@ -6,6 +6,14 @@ This is not a full SolidJS or TypeScript style guide. Use TypeScript strict mode
 
 ## Core Rules
 
+### Complexity Warnings Are A Temporary Non-blocking Check
+
+ESLint measures classic McCabe cyclomatic complexity per function, with a maximum of 15. The `complexity` rule runs at `warn`. `bun run lint` has no `--max-warnings 0`, so these warnings do not block CI or the comprehensive local check. This is a temporary exception to [Linting in CI](CI_BEST_PRACTICES.md#linting-in-ci), not permission to ignore lint errors.
+
+Files named `*.test.ts`, `*.test.tsx`, `*.spec.ts`, or `*.spec.tsx` are exempt from **only** the complexity rule. Their other lint rules remain active, and lint errors still block the check. Promotion to `error` needs a separate decision after review of the measured warning backlog.
+
+ESLint complexity and Codecov patch line coverage are independent checks. They are not a per-function TypeScript CRAP score.
+
 ### Sort Strings With localeCompare
 
 Never call `Array.sort()` on string arrays without a comparator. The default sort uses Unicode code points and produces incorrect results for non-ASCII characters (font family names, titles, tags). Always pass an explicit comparator:
