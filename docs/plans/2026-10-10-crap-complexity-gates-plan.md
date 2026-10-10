@@ -103,13 +103,13 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 ### Milestone 1: Phase 0 — advisory CRAP report + canonical Linux baseline
 
-- Status: TO BE DONE
+- Status: IN PROGRESS
 - Purpose: prove the toolchain end-to-end on Linux CI without gating anything, and produce the reviewed baseline M2 gates against.
 - Exit Criteria: the M1 advisory PR (Task 1.4) is merged and its master CI run produces the report artifact; acceptance probes document closure, cfg-dead-code, path-matching, and numeric repeatability behavior; `ci/crap-baseline.json` + `ci/crap-baseline.provenance.md` committed — Linux-produced, normalized (`--for-baseline` rejects outside-repo paths), probe-free, with the test-helper exclusion list applied; **Task 1.6 approval gate passed**: user reviewed the Linux results (unexplained coverage mismatches, runtime cost, repeatability) and the explicit approval is recorded in the Decision Log before any M2 task starts.
 
 #### Task 1.1: Pin cargo-crap + advisory CI step
 
-- Status: TO BE DONE
+- Status: IN PROGRESS
 - Depends On: none
 - Objective: CI `test` job produces a best-effort cargo-crap JSON report artifact that can never fail the job or interfere with Codecov uploads, with elapsed time and producer-root provenance echoed.
 - Steps:
@@ -122,7 +122,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 #### Task 1.2: Acceptance probes on a scratch branch
 
-- Status: TO BE DONE
+- Status: IN PROGRESS
 - Depends On: 1.1
 - Objective: empirically document cargo-crap's behavior for the three known blind spots plus score repeatability, on Linux, before any gate exists.
 - Steps:
@@ -135,7 +135,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 #### Task 1.3: `scripts/normalize-crap-baseline.mjs`
 
-- Status: TO BE DONE
+- Status: COMPLETED
 - Depends On: 1.1
 - Objective: standalone Node script converting cargo-crap JSON report paths to repo-relative forward-slash form, preserving all parsed non-path values exactly.
 - Steps:
@@ -239,13 +239,13 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 ### Milestone 3: Phase 2 — complexity lints + adjacent fix
 
-- Status: TO BE DONE
+- Status: IN PROGRESS
 - Purpose: cyclomatic/cognitive complexity lints active in both languages with measured-zero legacy debt, plus the coverage-reporting fix discovered during verification.
 - Exit Criteria: `cargo clippy --workspace --all-targets -- -D warnings` green with `cognitive_complexity` enabled and a positive control proving the wiring live; `bun run lint` emits complexity warnings without failing; test files exempt from the complexity rule only; a failing test run still writes lcov; CHANGELOG updated.
 
 #### Task 3.1: Root `clippy.toml`, delete `src-tauri/.clippy.toml`
 
-- Status: TO BE DONE
+- Status: COMPLETED
 - Depends On: none
 - Objective: one workspace-level clippy config with the cognitive threshold; obsolete crate-local file removed entirely.
 - Steps:
@@ -256,7 +256,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 #### Task 3.2: Enable `cognitive_complexity` workspace-wide
 
-- Status: TO BE DONE
+- Status: IN PROGRESS
 - Depends On: 3.1
 - Objective: the nursery lint is genuinely enabled for all three crates and enforced by existing CI via `-D warnings`.
 - Steps:
@@ -268,7 +268,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 #### Task 3.3: ESLint `complexity` rule
 
-- Status: TO BE DONE
+- Status: COMPLETED
 - Depends On: none
 - Objective: TS/JSX functions linted for McCabe cyclomatic complexity; test files exempt from that rule only.
 - Steps:
@@ -281,7 +281,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 #### Task 3.4: `coverage.reportOnFailure: true` (own scoped commit)
 
-- Status: TO BE DONE
+- Status: COMPLETED
 - Depends On: none
 - Objective: Vitest writes a fresh `coverage/lcov.info` even when tests fail; this reporting fix does not replace the caller's freshness checks.
 - Steps:
@@ -384,6 +384,48 @@ Write an entry **before moving to the next task**, never retrospectively. An ent
 - Decision: Include an unchanged-code comparison against a normalized report in Linux acceptance. Do not assume absolute current paths match the committed relative baseline.
 - Rationale: Installed cargo-crap 0.6.1 `src/delta.rs:150–179` normalizes slashes but does not remove producer roots. Exact matches include file, function, and line; fallback name matching can be ambiguous. Resolve the comparison approach from real reports before M2 implementation.
 
+### DEC-004 — Local validation before the Linux checkpoint
+
+- Date: 2026-10-10
+- Task: 1.1, 1.3
+- Decision: Implement and validate the normalizer together with advisory CI wiring. Keep Task 1.1 IN PROGRESS until its Linux workflow validation finishes; do not claim a Linux report or baseline from a local run.
+- Rationale: The lint job invokes the normalizer, so the two files must ship together. A real local 0.6.1 report can validate the path-only transformation before CI, without serving as the canonical baseline.
+
+### DEC-005 — Remove an obsolete MSRV setting
+
+- Date: 2026-10-10
+- Task: 3.1, 3.2
+- Decision: Remove `msrv = "1.75"` with the old app-only config. Do not replace it with the pinned toolchain version or declare an MSRV. Fix the single newly exposed `manual_inspect` lint with the equivalent `inspect_err` call in a separate commit.
+- Rationale: Clippy documentation confirms that MSRV means the minimum supported compiler, not today's compiler. The full `-D warnings` run found one `map_err` callback that returns its input error unchanged after cleanup (`auth_core.rs:467`). `inspect_err` keeps that cleanup and error propagation unchanged. No auth policy, key handling, or IPC error changes are needed.
+
+### DEC-006 — Non-blocking frontend complexity and maintained controls
+
+- Date: 2026-10-10
+- Task: 3.3
+- Decision: Keep classic complexity max 15 at `warn`; promotion to `error` needs a separate decision. Test each exemption with ESLint `lintText` using a virtual test-file path, and keep these controls plus the normalizer self-test in `scripts/crap-complexity.test.mjs`.
+- Rationale: Lint has no `--max-warnings 0`. Virtual paths exercise the real file overrides without leaving scratch files on disk. The existing `test:scripts` runner now provides CI and pre-commit coverage for these controls.
+
+### DEC-007 — Coverage validation timeout
+
+- Date: 2026-10-10
+- Task: 3.4
+- Decision: The first forced-failure coverage run exceeded 120 seconds before any test results or lcov were written. Retry with a 600-second tool limit; do not count the timeout as the required failing-assertion control.
+- Rationale: The validation requires an actual failed assertion and a report newer than run start. A killed process proves neither.
+
+### DEC-008 — Test the newly exposed lint fix instead of weakening coverage
+
+- Date: 2026-10-10
+- Task: 3.2
+- Decision: Extract only the existing `create_diary_auto` body into a private `&DiaryState` helper and test both successful creation and database-creation failure. Reopen Task 3.2 until the fresh coverage gate passes. Keep the thin IPC wrapper and all behavior unchanged.
+- Rationale: Fresh local patch coverage failed at 0/1 on the new `inspect_err` line. Tauri `State` has no public constructor (installed `tauri/src/state.rs:20`), while nearby command tests use private state-reference helpers. This small extraction allows real tests of config rollback and error propagation without a new Tauri test dependency, a lint suppression, or a lower coverage threshold. It is limited to validation of the required lint fix, not a refactor of the legacy CRAP offenders.
+
+### DEC-009 — Run local E2E for the auth helper extraction
+
+- Date: 2026-10-10
+- Task: 3.2
+- Decision: Run `cmd.exe /c bun run test:e2e:local` before closing Task 3.2. Correct the earlier note that exempted this extraction from E2E.
+- Rationale: The post-task checklist requires local E2E when a change touches auth. Equivalent behavior does not remove that requirement. The command builds the current source before it tests the Windows app.
+
 ## Final Verification
 
 Task 4.2: successful fresh coverage generation, the full pre-flight list, all three platform-independent local script self-tests (exit 0), and a successful local CRAP analysis with a clearly reported ADVISORY policy verdict. Local policy exit 0 is NOT required: exit 1 may reflect legitimate platform differences against the Linux baseline; exit 2 is an input/tool failure to diagnose. The REQUIRED blocking unchanged-code check is a green Linux CI PR run with the gating step active and the policy script exiting 0. Complete verification before setting Plan Status to COMPLETED.
@@ -396,17 +438,41 @@ Approved by the user on 2026-10-10: “Do an exploration on the plan … Then im
 
 ```
 $ python "C:\Users\Francisco\.config\opencode\skills\manual-planning\scripts\check-plan.py" "docs/plans/2026-10-10-crap-complexity-gates-plan.md"
-W001 warning 0: Tracking says tracked but git does not track this file
-0 error(s), 1 warning(s)
+0 error(s), 0 warning(s)
 ```
 
-Run: 2026-10-10 (fresh check after applying the remaining plan-review fixes)
+Run: 2026-10-10 (execution check after committing the plan)
 
-Checker exit code: 2 (warnings only).
+Checker exit code: 0.
 
-W001 is accepted: `docs/plans/` is a tracked directory by repo convention (an existing plan is committed there), so `Tracking: tracked` is the correct stamp; the file itself is not yet `git add`-ed because the research session that produced this plan does not commit (exploration-mode guardrail). The executing session commits the plan as its first action after approval, which resolves the warning.
+The earlier W001 warning is resolved: the plan is now tracked in commit `4f480f0`.
 
 ## Execution Notes
+
+- Task 3.2 coverage follow-up: extracted only `create_diary_auto_inner(&DiaryState)` and added named tests `test_create_diary_auto_keeps_key_after_success` and `test_create_diary_auto_clears_key_and_preserves_database_error`. Both passed. The success test proves that the saved key opens the journal; the failure test blocks the database parent with a file and checks exact error preservation, no open connection, and removal of the auto key. No keys are printed. Clippy and rustfmt passed after the extraction. Fresh full backend tests and coverage each passed 937/937 (app 304, core 591, crypto 42). `bun run coverage:diff --working-tree` passed at 46/48 lines, 95.8%, with the unchanged 80% threshold. Local Windows E2E is running; Task 3.2 stays IN PROGRESS until its result is known.
+- Task 1.1 failure-path preparation: scratch commit `a33438a` adds only a deliberate failing frontend assertion. It is not pushed yet, because pushing would cancel the active acceptance run under CI's concurrency rule. After the current probe evidence is saved, push this commit to the same NEVER-MERGE PR and verify upload attempts, CRAP skip behavior, and tolerant artifact upload.
+- Task 1.2 local path control: the fresh Windows report contains 643 functions, 17 above 30. `create_diary_auto_inner` scores 8.003251536859219 at 96.29629629629629% coverage; the thin wrapper scores 2 at 0%. Normalize the report, then restore each entry's current absolute workspace root in a disposable input copy: cargo-crap reports all 643 identities unchanged and zero removed. Parsed entries remain exactly equal apart from slash spelling. This validates a possible path-alignment approach locally, not Linux acceptance or a blocking gate. All diagnostic reports remain outside the repo under the approved temporary directory.
+- Auth validation follow-up is committed separately as `b42c3da` with its Internal changelog refinement. Local E2E and Linux acceptance remain pending; the commit does not complete Task 3.2 or authorize M2.
+- Local diagnostic comparison against the earlier normalized Windows report produced seven false `new` identities for unchanged repeated names (`SecretBytes::eq`, platform `init`, and `trigger_auto_lock`). This is not a canonical score comparison because coverage inputs differ. It confirms the identity risk in DEC-003: the baseline paths must be aligned before cargo-crap computes the delta. Linux acceptance includes the exact unchanged-source control.
+- Verification completed: `bun run test:run` passed 1272/1272 in 116 files. `bun run sync-skills` passed with no DRIFT and no canonical skill edits. Local E2E is required for the auth helper extraction (DEC-009). No website screenshot is required because rendered output did not change.
+- The first `gh run watch` for the scratch PR stopped because of a GitHub API connection timeout, not a CI failure. The run was still active; its lint job, normalizer self-test, frontend tests, and script tests had passed. Restarted the watcher without changing CI.
+
+- Task 1.2 preparation: isolated probe commit `dac0351` lives only on `scratch/crap-phase0-acceptance`, in external worktree `C:\Users\Francisco\AppData\Local\Temp\opencode\crap-acceptance-20261010`. Draft PR [#328](https://github.com/fjrevoredo/mini-diarium/pull/328) targets master and is explicitly NEVER MERGE. It runs two fresh backend coverage passes, reports numeric max delta and identical function sets, captures all probe and scope findings, and tests absolute current paths versus a normalized relative baseline. Probe binaries are not built. The first isolation check against `origin/master` returned exactly 1 (not an ancestor, PASS). Linux run: [38072720599](https://github.com/fjrevoredo/mini-diarium/actions/runs/38072720599). Do not close or delete the branch until the artifacts and failure-path evidence are collected.
+- Task 1.1 Linux workflow validation is running on advisory PR #327: [38072527514](https://github.com/fjrevoredo/mini-diarium/actions/runs/38072527514). No result is claimed yet.
+- Independent implementation commits: `f7b5239` (reportOnFailure plus Internal changelog), `96753a7` (equivalent inspect_err cleanup), `0f277cd` (root Clippy config and three-crate lint inheritance), `f0bd106` (ESLint warning rule, durable exception docs, and maintained controls). Full backend tests passed: app 302, core 591, crypto 42, total 935. Final script tests passed 56/56; runner ownership passed for all 130 tracked test files. The tracked project has exactly one Clippy config: `clippy.toml`.
+- Changelog records implemented advisory reports, coverage reporting, and the two lint changes under Unreleased/Internal. Task 3.5 remains pending because the CRAP blocking gate and its docs are not approved or implemented yet; do not describe the gate as shipped.
+
+- Task 3.2: the full workspace Clippy check passed after the small `inspect_err` change. Temporarily lowering the root threshold to 25 made CI-style `-D warnings` fail on `jrnl.rs:342` with cognitive complexity 26/25. Restoring 30 made the full check pass again. No other nursery lints were enabled.
+- Task 3.4: forced assertion run started at `2026-10-10T17:33:48.5000153Z`, failed only the named probe (1 failed, 1272 passed), and recreated lcov at `2026-10-10T17:34:54.9494531Z`. Removed the disposable test. Normal coverage started at `2026-10-10T17:35:20.7617682Z`, passed 1272/1272 tests in 116 files, and rewrote lcov at `2026-10-10T17:36:58.0894401Z`. `reportOnFailure` behavior was checked in installed Vitest source before the edit. No timeout settings were changed.
+- Local checks passed: TypeScript, ESLint (7 advisory warnings), source Prettier, workspace rustfmt, locale validation, normalizer self-test, diff-coverage parser self-test, and production frontend build. Workflow syntax passed `actionlint -shellcheck= -pyflakes= .github/workflows/ci.yml` (no output, exit 0).
+- Task 1.4 preparation: opened advisory-only draft PR [#327](https://github.com/fjrevoredo/mini-diarium/pull/327) on `ci/crap-phase0-advisory` at `9c3ad8c`. Independent lint and coverage-report commits remain separate from that advisory branch. No merge or baseline production has occurred.
+
+- Task 3.3: `bun run lint` exited 0 with seven warnings and no errors. Functions: `mapTauriError` (32), EditorToolbar callback (25), `getFirstStrongDir` (20), useMultiEntryNav callback (20), BackupsPanel callback (16), Calendar callback (16), `isAnyOverlayOpen` (16). DiaryEditor has no warning at this threshold. All four test-name overrides retain the unused-variable error. Script suite including these maintained controls passed (56/56). Type-check passed.
+
+- Task 3.1: a workspace Clippy run with explicit cognitive lint opt-in exited 0 at root threshold 30, with no cognitive-complexity warnings. The root config replaces the crate-local config.
+
+- Initial exploration rechecked `.github/workflows/ci.yml`, `package.json`, `eslint.config.js`, `vitest.config.ts`, all four Cargo manifests, the proposal, the second-brain project page, and installed cargo-crap/ESLint sources. Machine identity resolved to `machine.main-desktop`. Current starting commit is `5a82c70`, not the plan's earlier census commit.
+- Task 1.3: inline self-tests passed. Normalizing a real Windows 0.6.1 report preserved every parsed non-path value and all 642 function entries. This report is diagnostic only and uses existing local coverage, not a fresh canonical run. `bun.lock`, `package-lock.json`, and `nix/package.nix` have no diff. Existing script tests passed (50/50); runner ownership passed (129 tracked files).
 
 - Update milestone and task status before starting and after validation (`plan-status.py <plan> set <id> "<STATUS>"`).
 - Task numbering is not execution order; follow `Depends On` (e.g. Tasks 3.1/3.3/3.4 can start before Milestone 1 finishes).
