@@ -29,7 +29,7 @@
 
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, posix, win32 } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { SCRIPT_TEST_FILE } from './run-script-tests.mjs';
@@ -291,12 +291,37 @@ export async function findConfigDrift({ vitestConfig, wdioConfig, playwrightConf
   return problems;
 }
 
+/** Selects a trusted installation explicitly; never search the caller's PATH for Git. */
+export function getGitExecutable({ platform = process.platform, env = process.env } = {}) {
+  const windows = platform === 'win32';
+  const paths = windows ? win32 : posix;
+  const executable =
+    env.MINI_DIARIUM_GIT_EXECUTABLE ??
+    (windows
+      ? win32.join(
+          env.ProgramW6432 ?? env.ProgramFiles ?? 'C:\\Program Files',
+          'Git',
+          'cmd',
+          'git.exe',
+        )
+      : '/usr/bin/git');
+  if (
+    typeof executable !== 'string' ||
+    executable.includes('\0') ||
+    !paths.isAbsolute(executable) ||
+    (windows && paths.parse(executable).root.length === 1)
+  ) {
+    throw new Error('Git executable must be a fully qualified absolute path');
+  }
+  return executable;
+}
+
 async function main() {
   const repoRoot = fileURLToPath(new URL('..', import.meta.url));
 
   let tracked;
   try {
-    tracked = execFileSync('git', ['ls-files', '-z'], {
+    tracked = execFileSync(getGitExecutable(), ['ls-files', '-z'], {
       encoding: 'utf8',
       cwd: repoRoot,
       maxBuffer: 32 * 1024 * 1024,
