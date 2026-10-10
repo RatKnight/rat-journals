@@ -295,6 +295,8 @@ Run all static checks in a **single `lint` job** to share toolchain and cache ov
 - **Type checker**
 - **Generated artifact verification** — lockfiles, generated code, diagrams
 
+Mini Diarium enables `clippy::cognitive_complexity` through the workspace lint table and `[lints] workspace = true` in all three crates. Root `clippy.toml` sets the threshold to 30. The lint is `warn`, but the existing `cargo clippy --workspace --all-targets -- -D warnings` command makes violations blocking. Do not add a crate-local Clippy config that hides the root config. Removing the obsolete `msrv = "1.75"` setting did not establish a new minimum supported Rust version.
+
 ```yaml
 - name: Format check
   run: prettier --check .         # or: black --check, gofmt -l, etc.

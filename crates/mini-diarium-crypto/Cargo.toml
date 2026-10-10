@@ -10,6 +10,9 @@ authors = ["Francisco J. Revoredo"]
 license = "MIT"
 repository = "https://github.com/fjrevoredo/mini-diarium"
 
+[lints]
+workspace = true
+
 [lib]
 # Defensive, per docs/OPEN_CORE_STRATEGY.md: benches live in the app crate, but
 # keep libtest from being invoked here with --output-format bencher.
