@@ -78,3 +78,24 @@ Companion to [the implementation plan](2026-10-10-crap-complexity-gates-plan.md)
 - Task: 1.4, 1.7
 - Decision: Record an approval-blocked prerequisite task and do not merge PR #327, edit the inherited runner guard, or dismiss its security finding without a user decision. Promote the eleven-entry log to this companion file under the manual-planning convention.
 - Rationale: The public SonarCloud API reports `new_security_rating = 2` (required 1), caused only by `javascript:S4036` at `scripts/check-test-runners.mjs:299`, issue `AaEm5TptZUoGI0Yrksmb`. `git log origin/master..ci/crap-phase0-advisory` shows the pre-existing `5a82c70` runner-infrastructure commit in the PR ancestry. That commit is not yet on origin/master. It is user work outside the CRAP scope, and the plan requires a green advisory PR before merge. No normalizer security or duplication finding was reported.
+
+### DEC-012 — User authorizes a separate prerequisite fix
+
+- Date: 2026-10-10
+- Task: 1.7
+- Decision: The user selected “Fix separately (Recommended)”: fix and test the inherited PATH finding in a separate scoped commit, then return to advisory merge review. Select an absolute Git executable from the standard OS installation, with a documented explicit absolute-path override for nonstandard installations; never discover it through inherited PATH. Retain direct execFileSync arguments and fail loudly if the selected executable cannot run.
+- Rationale: Node's child-process documentation confirms that bare commands use inherited PATH and that absolute executable paths work without a shell. On this verified Windows machine, Git is at C:\Program Files\Git\cmd\git.exe. Unix defaults use /usr/bin/git; Windows uses the OS Program Files location. Nonstandard developer installations need an explicit trusted executable choice, not an implicit PATH fallback. Tests will cover platform selection, invalid relative paths, and the real CLI with PATH empty. This approval does not replace Task 1.6 or authorize a gate.
+
+### DEC-013 — Carry the verified path-alignment requirement into pending M2 steps
+
+- Date: 2026-10-10
+- Task: 1.2
+- Decision: Update the still-unstarted M2 instructions to prepare an ignored, temporary absolute-path input copy from the committed relative baseline before cargo-crap computes its delta. A future `--for-comparison` mode of the existing path-only normalizer will perform that transformation with tests. Keep the committed baseline relative and unchanged. Do not implement the mode or any M2 task before Task 1.6 approval.
+- Rationale: Linux acceptance run 38074856678 matched all 622 unchanged functions and zero removed when the current producer root was restored to an input copy. Direct relative-baseline comparison still produced seven false new identities. The original M2 command examples would therefore be incorrect even though the canonical relative-baseline requirement is correct. The transformation changes paths only, never scores, function sets, or identities.
+
+### DEC-014 — Add the missing inherited security-gate diagnosis recipe
+
+- Date: 2026-10-10
+- Task: 1.7
+- Decision: Under the skill-improver workflow, add a narrow security-rating API recipe and an inherited-commit check to the canonical CI diagnosis skill in a separate documentation change. Sync generated mirrors after that edit. Do not add M2 gate documentation or alter SonarCloud configuration.
+- Rationale: The existing skill explains duplication and coverage failures, but not a security-rating failure. Querying the issue API located the sole finding in earlier unmerged work and prevented an unauthorized change. The missing recipe is an obvious documentation gap; the current fix and its tests already address the repo artifact gap. No structural skill redesign is needed.
