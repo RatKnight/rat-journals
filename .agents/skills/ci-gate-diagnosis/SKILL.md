@@ -24,6 +24,14 @@ Common failures and their usual causes:
 - **`new_duplicated_lines_density` > 3%**: copy-pasted test helpers or fixture objects — extract to a shared constant/function in the same file.
 - **`new_coverage` < threshold**: new logic in a file that `generatePdfFromElement`-style functions (html2canvas/jsPDF) can't be tested in JSDOM — mock the module boundary instead.
 
+- **`new_security_rating` worse than A**: query the issue API for the actual rule and file; a project-status summary does not identify the finding:
+
+  ```bash
+  curl -s "https://sonarcloud.io/api/issues/search?componentKeys=fjrevoredo_mini-diarium&pullRequest=<PR>&types=VULNERABILITY&resolved=false&ps=100"
+  ```
+
+  Check `git log origin/master..HEAD` and the affected file's history before changing it. A PR can inherit earlier unmerged work; agree on its scope before editing that work or dismissing a finding. For `javascript:S4036`, do not hide the warning: select a trusted absolute executable instead of inherited PATH, test failure without fallback, and document any explicit nonstandard-installation choice. This protects executable selection, not a compromised host installation.
+
 Note: `website/**/*.html` is excluded from duplication detection — every new blog post would otherwise fail the gate.
 
 ## Codecov patch check — mirror it locally before pushing
