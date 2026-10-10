@@ -464,10 +464,9 @@ pub fn create_diary_auto(state: State<DiaryState>) -> Result<(), String> {
     crate::config::save_journal_auto_key(&state.app_data_dir, &active_id, Some(&auto_key_hex))?;
 
     // Create the database. auto_key_bytes drops (and zeroizes) at end of scope regardless of outcome.
-    let db_conn = create_database_auto(&db_path, &auto_key_bytes).map_err(|e| {
+    let db_conn = create_database_auto(&db_path, &auto_key_bytes).inspect_err(|_| {
         // Roll back config change on failure
         let _ = crate::config::save_journal_auto_key(&state.app_data_dir, &active_id, None);
-        e
     })?;
     // auto_key_bytes zeroizes here on drop (Zeroizing<T>)
 
