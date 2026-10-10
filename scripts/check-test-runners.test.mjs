@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import {
   findConfigDrift,
   findOrphanTests,
+  getGitExecutable,
   globToRegExp,
   scanTrackedFiles,
   WDIO_SPECS,
@@ -21,6 +22,97 @@ const realConfigs = () => ({
   vitestConfig: readConfig('vitest.config.ts'),
   wdioConfig: readConfig('wdio.conf.ts'),
   playwrightConfig: readConfig('playwright.config.ts'),
+});
+
+test('getGitExecutable ignores inherited PATH on Linux and macOS', () => {
+  for (const platform of ['linux', 'darwin']) {
+    assert.equal(getGitExecutable({ platform, env: { PATH: '/untrusted/bin' } }), '/usr/bin/git');
+  }
+});
+
+test('getGitExecutable uses the Windows system installation, not PATH', () => {
+  const env = {
+    ProgramW6432: 'D:\\Program Files',
+    ProgramFiles: 'D:\\Program Files (x86)',
+    Path: '.',
+  };
+  assert.equal(
+    getGitExecutable({ platform: 'win32', env }),
+    'D:\\Program Files\\Git\\cmd\\git.exe',
+  );
+  assert.equal(
+    getGitExecutable({ platform: 'win32', env: { ProgramFiles: 'E:\\Program Files' } }),
+    'E:\\Program Files\\Git\\cmd\\git.exe',
+  );
+  assert.equal(
+    getGitExecutable({ platform: 'win32', env: {} }),
+    'C:\\Program Files\\Git\\cmd\\git.exe',
+  );
+});
+
+test('getGitExecutable accepts an explicit absolute path for nonstandard installations', () => {
+  for (const [platform, executable] of [
+    ['linux', '/nix/store/trusted-git/bin/git'],
+    ['darwin', '/opt/homebrew/bin/git'],
+    ['win32', 'D:\\Trusted tools\\Git\\cmd\\git.exe'],
+  ]) {
+    assert.equal(
+      getGitExecutable({ platform, env: { MINI_DIARIUM_GIT_EXECUTABLE: executable, PATH: '.' } }),
+      executable,
+    );
+  }
+});
+
+test('getGitExecutable refuses relative, drive-relative, empty, and NUL paths', () => {
+  for (const platform of ['linux', 'win32']) {
+    for (const executable of ['git', './git', '', 'git\0']) {
+      assert.throws(
+        () => getGitExecutable({ platform, env: { MINI_DIARIUM_GIT_EXECUTABLE: executable } }),
+        /fully qualified absolute path/,
+      );
+    }
+  }
+  for (const executable of ['C:git.exe', '\\tools\\git.exe', '/tools/git.exe']) {
+    assert.throws(
+      () =>
+        getGitExecutable({ platform: 'win32', env: { MINI_DIARIUM_GIT_EXECUTABLE: executable } }),
+      /fully qualified absolute path/,
+    );
+  }
+  assert.throws(
+    () => getGitExecutable({ platform: 'win32', env: { ProgramFiles: 'relative-folder' } }),
+    /fully qualified absolute path/,
+  );
+});
+
+test('the real CLI lists tracked files with an empty PATH', () => {
+  // Remove every spelling: Node uses only the first case-insensitive PATH key on Windows.
+  const env = Object.fromEntries(
+    Object.entries(process.env).filter(([key]) => key.toUpperCase() !== 'PATH'),
+  );
+  env.PATH = '';
+  const result = spawnSync(
+    process.execPath,
+    [fileURLToPath(new URL('check-test-runners.mjs', import.meta.url))],
+    { encoding: 'utf8', env },
+  );
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /All \d+ tracked test files belong to a gated runner/);
+});
+
+test('the CLI fails when an explicitly selected Git is missing, without a PATH fallback', () => {
+  const missing = join(
+    tmpdir(),
+    `missing-git-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    'git',
+  );
+  const result = spawnSync(
+    process.execPath,
+    [fileURLToPath(new URL('check-test-runners.mjs', import.meta.url))],
+    { encoding: 'utf8', env: { ...process.env, MINI_DIARIUM_GIT_EXECUTABLE: missing } },
+  );
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /could not list tracked files:.*ENOENT/);
 });
 
 test('findOrphanTests accepts a file for each runner', () => {

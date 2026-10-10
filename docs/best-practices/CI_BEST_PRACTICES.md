@@ -333,6 +333,8 @@ The hook is a complement to CI, not a replacement: it runs `--write`/auto-fix lo
 - **Pass explicit file lists to a runner when its directory or glob handling differs across versions or shells** — a pattern that silently matches nothing is a passing gate with zero tests
 - **Fail a runner that finds zero tests** — an empty run must not report success
 
+For the Mini Diarium ownership guard, select Git by an absolute executable path, not inherited PATH. The standard OS installation and explicit nonstandard-installation override are documented in [scripts/README.md](../../scripts/README.md#git-executable-for-the-ownership-guard). A missing selected executable must fail rather than fall back to PATH.
+
 ---
 
 ## Coverage Gating

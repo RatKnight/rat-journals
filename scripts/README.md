@@ -28,6 +28,19 @@ Every test file must belong to a runner that a gate executes (rule: [CI Best Pra
 
 Script tests use `node:test` + `node:assert/strict`, not Vitest: Vitest and coverage exclude `scripts/**`, so these suites have no effect on the Codecov patch gate. When you change a runner's include or exclude list, change the matching rule in `scripts/check-test-runners.mjs` in the same commit; the guard parses the configs and fails when the two disagree.
 
+### Git executable for the ownership guard
+
+The ownership guard executes Git by an absolute path, without a shell or a search of the caller's `PATH`. Defaults are `/usr/bin/git` on Linux/macOS and `Git\cmd\git.exe` under the Windows OS Program Files location (`ProgramW6432`, then `ProgramFiles`). An unavailable executable fails the check; there is no PATH fallback.
+
+For a nonstandard installation, explicitly select a trusted absolute executable with `MINI_DIARIUM_GIT_EXECUTABLE`:
+
+```powershell
+$env:MINI_DIARIUM_GIT_EXECUTABLE = 'D:\Trusted tools\Git\cmd\git.exe'
+cmd.exe /c bun run check:test-runners
+```
+
+Relative paths, Windows drive-relative paths, and empty values are refused. Keep the chosen executable and OS installation settings trusted. This protects the initial Git selection from PATH shadowing; it does not sandbox Git or protect a compromised installation or an unsafe explicit override.
+
 ## Local Git Hook (auto-installed)
 
 `scripts/install-hooks.js` runs as the `postinstall` step of `bun install` and sets `core.hooksPath` to `.githooks/`. This activates `.githooks/pre-commit`, which on every commit:
