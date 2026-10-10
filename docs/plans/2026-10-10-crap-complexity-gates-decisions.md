@@ -1,0 +1,80 @@
+# CRAP complexity gates decisions
+
+Companion to [the implementation plan](2026-10-10-crap-complexity-gates-plan.md). Entries are append-only.
+
+### DEC-001 — Initial approval and separate blocking approval
+
+- Date: 2026-10-10
+- Task: 1.1
+- Decision: The user's request to explore and then implement approves initial execution. It does not replace Task 1.6's separate approval after Linux acceptance. Execute Tasks 1.1 and 1.3 and the independent Tasks 3.1 to 3.4 first.
+- Rationale: The dependency graph permits the independent lint work, but forbids all M2 work before Task 1.6.
+
+### DEC-002 — Coverage upload failure path
+
+- Date: 2026-10-10
+- Task: 1.1
+- Decision: Add `if: always()` to the two existing Codecov upload steps, without changing their inputs or gate configuration.
+- Rationale: Current uploads use the default success condition, so they do not run after a failed test. Task 1.1 explicitly requires upload attempts on that path. The CRAP cache and install can also run after uploads, so their runtime cannot delay coverage uploads.
+
+### DEC-003 — Verify relative baseline comparison before M2
+
+- Date: 2026-10-10
+- Task: 1.2
+- Decision: Include an unchanged-code comparison against a normalized report in Linux acceptance. Do not assume absolute current paths match the committed relative baseline.
+- Rationale: Installed cargo-crap 0.6.1 `src/delta.rs:150–179` normalizes slashes but does not remove producer roots. Exact matches include file, function, and line; fallback name matching can be ambiguous. Resolve the comparison approach from real reports before M2 implementation.
+
+### DEC-004 — Local validation before the Linux checkpoint
+
+- Date: 2026-10-10
+- Task: 1.1, 1.3
+- Decision: Implement and validate the normalizer together with advisory CI wiring. Keep Task 1.1 IN PROGRESS until its Linux workflow validation finishes; do not claim a Linux report or baseline from a local run.
+- Rationale: The lint job invokes the normalizer, so the two files must ship together. A real local 0.6.1 report can validate the path-only transformation before CI, without serving as the canonical baseline.
+
+### DEC-005 — Remove an obsolete MSRV setting
+
+- Date: 2026-10-10
+- Task: 3.1, 3.2
+- Decision: Remove `msrv = "1.75"` with the old app-only config. Do not replace it with the pinned toolchain version or declare an MSRV. Fix the single newly exposed `manual_inspect` lint with the equivalent `inspect_err` call in a separate commit.
+- Rationale: Clippy documentation confirms that MSRV means the minimum supported compiler, not today's compiler. The full `-D warnings` run found one `map_err` callback that returns its input error unchanged after cleanup (`auth_core.rs:467`). `inspect_err` keeps that cleanup and error propagation unchanged. No auth policy, key handling, or IPC error changes are needed.
+
+### DEC-006 — Non-blocking frontend complexity and maintained controls
+
+- Date: 2026-10-10
+- Task: 3.3
+- Decision: Keep classic complexity max 15 at `warn`; promotion to `error` needs a separate decision. Test each exemption with ESLint `lintText` using a virtual test-file path, and keep these controls plus the normalizer self-test in `scripts/crap-complexity.test.mjs`.
+- Rationale: Lint has no `--max-warnings 0`. Virtual paths exercise the real file overrides without leaving scratch files on disk. The existing `test:scripts` runner now provides CI and pre-commit coverage for these controls.
+
+### DEC-007 — Coverage validation timeout
+
+- Date: 2026-10-10
+- Task: 3.4
+- Decision: The first forced-failure coverage run exceeded 120 seconds before any test results or lcov were written. Retry with a 600-second tool limit; do not count the timeout as the required failing-assertion control.
+- Rationale: The validation requires an actual failed assertion and a report newer than run start. A killed process proves neither.
+
+### DEC-008 — Test the newly exposed lint fix instead of weakening coverage
+
+- Date: 2026-10-10
+- Task: 3.2
+- Decision: Extract only the existing `create_diary_auto` body into a private `&DiaryState` helper and test both successful creation and database-creation failure. Reopen Task 3.2 until the fresh coverage gate passes. Keep the thin IPC wrapper and all behavior unchanged.
+- Rationale: Fresh local patch coverage failed at 0/1 on the new `inspect_err` line. Tauri `State` has no public constructor (installed `tauri/src/state.rs:20`), while nearby command tests use private state-reference helpers. This small extraction allows real tests of config rollback and error propagation without a new Tauri test dependency, a lint suppression, or a lower coverage threshold. It is limited to validation of the required lint fix, not a refactor of the legacy CRAP offenders.
+
+### DEC-009 — Run local E2E for the auth helper extraction
+
+- Date: 2026-10-10
+- Task: 3.2
+- Decision: Run `cmd.exe /c bun run test:e2e:local` before closing Task 3.2. Correct the earlier note that exempted this extraction from E2E.
+- Rationale: The post-task checklist requires local E2E when a change touches auth. Equivalent behavior does not remove that requirement. The command builds the current source before it tests the Windows app.
+
+### DEC-010 — Exclude confirmed test files and validate aligned baseline paths
+
+- Date: 2026-10-10
+- Task: 1.2
+- Decision: Add `--exclude '**/tests.rs' --exclude '**/test_support.rs'` consistently to advisory analysis and its provenance, retaining all default exclusions. Run another disposable Linux success control with that scope and an input copy of the relative baseline whose entry paths have the current producer root restored. Do not add a gate or commit a baseline.
+- Rationale: Linux run 38072720599 includes helpers from six files whose parent declarations use `#[cfg(test)]`: config/tests.rs, fonts/tests.rs, and four core test_support.rs files. The unchanged-source comparison also reports seven false new identities because cargo-crap compares absolute current paths to relative baseline paths. A local diagnostic root-aligned input already matched all 643 identities; Linux must confirm that behavior before M2.
+
+### DEC-011 — Preserve the inherited prerequisite and stop at its quality gate
+
+- Date: 2026-10-10
+- Task: 1.4, 1.7
+- Decision: Record an approval-blocked prerequisite task and do not merge PR #327, edit the inherited runner guard, or dismiss its security finding without a user decision. Promote the eleven-entry log to this companion file under the manual-planning convention.
+- Rationale: The public SonarCloud API reports `new_security_rating = 2` (required 1), caused only by `javascript:S4036` at `scripts/check-test-runners.mjs:299`, issue `AaEm5TptZUoGI0Yrksmb`. `git log origin/master..ci/crap-phase0-advisory` shows the pre-existing `5a82c70` runner-infrastructure commit in the PR ancestry. That commit is not yet on origin/master. It is user work outside the CRAP scope, and the plan requires a green advisory PR before merge. No normalizer security or duplication finding was reported.

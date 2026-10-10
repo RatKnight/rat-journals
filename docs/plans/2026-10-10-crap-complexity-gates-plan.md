@@ -2,7 +2,7 @@
 
 ## Metadata
 
-- Plan Status: IN PROGRESS
+- Plan Status: BLOCKED
 - Plan Format: manual-planning v2.0.0
 - Template: milestoned
 - Tracking: tracked (by user request)
@@ -97,13 +97,13 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 ## Open Questions
 
-- None — all eight design questions were resolved in the scope-agreement round with the coding agent (tab wK:t4, 2026-10-10); the resolutions are reflected in Scope, Non-Goals, and Hard Constraints above.
+- How should the pre-existing `5a82c70` runner-infrastructure commit and its SonarCloud PATH finding be handled before advisory PR #327 can merge? User decision required under Task 1.7; no changes to that earlier work or finding dismissal are authorized yet.
 
 ## Milestones
 
 ### Milestone 1: Phase 0 — advisory CRAP report + canonical Linux baseline
 
-- Status: IN PROGRESS
+- Status: BLOCKED
 - Purpose: prove the toolchain end-to-end on Linux CI without gating anything, and produce the reviewed baseline M2 gates against.
 - Exit Criteria: the M1 advisory PR (Task 1.4) is merged and its master CI run produces the report artifact; acceptance probes document closure, cfg-dead-code, path-matching, and numeric repeatability behavior; `ci/crap-baseline.json` + `ci/crap-baseline.provenance.md` committed — Linux-produced, normalized (`--for-baseline` rejects outside-repo paths), probe-free, with the test-helper exclusion list applied; **Task 1.6 approval gate passed**: user reviewed the Linux results (unexplained coverage mismatches, runtime cost, repeatability) and the explicit approval is recorded in the Decision Log before any M2 task starts.
 
@@ -122,7 +122,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 #### Task 1.2: Acceptance probes on a scratch branch
 
-- Status: IN PROGRESS
+- Status: COMPLETED
 - Depends On: 1.1
 - Objective: empirically document cargo-crap's behavior for the three known blind spots plus score repeatability, on Linux, before any gate exists.
 - Steps:
@@ -147,14 +147,14 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 #### Task 1.4: M1 merge checkpoint (advisory-only PR to master)
 
-- Status: TO BE DONE
-- Depends On: 1.1, 1.2, 1.3
+- Status: BLOCKED
+- Depends On: 1.1, 1.2, 1.3, 1.7
 - Objective: the advisory infrastructure is reviewed and merged to master, because the canonical baseline can only come from a master CI run — master does not have the advisory step until this merge lands.
 - Steps:
    1. Open the M1 PR containing: advisory CI step + binary cache and production-time provenance capture (Task 1.1), normalizer script + self-test + `package.json` entry (Task 1.3), `.gitignore` additions, and a lint-job CI step running `node scripts/normalize-crap-baseline.mjs --self-test` (script self-tests are outside ESLint's `src` scope and Vitest excludes `scripts/**` — without explicit wiring the normalizer could rot silently). Apply any test-helper analyzer exclusions decided in Task 1.2 to the report command before merging; record the exact exclusion list with the report provenance so Task 1.5 receives an already correctly scoped report.
   2. User review; merge to master. This merge IS the checkpoint — no canonical master artifact can exist before it.
 - Validation: the M1 PR is green (advisory step + normalizer self-test visible in the run) and merged; the subsequent master CI run produces the report artifact.
-- Notes: the PR is advisory-only — nothing gates, nothing can fail beyond what already could.
+- Notes: the CRAP changes are advisory-only. The PR also inherits the pre-existing runner-infrastructure commit `5a82c70`, which is absent from origin/master and has a SonarCloud PATH finding. Task 1.7 must resolve that prerequisite before this PR can satisfy the green-check requirement. Do not merge or dismiss the finding without a user decision.
 
 #### Task 1.5: Canonical Linux baseline `ci/crap-baseline.json`
 
@@ -179,6 +179,18 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
   2. Ask for explicit approval to enable the blocking gate; record the decision as a `## Decision Log` entry (approval, or plan BLOCKED with reason).
 - Validation: a dated Decision Log entry names this task and records the user's explicit approval to enable blocking checks. Only affirmative approval completes Task 1.6; refusal or pending approval leaves M2 blocked. Task 2.1 depends on completion of Task 1.6, and no M2 task may start before approval.
 - Notes: this task exists because milestone prose alone does not constrain the dependency graph — Task 2.1 hard-depends on it.
+
+#### Task 1.7: Resolve inherited prerequisite quality gate
+
+- Status: BLOCKED
+- Depends On: none
+- Objective: advisory PR #327 has an agreed prerequisite scope and no unresolved inherited SonarCloud security gate failure.
+- Steps:
+  1. Present the source evidence: pre-existing commit `5a82c70` appears in `git log origin/master..ci/crap-phase0-advisory`; SonarCloud issue `AaEm5TptZUoGI0Yrksmb` flags `javascript:S4036` at `scripts/check-test-runners.mjs:299`, not the new CRAP normalizer.
+  2. Obtain the user's decision: authorize a separate prerequisite fix, wait for that prerequisite to be resolved and merged separately, or authorize rebuilding the advisory PR without it. Do not modify earlier work, rewrite the published PR branch, or dismiss the finding before this decision.
+  3. Follow the selected approach in a separate scoped change and run its required tests, changelog, and CI validation. Record the decision and results before resuming Task 1.4.
+- Validation: the user's decision is recorded; PR #327 has the agreed ancestry/scope; the public SonarCloud project_status API reports a passing security condition for that scope; required checks pass. No CRAP or coverage threshold is weakened.
+- Notes: discovered outside the original CRAP implementation scope. The original user design questions remain resolved; this question concerns a pre-existing prerequisite, not Task 1.6 approval.
 
 ### Milestone 2: Phase 1 — CRAP policy gate
 
@@ -361,77 +373,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 ## Decision Log
 
-Write an entry **before moving to the next task**, never retrospectively. An entry is required when implementation diverges from what this plan specifies, when a validation failure forces the plan to adapt, when an unplanned problem is found, or when a validation is deliberately deferred. No entry is needed when execution matches the plan.
-
-### DEC-001 — Initial approval and separate blocking approval
-
-- Date: 2026-10-10
-- Task: 1.1
-- Decision: The user's request to explore and then implement approves initial execution. It does not replace Task 1.6's separate approval after Linux acceptance. Execute Tasks 1.1 and 1.3 and the independent Tasks 3.1 to 3.4 first.
-- Rationale: The dependency graph permits the independent lint work, but forbids all M2 work before Task 1.6.
-
-### DEC-002 — Coverage upload failure path
-
-- Date: 2026-10-10
-- Task: 1.1
-- Decision: Add `if: always()` to the two existing Codecov upload steps, without changing their inputs or gate configuration.
-- Rationale: Current uploads use the default success condition, so they do not run after a failed test. Task 1.1 explicitly requires upload attempts on that path. The CRAP cache and install can also run after uploads, so their runtime cannot delay coverage uploads.
-
-### DEC-003 — Verify relative baseline comparison before M2
-
-- Date: 2026-10-10
-- Task: 1.2
-- Decision: Include an unchanged-code comparison against a normalized report in Linux acceptance. Do not assume absolute current paths match the committed relative baseline.
-- Rationale: Installed cargo-crap 0.6.1 `src/delta.rs:150–179` normalizes slashes but does not remove producer roots. Exact matches include file, function, and line; fallback name matching can be ambiguous. Resolve the comparison approach from real reports before M2 implementation.
-
-### DEC-004 — Local validation before the Linux checkpoint
-
-- Date: 2026-10-10
-- Task: 1.1, 1.3
-- Decision: Implement and validate the normalizer together with advisory CI wiring. Keep Task 1.1 IN PROGRESS until its Linux workflow validation finishes; do not claim a Linux report or baseline from a local run.
-- Rationale: The lint job invokes the normalizer, so the two files must ship together. A real local 0.6.1 report can validate the path-only transformation before CI, without serving as the canonical baseline.
-
-### DEC-005 — Remove an obsolete MSRV setting
-
-- Date: 2026-10-10
-- Task: 3.1, 3.2
-- Decision: Remove `msrv = "1.75"` with the old app-only config. Do not replace it with the pinned toolchain version or declare an MSRV. Fix the single newly exposed `manual_inspect` lint with the equivalent `inspect_err` call in a separate commit.
-- Rationale: Clippy documentation confirms that MSRV means the minimum supported compiler, not today's compiler. The full `-D warnings` run found one `map_err` callback that returns its input error unchanged after cleanup (`auth_core.rs:467`). `inspect_err` keeps that cleanup and error propagation unchanged. No auth policy, key handling, or IPC error changes are needed.
-
-### DEC-006 — Non-blocking frontend complexity and maintained controls
-
-- Date: 2026-10-10
-- Task: 3.3
-- Decision: Keep classic complexity max 15 at `warn`; promotion to `error` needs a separate decision. Test each exemption with ESLint `lintText` using a virtual test-file path, and keep these controls plus the normalizer self-test in `scripts/crap-complexity.test.mjs`.
-- Rationale: Lint has no `--max-warnings 0`. Virtual paths exercise the real file overrides without leaving scratch files on disk. The existing `test:scripts` runner now provides CI and pre-commit coverage for these controls.
-
-### DEC-007 — Coverage validation timeout
-
-- Date: 2026-10-10
-- Task: 3.4
-- Decision: The first forced-failure coverage run exceeded 120 seconds before any test results or lcov were written. Retry with a 600-second tool limit; do not count the timeout as the required failing-assertion control.
-- Rationale: The validation requires an actual failed assertion and a report newer than run start. A killed process proves neither.
-
-### DEC-008 — Test the newly exposed lint fix instead of weakening coverage
-
-- Date: 2026-10-10
-- Task: 3.2
-- Decision: Extract only the existing `create_diary_auto` body into a private `&DiaryState` helper and test both successful creation and database-creation failure. Reopen Task 3.2 until the fresh coverage gate passes. Keep the thin IPC wrapper and all behavior unchanged.
-- Rationale: Fresh local patch coverage failed at 0/1 on the new `inspect_err` line. Tauri `State` has no public constructor (installed `tauri/src/state.rs:20`), while nearby command tests use private state-reference helpers. This small extraction allows real tests of config rollback and error propagation without a new Tauri test dependency, a lint suppression, or a lower coverage threshold. It is limited to validation of the required lint fix, not a refactor of the legacy CRAP offenders.
-
-### DEC-009 — Run local E2E for the auth helper extraction
-
-- Date: 2026-10-10
-- Task: 3.2
-- Decision: Run `cmd.exe /c bun run test:e2e:local` before closing Task 3.2. Correct the earlier note that exempted this extraction from E2E.
-- Rationale: The post-task checklist requires local E2E when a change touches auth. Equivalent behavior does not remove that requirement. The command builds the current source before it tests the Windows app.
-
-### DEC-010 — Exclude confirmed test files and validate aligned baseline paths
-
-- Date: 2026-10-10
-- Task: 1.2
-- Decision: Add `--exclude '**/tests.rs' --exclude '**/test_support.rs'` consistently to advisory analysis and its provenance, retaining all default exclusions. Run another disposable Linux success control with that scope and an input copy of the relative baseline whose entry paths have the current producer root restored. Do not add a gate or commit a baseline.
-- Rationale: Linux run 38072720599 includes helpers from six files whose parent declarations use `#[cfg(test)]`: config/tests.rs, fonts/tests.rs, and four core test_support.rs files. The unchanged-source comparison also reports seven false new identities because cargo-crap compares absolute current paths to relative baseline paths. A local diagnostic root-aligned input already matched all 643 identities; Linux must confirm that behavior before M2.
+Entries live in [2026-10-10-crap-complexity-gates-decisions.md](2026-10-10-crap-complexity-gates-decisions.md) (11 entries). The timing rule is unchanged: write an entry before moving to the next task.
 
 ## Final Verification
 
@@ -457,20 +399,22 @@ The earlier W001 warning is resolved: the plan is now tracked in commit `4f480f0
 ## Execution Notes
 
 - Task 3.2 coverage follow-up: extracted only `create_diary_auto_inner(&DiaryState)` and added named tests `test_create_diary_auto_keeps_key_after_success` and `test_create_diary_auto_clears_key_and_preserves_database_error`. Both passed. The success test proves that the saved key opens the journal; the failure test blocks the database parent with a file and checks exact error preservation, no open connection, and removal of the auto key. No keys are printed. Clippy and rustfmt passed after the extraction. Fresh full backend tests and coverage each passed 937/937 (app 304, core 591, crypto 42). `bun run coverage:diff --working-tree` passed at 46/48 lines, 95.8%, with the unchanged 80% threshold. Local Windows E2E rebuilt the release app and passed all six spec files on WebView2 154.0.4258.62, ending at `2026-10-10T17:56:07Z`. Task 3.2 is COMPLETED.
-- Task 1.1 failure-path preparation: scratch commit `a33438a` adds only a deliberate failing frontend assertion. Its push was held until the first successful acceptance run finished, to avoid canceling that run under CI's concurrency rule. It is now under validation in run 38074581034.
+- Task 1.1 failure-path preparation: scratch commit `a33438a` added only a deliberate failing frontend assertion. Its push was held until the first successful acceptance run finished, to avoid canceling that run under CI's concurrency rule. Validation passed in run 38074581034.
 - Task 1.2 Linux evidence saved: run [38072720599](https://github.com/fjrevoredo/mini-diarium/actions/runs/38072720599) completed successfully. Two fresh coverage runs produced identical sets of 645 functions and maximum absolute CRAP delta 0. Closure probe: CC 1, coverage 57.14285714285714%, CRAP 1.0787172011661808; closure branches do not increase CC, but covered closure lines contribute to coverage. cfg-dead probe: CC 3, coverage 100%, CRAP 3 despite not compiling on Linux. Mixed control: CC 4, coverage 55.55555555555556%, CRAP 5.404663923182442. Paths matched 119/124 analyzed files; the five unmatched sources are the two test-only files, build.rs, and macOS/Windows WebView sources. One coverage-only import/mod.rs is expected because it contains no scored production functions. Absolute-versus-relative baseline control found 638 unchanged and seven false new repeated-name identities. Analysis elapsed 0 whole seconds; cold cargo-crap install took 52 seconds. Both Codecov uploads and both report artifacts succeeded. Evidence and production-time provenance are retained outside the repo, never as a baseline.
 - Task 1.1 failed-test control passed its acceptance condition: run [38074581034](https://github.com/fjrevoredo/mini-diarium/actions/runs/38074581034) failed only the deliberate frontend assertion (116 normal test files passed). Backend coverage skipped. Both Codecov upload steps ran and completed; their logs explicitly report no coverage files, as expected for this advisory-only branch without reportOnFailure. CRAP printed its same-run-coverage skip message and completed without a report. The report artifact upload succeeded with provenance only; the disposable evidence upload tolerated no files. No additional step failed. Together with the first successful Linux report and both successful uploads, this completes Task 1.1.
-- Scope update: primary commit `7323092` adds the two test-only exclusion patterns to every advisory analyzer command and its provenance, and records the findings in CI best practices. Local analysis removed exactly 23 helper entries (643 to 620); every retained production entry remained exactly equal. Workflow syntax passed actionlint. Advisory PR #327 now contains the same isolated change at `f3e8ade`; run [38074726733](https://github.com/fjrevoredo/mini-diarium/actions/runs/38074726733) is active.
-- Final Task 1.2 control is pushed after saving the failed-test evidence: scratch commits `53b0c50` (same scope update) and `e9f259e` (remove the deliberate failing test, assert no test-helper entries, compare root-aligned baseline input against unchanged source, repeat two fresh coverage runs with the final scope). Actionlint passed. Run [38074856678](https://github.com/fjrevoredo/mini-diarium/actions/runs/38074856678) is queued. All four scratch commits (`dac0351`, `a33438a`, `53b0c50`, `e9f259e`) were checked against freshly fetched `origin/master`; each ancestry command returned exactly 1, confirming isolation.
+- Scope update: primary commit `7323092` adds the two test-only exclusion patterns to every advisory analyzer command and its provenance, and records the findings in CI best practices. Local analysis removed exactly 23 helper entries (643 to 620); every retained production entry remained exactly equal. Workflow syntax passed actionlint. Advisory PR #327 contains the same isolated change at `f3e8ade`; run [38074726733](https://github.com/fjrevoredo/mini-diarium/actions/runs/38074726733) completed successfully: Test, Lint, Windows/Linux/macOS builds, Flatpak, and E2E all passed. Its probe-free report contains 619 functions, 17 above 30, and zero probe entries. This is a PR report, not the canonical master baseline. The inherited SonarCloud security condition still blocks merge; the PR description now states the evidence and inherited scope.
+- Final Task 1.2 control passed in [38074856678](https://github.com/fjrevoredo/mini-diarium/actions/runs/38074856678), using the confirmed test-only exclusions. Two fresh coverage runs retained identical sets of 622 functions; maximum absolute CRAP delta was 0.0007656249999996589, below epsilon 0.01. Only `backup::create_snapshot` changed (CRAP 7 to 7.000765625, coverage 100% to 97.5%, uncovered line 166 is its manifest-save warning). The unchanged-source path-aligned control reports all 622 functions unchanged and zero removed; the direct relative-baseline control still falsely reports seven new entries. No test-helper entries remained. Scope: 115/118 source files matched; unmatched sources are build.rs and the macOS/Windows WebView sources. The four excluded helper files plus import/mod.rs explain all five coverage-only files. Both Codecov uploads, both report uploads, and normalizer self-tests passed. This completes Task 1.2; no gate or canonical baseline was produced.
+- Probe cleanup completed after all artifacts and failure-path logs were saved. PR #328 is CLOSED with `mergedAt: null`. All four scratch commits (`dac0351`, `a33438a`, `53b0c50`, `e9f259e`) were checked against freshly fetched `origin/master` immediately before cleanup; every ancestry command returned exactly 1. The clean disposable worktree and its local/remote scratch branch were removed without force-removing worktree contents. Downloaded evidence remains outside the repo. The advisory worktree is retained for the review checkpoint.
+- Task 1.4 is BLOCKED by inherited SonarCloud issue `AaEm5TptZUoGI0Yrksmb` (`javascript:S4036`, scripts/check-test-runners.mjs:299). The public gate API reports only the security rating failing (2 vs required 1); duplication is 0.0%, and no issue targets the normalizer. The earlier user commit `5a82c70` is not yet on origin/master and appears in advisory PR #327. Task 1.7 records the required user decision. No earlier work or Sonar issue status was changed.
 - The first advisory run 38072527514 completed with Test, Lint, Linux/macOS/Windows builds, and Flatpak all successful. Its E2E job was canceled by the newer scope-update push, so the full workflow conclusion is canceled, not a code failure. The active replacement run must finish before the advisory PR can be reviewed for merge.
 - Task 1.2 local path control: the fresh Windows report contains 643 functions, 17 above 30. `create_diary_auto_inner` scores 8.003251536859219 at 96.29629629629629% coverage; the thin wrapper scores 2 at 0%. Normalize the report, then restore each entry's current absolute workspace root in a disposable input copy: cargo-crap reports all 643 identities unchanged and zero removed. Parsed entries remain exactly equal apart from slash spelling. This validates a possible path-alignment approach locally, not Linux acceptance or a blocking gate. All diagnostic reports remain outside the repo under the approved temporary directory.
-- Auth validation follow-up is committed separately as `b42c3da` with its Internal changelog refinement. Local E2E passed and completes Task 3.2. Linux acceptance remains pending; this does not authorize M2.
+- Auth validation follow-up is committed separately as `b42c3da` with its Internal changelog refinement. Local E2E passed and completes Task 3.2. Linux acceptance is complete, but advisory merge, canonical baseline, and Task 1.6 approval remain pending; this does not authorize M2.
 - Local diagnostic comparison against the earlier normalized Windows report produced seven false `new` identities for unchanged repeated names (`SecretBytes::eq`, platform `init`, and `trigger_auto_lock`). This is not a canonical score comparison because coverage inputs differ. It confirms the identity risk in DEC-003: the baseline paths must be aligned before cargo-crap computes the delta. Linux acceptance includes the exact unchanged-source control.
 - Verification completed: `bun run test:run` passed 1272/1272 in 116 files. `bun run sync-skills` passed with no DRIFT and no canonical skill edits. Local E2E is required for the auth helper extraction (DEC-009). No website screenshot is required because rendered output did not change.
 - The first `gh run watch` for the scratch PR stopped because of a GitHub API connection timeout, not a CI failure. The run was still active; its lint job, normalizer self-test, frontend tests, and script tests had passed. Restarted the watcher without changing CI.
 
-- Task 1.2 preparation: isolated probe commit `dac0351` lives only on `scratch/crap-phase0-acceptance`, in external worktree `C:\Users\Francisco\AppData\Local\Temp\opencode\crap-acceptance-20261010`. Draft PR [#328](https://github.com/fjrevoredo/mini-diarium/pull/328) targets master and is explicitly NEVER MERGE. It runs two fresh backend coverage passes, reports numeric max delta and identical function sets, captures all probe and scope findings, and tests absolute current paths versus a normalized relative baseline. Probe binaries are not built. The first isolation check against `origin/master` returned exactly 1 (not an ancestor, PASS). Linux run: [38072720599](https://github.com/fjrevoredo/mini-diarium/actions/runs/38072720599). Do not close or delete the branch until the artifacts and failure-path evidence are collected.
-- Task 1.1 Linux workflow validation originally ran on advisory PR #327 as [38072527514](https://github.com/fjrevoredo/mini-diarium/actions/runs/38072527514); see the scoped replacement run and cancellation evidence above. Artifact production and failed-test flow are proven. The final scoped acceptance and green advisory merge run remain pending under Tasks 1.2 and 1.4.
+- Task 1.2 preparation used isolated probe commit `dac0351` in external worktree `C:\Users\Francisco\AppData\Local\Temp\opencode\crap-acceptance-20261010` and NEVER-MERGE draft PR [#328](https://github.com/fjrevoredo/mini-diarium/pull/328). Probe binaries were not built. Original Linux run: [38072720599](https://github.com/fjrevoredo/mini-diarium/actions/runs/38072720599). The final validation and probe cleanup are complete as recorded above.
+- Task 1.1 Linux workflow validation originally ran on advisory PR #327 as [38072527514](https://github.com/fjrevoredo/mini-diarium/actions/runs/38072527514); see the scoped replacement run and cancellation evidence above. Artifact production, failed-test flow, and final scoped Linux acceptance are proven. Advisory merge remains blocked under Tasks 1.4 and 1.7.
 - Independent implementation commits: `f7b5239` (reportOnFailure plus Internal changelog), `96753a7` (equivalent inspect_err cleanup), `0f277cd` (root Clippy config and three-crate lint inheritance), `f0bd106` (ESLint warning rule, durable exception docs, and maintained controls). Full backend tests passed: app 302, core 591, crypto 42, total 935. Final script tests passed 56/56; runner ownership passed for all 130 tracked test files. The tracked project has exactly one Clippy config: `clippy.toml`.
 - Changelog records implemented advisory reports, coverage reporting, and the two lint changes under Unreleased/Internal. Task 3.5 remains pending because the CRAP blocking gate and its docs are not approved or implemented yet; do not describe the gate as shipped.
 
