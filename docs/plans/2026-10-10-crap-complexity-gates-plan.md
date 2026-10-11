@@ -214,7 +214,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 ### Milestone 2: Phase 1 — CRAP policy gate
 
-- Status: IN PROGRESS
+- Status: COMPLETED
 - Purpose: convert the advisory report into a blocking, correctly-scoped gate with a local advisory mirror and full documentation.
 - Exit Criteria: Linux CI fails on a seeded new function with CRAP > 30 and on a seeded regression of an existing function, and the policy script exits 0 on unchanged code in that canonical CI environment; artifacts still upload when the gate fails; Codecov uploads unaffected; pre-commit prints a clearly labeled advisory CRAP verdict locally (explicit skip notice when the tool is missing or has the wrong version), without requiring local policy exit 0 against the Linux baseline; docs state the gate mechanics, the whole-function repo-wide policy, the baseline-update rules, and the blind spots; M1→M2 user approval recorded in the Decision Log.
 
@@ -271,7 +271,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 ### Milestone 3: Phase 2 — complexity lints + adjacent fix
 
-- Status: IN PROGRESS
+- Status: COMPLETED
 - Purpose: cyclomatic/cognitive complexity lints active in both languages with measured-zero legacy debt, plus the coverage-reporting fix discovered during verification.
 - Exit Criteria: `cargo clippy --workspace --all-targets -- -D warnings` green with `cognitive_complexity` enabled and a positive control proving the wiring live; `bun run lint` emits complexity warnings without failing; test files exempt from the complexity rule only; a failing test run still writes lcov; CHANGELOG updated.
 
@@ -324,7 +324,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 #### Task 3.5: CHANGELOG entry
 
-- Status: IN PROGRESS
+- Status: COMPLETED
 - Depends On: 2.2, 2.4, 3.2, 3.3, 3.4
 - Objective: the new gates/lints are recorded per repo convention.
 - Steps:
@@ -340,7 +340,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 #### Task 4.1: Cleanup Intermediate Artifacts
 
-- Status: TO BE DONE
+- Status: IN PROGRESS
 - Depends On: 2.2, 2.3, 3.5
 - Objective: remove artifacts created only to support implementation.
 - Steps:
@@ -430,6 +430,7 @@ The earlier W001 warning is resolved: the plan is now tracked in commit `4f480f0
 
 ## Execution Notes
 
+- Task 3.5 is COMPLETED: all four CRAP, workspace Clippy, frontend ESLint, and failure-reporting entries are verified under `0.7.5 / Unreleased / Internal`; the CRAP entry links to the finished policy and blind-spot documentation. No developer-only entry moved into a user-facing section. Milestones 2 and 3 now meet all exit criteria. Cleanup and final fresh verification remain Milestone 4.
 - Task 2.4 is COMPLETED: CI best practices now state the whole-function/repository-wide Linux policy, 0/1/2 failure contract, coverage/artifact ordering, all-local-platform advisory behavior, path alignment, reviewed baseline update/provenance rules, and closure/macro/cfg-dead limits. Canonical `ci-gate-diagnosis` includes artifact-first recipes, all-0% path checks, and the same policy/limits. Root `CLAUDE.md` adds only a self-test command and a short gotcha with pointers. All new relative links resolve, required anchors are present, `sync-skills` exits 0 without DRIFT, and no generated mirror is edited or staged. No website docs change applies to this developer-only check.
 - Task 2.2 is COMPLETED: unchanged-source run 38142680713 passed all seven jobs on `3e296fdd5e1ede64f2be77a4964734ecffcefd8e`, including the production gate, both lint self-tests, Windows/macOS/Linux builds, Flatpak, and clean/stateful Linux E2E. Both Codecov uploads and both CRAP artifacts succeeded. Independently parsed delta reports policy exit 0, 625 functions, zero violations, no probes, and unchanged `build_menu` at CRAP 600. Report/provenance/delta evidence is retained in `C:\Users\Francisco\AppData\Local\Temp\opencode\crap-gate-unchanged-evidence-38142680713`. Together with the two expected exit-1 negative controls below, this proves blocking behavior and upload preservation. All watchers have finished. Task 2.4 can now start; final post-cleanup verification remains Task 4.2.
 - Task 2.2 new-offender negative control passed its acceptance condition in run 38142680404 on `761fa966440e1a1358cb2429014af5cdc0fb70db`: only the production gate failed, exit 1, with the accurate `crap_gate_new_offender` annotation. Independently parsed delta has 626 functions and exactly one offender: New, CC 6, coverage 0%, CRAP 42, null baseline/delta. Frontend/script/backend/print tests, both lint self-tests, both Codecov uploads, and both report/delta uploads succeeded; dependent builds correctly skipped. Report, provenance, and delta are retained in `C:\Users\Francisco\AppData\Local\Temp\opencode\crap-gate-new-evidence-38142680404`; failed-step log is `crap-gate-new-failed-step-38142680404.log` in the parent approved temp directory. Both negative controls now pass; the unchanged-source watcher still owns the remaining Task 2.2 result.
