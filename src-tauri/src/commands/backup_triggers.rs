@@ -137,7 +137,8 @@ pub(crate) fn snapshot_detached(
 /// any of them was poisoned, the connection is dropped on this thread with no snapshot —
 /// a poisoned `db_path`/`backups_dir` pair may not match each other — and `rx` has already
 /// fired. The `db` poison is cleared once the value is `None`, which is always consistent,
-/// so the journal can be unlocked again. The path mutexes keep their poison.
+/// so the journal can be unlocked again. `backup_ops` and the path mutexes keep their poison,
+/// so later locks also skip the snapshot and the backup commands fail until the app restarts.
 ///
 /// `backup_ops` is acquired **before** `db_path`, matching the order every IPC backup command
 /// uses. Holding it through the connection hand-off guarantees no IPC command's directory
