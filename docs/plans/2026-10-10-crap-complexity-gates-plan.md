@@ -29,9 +29,9 @@
 ### Current execution boundary (2026-10-11)
 
 - The primary branch contains advisory reporting/normalization, workspace Clippy and frontend ESLint settings, Vitest failure reporting, the equivalent auth cleanup helper/tests, and the separately approved inherited Git-selection fix.
-- Draft PR #327 contains only the advisory reporting/normalization work and inherited runner infrastructure with its approved Git-selection fix. It deliberately excludes the independent Clippy, ESLint, Vitest, and auth commits. Local full-gate results validate the primary branch; PR CI results validate that narrower PR, not the independent changes.
+- Merged PR #327 contains only the advisory reporting/normalization work and inherited runner infrastructure with its approved Git-selection fix. It deliberately excludes the independent Clippy, ESLint, Vitest, and auth commits. Local full-gate results validate the primary branch; PR CI results validate that narrower PR, not the independent changes.
 - Tasks 1.8 and 1.4 are COMPLETED. The normalizer boundary fix is primary `d7b8dfc` and advisory `926d30f`; replacement CI run 38097918038 and every PR check passed on exact head `926d30f9a7ae5234a0e8ebf6bbdf736d3a2eeb99`. PR #327 merged under DEC-017 as `8a345d70abe8fb5c3aba842150f5b0c2af5a66d9`. Master CI run 38099433982 passed all seven jobs, and its probe-free Linux report and production provenance are verified.
-- Tasks 1.5, 1.6, all M2 tasks, final gate documentation/changelog, and whole-plan final verification remain pending. There is no canonical baseline, reusable comparison mode, or blocking CRAP gate. The merged PR's plan copy is an initial planning snapshot; this primary-worktree plan and companion decisions file are the current execution ledger. The independent lint, Vitest, and auth commits are not part of this merge.
+- The user requested a latest-master update and plan continuation. Merge `4a88bd7` includes master `f1bb84f73f44dd40028299682d0b6ef2f2326ca7`, including panic-lock recovery and legacy filename fixes. Task 1.5 is IN PROGRESS, awaiting the latest master report from run 38103562280 and fresh integrated local checks (DEC-018). Task 1.6 and all M2 work remain pending. No canonical baseline, reusable comparison mode, or blocking CRAP gate exists yet. This primary-worktree plan and companion decisions file remain the current execution ledger.
 
 ### Initial repository facts (before implementation)
 
@@ -165,7 +165,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 #### Task 1.5: Canonical Linux baseline `ci/crap-baseline.json`
 
-- Status: TO BE DONE
+- Status: IN PROGRESS
 - Depends On: 1.4
 - Objective: reviewed, normalized, Linux-produced baseline committed with durable provenance.
 - Steps:
@@ -393,7 +393,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 ## Decision Log
 
-Entries live in [2026-10-10-crap-complexity-gates-decisions.md](2026-10-10-crap-complexity-gates-decisions.md) (17 entries). The timing rule is unchanged: write an entry before moving to the next task.
+Entries live in [2026-10-10-crap-complexity-gates-decisions.md](2026-10-10-crap-complexity-gates-decisions.md) (18 entries). The timing rule is unchanged: write an entry before moving to the next task.
 
 ## Final Verification
 
@@ -418,6 +418,7 @@ The earlier W001 warning is resolved: the plan is now tracked in commit `4f480f0
 
 ## Execution Notes
 
+- Latest-master sync completed as merge `4a88bd7`: origin/master `f1bb84f73f44dd40028299682d0b6ef2f2326ca7` is an ancestor of HEAD. The only conflict was `CHANGELOG.md`; resolution retains master's 233-byte legacy filename description, one advisory-report entry, and this branch's independent lint/reporting/diagnosis entries. Staged formatting and diff checks passed. Task 1.5 now awaits latest master CI run 38103562280 and fresh local `bun run pre-commit`; both have background watchers. No M2 work or gate approval is implied (DEC-018).
 - Task 1.4 is COMPLETED: post-merge master CI run 38099433982 passed Test, Lint, Windows/Linux/macOS builds, Flatpak, and E2E on exact merge SHA `8a345d70abe8fb5c3aba842150f5b0c2af5a66d9`. The downloaded `crap-report` artifact has production timestamp `2026-10-11T00:52:22Z`, event push, ref refs/heads/master, correct source SHA and run ID, Linux/X64, rustc 1.95.0, cargo-crap 0.6.1, cargo-llvm-cov 0.8.7, nextest 0.9.130, successful workspace coverage, and the confirmed exclusions. Its report covers all three crates: 619 functions, 17 above CRAP 30, zero probes/helper entries. In-memory baseline-mode normalization accepts every path and preserves all non-path values and order. This verifies the required master artifact only; no canonical baseline was written or committed. Task 1.5 and separate Task 1.6 approval remain pending; no M2 work started.
 - PR #327 merged at `2026-10-11T00:44:08Z` with merge commit `8a345d70abe8fb5c3aba842150f5b0c2af5a66d9`. It was marked ready only after Task 1.8 completed and every check passed. The merge used `--match-head-commit 926d30f9a7ae5234a0e8ebf6bbdf736d3a2eeb99`, without admin/auto-merge or any check bypass, preserving the scoped commits. Freshly fetched origin/master contains the merge, and all four disposable probe commits still return exactly 1 from ancestor checks. Post-merge master CI [38099433982](https://github.com/fjrevoredo/mini-diarium/actions/runs/38099433982) is active on the exact merge SHA. Task 1.4 remains IN PROGRESS until its report artifact is verified; no canonical baseline or M2 work started.
 - Task 1.8 is COMPLETED: CI run 38097918038 passed all seven jobs, including Windows/Linux/macOS builds, Flatpak, and E2E. Every PR check also passed, including SonarCloud, CodeQL, and Codecov patch coverage. The checked PR head is exactly `926d30f9a7ae5234a0e8ebf6bbdf736d3a2eeb99`, still draft/open and mergeable at the final check. Together with the recorded code audit, fresh local checks, maintained regression tests, and production artifact validation, this satisfies the full self-check. Task 1.4 may now merge under DEC-017 without any check bypass; master CI validation remains required afterward.

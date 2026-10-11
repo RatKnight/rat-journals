@@ -120,3 +120,10 @@ Companion to [the implementation plan](2026-10-10-crap-complexity-gates-plan.md)
 - Task: 1.4, 1.8
 - Decision: The user instructed: “finish the self-check and then merge the pr 327 when finished”. Finish Task 1.8, require every current PR check to pass, then mark PR #327 ready and merge its checked head without bypassing branch protection. Verify the post-merge master CI report before completing Task 1.4. Keep Task 1.6's approval separate.
 - Rationale: This is explicit conditional approval for the advisory-only merge after validation, not permission to merge while checks run or enable a blocking CRAP gate. At approval, Linux/macOS builds, tests, lint, SonarCloud, CodeQL, and Codecov pass; Windows build, Flatpak, and E2E still run.
+
+### DEC-018 — Update from master before baseline review
+
+- Date: 2026-10-11
+- Task: 1.5
+- Decision: The user requested updating this branch from latest master and continuing the plan. Merge master `f1bb84f73f44dd40028299682d0b6ef2f2326ca7` without rewriting this branch. Resolve the changelog conflict by retaining the newer filename rules and all independent branch entries. Use master CI run 38103562280 for Task 1.5 after its coverage/report and checks pass, rather than the older merge report. Run fresh local integrated checks after the merge. Keep Task 1.6 approval separate.
+- Rationale: Master now contains panic-lock recovery and legacy filename fixes that change the analyzed Rust source. A baseline from the older merge SHA would omit that work. The continuation request permits baseline preparation but does not replace the explicit blocking-gate approval required by Task 1.6.
