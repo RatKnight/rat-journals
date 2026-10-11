@@ -134,3 +134,10 @@ Companion to [the implementation plan](2026-10-10-crap-complexity-gates-plan.md)
 - Task: 1.6
 - Decision: After the Task 1.6 acceptance summary and the question asking approval to enable the Linux blocking CRAP gate, the user replied: “ok we need to continue”. Record this affirmative reply as approval to implement M2 with new functions at CRAP ≤30 and existing functions allowed no increase above epsilon 0.01. Keep local checks advisory on every platform, preserve Codecov uploads and failure artifacts, and retain the reviewed Linux baseline.
 - Rationale: The approval question followed the completed dedicated baseline review: 624 functions, 17 above 30, explained coverage/source differences, numeric repeatability below 0.01, verified root alignment, measured runtime, exclusions, and closure/macro/inactive-code limits. This is the separate Task 1.6 checkpoint, not the earlier advisory merge approval.
+
+### DEC-020 — Record the existing dedup-guard timeout without weakening tests
+
+- Date: 2026-10-11
+- Task: 2.1
+- Decision: The fresh comprehensive local gate failed only `prosemirror-dedup.test.ts` at its unchanged five-second timeout. Record the failure and run an unchanged targeted control plus a fresh full frontend coverage run. Do not alter or disable the test, increase any timeout, or count this comprehensive run as green. If the failure repeats, request separate authorization for its diagnosis/fix; the source fix remains outside this plan's Non-Goals.
+- Rationale: The other 1276 frontend tests, all 950 backend tests, all 74 script tests, and the other 13 gate checks passed. Patch coverage is still 46/48 (95.8%) at the unchanged 80% threshold. The plan already excludes the dedup timeout fix; changing it silently would mix unrelated work into the policy implementation.
