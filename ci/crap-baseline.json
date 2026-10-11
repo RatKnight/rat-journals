@@ -1,0 +1,7417 @@
+{
+  "$schema": "https://raw.githubusercontent.com/minikin/cargo-crap/main/schemas/report-v1.json",
+  "version": "0.6.1",
+  "entries": [
+    {
+      "file": "crates/mini-diarium-core/src/auth/mod.rs",
+      "function": "add_keypair_slot",
+      "line": 54,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/auth/mod.rs",
+      "function": "add_password_slot",
+      "line": 34,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/inspect.rs",
+      "function": "SnapshotCredential::fmt",
+      "line": 50,
+      "cyclomatic": 4,
+      "coverage": 85.71428571428571,
+      "crap": 4.0466472303206995,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 53,
+          "end": 53
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/inspect.rs",
+      "function": "compare_snapshot_credentials",
+      "line": 208,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/inspect.rs",
+      "function": "decrypt_field",
+      "line": 366,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/inspect.rs",
+      "function": "has_column",
+      "line": 350,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/inspect.rs",
+      "function": "list_snapshot_entries",
+      "line": 145,
+      "cyclomatic": 6,
+      "coverage": 97.61904761904762,
+      "crap": 6.000485908649174,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 189,
+          "end": 189
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/inspect.rs",
+      "function": "open_snapshot_readonly",
+      "line": 101,
+      "cyclomatic": 7,
+      "coverage": 73.91304347826086,
+      "crap": 7.869893975507521,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 106,
+          "end": 106
+        },
+        {
+          "start": 122,
+          "end": 126
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/inspect.rs",
+      "function": "read_slot_fingerprints",
+      "line": 248,
+      "cyclomatic": 6,
+      "coverage": 100,
+      "crap": 6,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/inspect.rs",
+      "function": "slot_types",
+      "line": 240,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/inspect.rs",
+      "function": "unwrap_master_key",
+      "line": 270,
+      "cyclomatic": 10,
+      "coverage": 59.57446808510638,
+      "crap": 16.60643595349778,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 277,
+          "end": 280
+        },
+        {
+          "start": 289,
+          "end": 300
+        },
+        {
+          "start": 304,
+          "end": 306
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/inspect.rs",
+      "function": "wrapped_key_for",
+      "line": 325,
+      "cyclomatic": 3,
+      "coverage": 68.42105263157895,
+      "crap": 3.2834232395392915,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 331,
+          "end": 337
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/manifest.rs",
+      "function": "Manifest::empty",
+      "line": 57,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/manifest.rs",
+      "function": "Manifest::sorted",
+      "line": 66,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/manifest.rs",
+      "function": "adopt",
+      "line": 171,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/manifest.rs",
+      "function": "adopted_creation_time",
+      "line": 197,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/manifest.rs",
+      "function": "load",
+      "line": 85,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/manifest.rs",
+      "function": "load_reconciled",
+      "line": 125,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/manifest.rs",
+      "function": "manifest_path",
+      "line": 76,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/manifest.rs",
+      "function": "save",
+      "line": 97,
+      "cyclomatic": 5,
+      "coverage": 75,
+      "crap": 5.390625,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 106,
+          "end": 108
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/mod.rs",
+      "function": "SnapshotOutcome::created",
+      "line": 92,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/mod.rs",
+      "function": "apply_retention",
+      "line": 213,
+      "cyclomatic": 5,
+      "coverage": 89.47368421052632,
+      "crap": 5.029158769499927,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 222,
+          "end": 222
+        },
+        {
+          "start": 231,
+          "end": 231
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/mod.rs",
+      "function": "backup_health",
+      "line": 257,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/mod.rs",
+      "function": "backups_dir_is_usable",
+      "line": 289,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/mod.rs",
+      "function": "check_snapshot_credentials",
+      "line": 375,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/mod.rs",
+      "function": "create_pre_v3_snapshot",
+      "line": 391,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/mod.rs",
+      "function": "create_snapshot",
+      "line": 109,
+      "cyclomatic": 7,
+      "coverage": 100,
+      "crap": 7,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/mod.rs",
+      "function": "delete_snapshot",
+      "line": 345,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/mod.rs",
+      "function": "list_snapshots",
+      "line": 245,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/mod.rs",
+      "function": "open_snapshot_file",
+      "line": 361,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/mod.rs",
+      "function": "verify_snapshot_file",
+      "line": 308,
+      "cyclomatic": 6,
+      "coverage": 96,
+      "crap": 6.002304,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 334,
+          "end": 334
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/mod.rs",
+      "function": "write_snapshot",
+      "line": 173,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/policy.rs",
+      "function": "RetentionPolicy::default",
+      "line": 166,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/policy.rs",
+      "function": "RetentionPolicy::for_journal_size",
+      "line": 156,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/policy.rs",
+      "function": "SnapshotTrigger::bypasses_rate_limits",
+      "line": 77,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/policy.rs",
+      "function": "SnapshotTrigger::destructive",
+      "line": 68,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/policy.rs",
+      "function": "claim_bucket",
+      "line": 440,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/policy.rs",
+      "function": "plan_retention",
+      "line": 331,
+      "cyclomatic": 6,
+      "coverage": 100,
+      "crap": 6,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/policy.rs",
+      "function": "should_snapshot",
+      "line": 268,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/policy.rs",
+      "function": "summarize_health",
+      "line": 215,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/relocate.rs",
+      "function": "files_have_identical_content",
+      "line": 210,
+      "cyclomatic": 11,
+      "coverage": 94.11764705882352,
+      "crap": 11.024628536535722,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 225,
+          "end": 225
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/relocate.rs",
+      "function": "merge_manifests",
+      "line": 192,
+      "cyclomatic": 4,
+      "coverage": 80,
+      "crap": 4.128,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 198,
+          "end": 199
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/relocate.rs",
+      "function": "read_full",
+      "line": 235,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/relocate.rs",
+      "function": "relocate_backups",
+      "line": 66,
+      "cyclomatic": 10,
+      "coverage": 91.66666666666666,
+      "crap": 10.05787037037037,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 117,
+          "end": 117
+        },
+        {
+          "start": 122,
+          "end": 123
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/relocate.rs",
+      "function": "relocate_one_file",
+      "line": 145,
+      "cyclomatic": 2,
+      "coverage": 78.37837837837837,
+      "crap": 2.040431958620417,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 160,
+          "end": 163
+        },
+        {
+          "start": 168,
+          "end": 171
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/relocate.rs",
+      "function": "relocate_temp_name",
+      "line": 22,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/restore.rs",
+      "function": "RestoreOutcome::aborted",
+      "line": 69,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/restore.rs",
+      "function": "RestoreOutcome::unrecoverable",
+      "line": 78,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 78,
+          "end": 90
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/restore.rs",
+      "function": "precheck_restorable",
+      "line": 232,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/restore.rs",
+      "function": "reopen_current",
+      "line": 271,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/restore.rs",
+      "function": "restore_from_snapshot",
+      "line": 100,
+      "cyclomatic": 14,
+      "coverage": 66.66666666666666,
+      "crap": 21.25925925925927,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 117,
+          "end": 117
+        },
+        {
+          "start": 128,
+          "end": 138
+        },
+        {
+          "start": 150,
+          "end": 157
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/restore.rs",
+      "function": "roll_back",
+      "line": 190,
+      "cyclomatic": 8,
+      "coverage": 86.20689655172413,
+      "crap": 8.167944565172824,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 200,
+          "end": 200
+        },
+        {
+          "start": 204,
+          "end": 204
+        },
+        {
+          "start": 207,
+          "end": 207
+        },
+        {
+          "start": 220,
+          "end": 220
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/restore_entries.rs",
+      "function": "copy_attachment_blobs",
+      "line": 285,
+      "cyclomatic": 6,
+      "coverage": 100,
+      "crap": 6,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/restore_entries.rs",
+      "function": "has_table",
+      "line": 401,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/restore_entries.rs",
+      "function": "list_snapshot_entries_with_status",
+      "line": 95,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/restore_entries.rs",
+      "function": "read_full_snapshot_entry",
+      "line": 320,
+      "cyclomatic": 9,
+      "coverage": 87.75510204081633,
+      "crap": 9.148713546226487,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 355,
+          "end": 355
+        },
+        {
+          "start": 359,
+          "end": 359
+        },
+        {
+          "start": 365,
+          "end": 368
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/restore_entries.rs",
+      "function": "read_word_counts",
+      "line": 387,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/restore_entries.rs",
+      "function": "remap_attachment_refs",
+      "line": 307,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/restore_entries.rs",
+      "function": "resolve_snapshot_image_refs",
+      "line": 255,
+      "cyclomatic": 1,
+      "coverage": 89.47368421052632,
+      "crap": 1.001166350779997,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 263,
+          "end": 263
+        },
+        {
+          "start": 266,
+          "end": 266
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/restore_entries.rs",
+      "function": "restore_entries_from_snapshot",
+      "line": 157,
+      "cyclomatic": 8,
+      "coverage": 100,
+      "crap": 8,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/restore_entries.rs",
+      "function": "restore_one_entry",
+      "line": 208,
+      "cyclomatic": 15,
+      "coverage": 84.61538461538461,
+      "crap": 15.819299044151116,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 215,
+          "end": 216
+        },
+        {
+          "start": 229,
+          "end": 229
+        },
+        {
+          "start": 246,
+          "end": 246
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "FsSnapshotStore::delete",
+      "line": 167,
+      "cyclomatic": 5,
+      "coverage": 92.3076923076923,
+      "crap": 5.011379153390988,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 180,
+          "end": 180
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "FsSnapshotStore::dir",
+      "line": 91,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "FsSnapshotStore::list",
+      "line": 120,
+      "cyclomatic": 7,
+      "coverage": 95.45454545454545,
+      "crap": 7.004601803155522,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 138,
+          "end": 138
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "FsSnapshotStore::new",
+      "line": 85,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "FsSnapshotStore::read",
+      "line": 156,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "FsSnapshotStore::stat",
+      "line": 184,
+      "cyclomatic": 2,
+      "coverage": 50,
+      "crap": 2.5,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 187,
+          "end": 190
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "FsSnapshotStore::sweep_temp_files",
+      "line": 100,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "FsSnapshotStore::write",
+      "line": 152,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "FsSnapshotStore::write_atomic",
+      "line": 218,
+      "cyclomatic": 4,
+      "coverage": 92.10526315789474,
+      "crap": 4.007872867764981,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 228,
+          "end": 230
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "FsSnapshotStore::write_openable_only",
+      "line": 201,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "describe_snapshot",
+      "line": 688,
+      "cyclomatic": 1,
+      "coverage": 96.7741935483871,
+      "crap": 1.0000335671847203,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 690,
+          "end": 690
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "dir_state",
+      "line": 351,
+      "cyclomatic": 8,
+      "coverage": 92.3076923076923,
+      "crap": 8.029130632680928,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 373,
+          "end": 373
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "file_size",
+      "line": 327,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "finalize_restore",
+      "line": 305,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "fsync_dir",
+      "line": 497,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "fsync_file",
+      "line": 483,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "is_snapshot_file_name",
+      "line": 385,
+      "cyclomatic": 6,
+      "coverage": 100,
+      "crap": 6,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "parse_snapshot_timestamp",
+      "line": 423,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "read_change_counter",
+      "line": 455,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "snapshot_file_name",
+      "line": 398,
+      "cyclomatic": 4,
+      "coverage": 85.71428571428571,
+      "crap": 4.0466472303206995,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 412,
+          "end": 414
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "stage_restore_copy",
+      "line": 281,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "vacuum_into",
+      "line": 466,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "verify_key_decrypts",
+      "line": 571,
+      "cyclomatic": 35,
+      "coverage": 97.33333333333334,
+      "crap": 35.02322962962963,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 642,
+          "end": 642
+        },
+        {
+          "start": 660,
+          "end": 660
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/backup/store.rs",
+      "function": "verify_snapshot",
+      "line": 528,
+      "cyclomatic": 5,
+      "coverage": 72.22222222222221,
+      "crap": 5.535836762688615,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 540,
+          "end": 544
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/config.rs",
+      "function": "JournalInfo::from",
+      "line": 32,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/config.rs",
+      "function": "check_db_filename",
+      "line": 230,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/config.rs",
+      "function": "default_journal_dir",
+      "line": 165,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/config.rs",
+      "function": "generate_journal_id",
+      "line": 55,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/config.rs",
+      "function": "is_valid_db_filename",
+      "line": 240,
+      "cyclomatic": 12,
+      "coverage": 100,
+      "crap": 12,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/config.rs",
+      "function": "journal_db_paths",
+      "line": 285,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/config.rs",
+      "function": "load_active_journal_id",
+      "line": 299,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/config.rs",
+      "function": "load_config",
+      "line": 60,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/config.rs",
+      "function": "load_diary_dir",
+      "line": 77,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/config.rs",
+      "function": "load_journals",
+      "line": 104,
+      "cyclomatic": 4,
+      "coverage": 96.15384615384616,
+      "crap": 4.000910332271279,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 129,
+          "end": 129
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/config.rs",
+      "function": "save_active_journal_id",
+      "line": 304,
+      "cyclomatic": 3,
+      "coverage": 90,
+      "crap": 3.009,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 313,
+          "end": 313
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/config.rs",
+      "function": "save_config",
+      "line": 67,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/config.rs",
+      "function": "save_diary_dir",
+      "line": 87,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/config.rs",
+      "function": "save_journal_auto_key",
+      "line": 319,
+      "cyclomatic": 3,
+      "coverage": 84.61538461538461,
+      "crap": 3.0327719617660445,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 328,
+          "end": 329
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/config.rs",
+      "function": "save_journals",
+      "line": 137,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/config.rs",
+      "function": "set_journal_require_all_auth",
+      "line": 335,
+      "cyclomatic": 4,
+      "coverage": 84.61538461538461,
+      "crap": 4.058261265361857,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 344,
+          "end": 345
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/config.rs",
+      "function": "validate_db_filename",
+      "line": 217,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/peek.rs",
+      "function": "peek_auth_slot_types",
+      "line": 54,
+      "cyclomatic": 7,
+      "coverage": 100,
+      "crap": 7,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/attachments/mime.rs",
+      "function": "mime_for_extension",
+      "line": 12,
+      "cyclomatic": 43,
+      "coverage": 100,
+      "crap": 43,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/attachments/refs.rs",
+      "function": "attachment_ref_span",
+      "line": 68,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/attachments/refs.rs",
+      "function": "ref_id_in_tag",
+      "line": 11,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/attachments/refs.rs",
+      "function": "rewrite_attachment_refs",
+      "line": 21,
+      "cyclomatic": 7,
+      "coverage": 93.10344827586206,
+      "crap": 7.016072819713806,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 35,
+          "end": 35
+        },
+        {
+          "start": 45,
+          "end": 45
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/attachments/refs.rs",
+      "function": "strip_attachment_refs",
+      "line": 63,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/attachments/storage.rs",
+      "function": "add_attachment_to_entry",
+      "line": 123,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/attachments/storage.rs",
+      "function": "cleanup_orphaned_attachments",
+      "line": 310,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/attachments/storage.rs",
+      "function": "decrypt_summary",
+      "line": 151,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/attachments/storage.rs",
+      "function": "entry_has_attachments",
+      "line": 295,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/attachments/storage.rs",
+      "function": "get_attachments_map",
+      "line": 209,
+      "cyclomatic": 6,
+      "coverage": 100,
+      "crap": 6,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/attachments/storage.rs",
+      "function": "get_entry_attachment",
+      "line": 165,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/attachments/storage.rs",
+      "function": "link_attachment",
+      "line": 94,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/attachments/storage.rs",
+      "function": "list_entry_attachments",
+      "line": 186,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/attachments/storage.rs",
+      "function": "read_attachment_bytes",
+      "line": 272,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/attachments/storage.rs",
+      "function": "read_summary_row",
+      "line": 141,
+      "cyclomatic": 6,
+      "coverage": 100,
+      "crap": 6,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/attachments/storage.rs",
+      "function": "remove_attachment_from_entry",
+      "line": 249,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/attachments/storage.rs",
+      "function": "upsert_attachment_blob",
+      "line": 52,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/attachments/storage.rs",
+      "function": "validate_attachment_bytes",
+      "line": 16,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/attachments/storage.rs",
+      "function": "validate_attachment_name",
+      "line": 30,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/auth_slots.rs",
+      "function": "count_auth_slots",
+      "line": 107,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/auth_slots.rs",
+      "function": "delete_auth_slot",
+      "line": 99,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/auth_slots.rs",
+      "function": "get_auth_slot_type",
+      "line": 117,
+      "cyclomatic": 4,
+      "coverage": 90,
+      "crap": 4.016,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 126,
+          "end": 126
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/auth_slots.rs",
+      "function": "get_keypair_slot_by_pubkey",
+      "line": 19,
+      "cyclomatic": 4,
+      "coverage": 76.92307692307693,
+      "crap": 4.196631770596268,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 28,
+          "end": 28
+        },
+        {
+          "start": 30,
+          "end": 31
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/auth_slots.rs",
+      "function": "get_password_slot",
+      "line": 5,
+      "cyclomatic": 4,
+      "coverage": 90,
+      "crap": 4.016,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 14,
+          "end": 14
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/auth_slots.rs",
+      "function": "insert_auth_slot",
+      "line": 51,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/auth_slots.rs",
+      "function": "list_auth_slots",
+      "line": 69,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/auth_slots.rs",
+      "function": "update_auth_slot_wrapped_key",
+      "line": 36,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/auth_slots.rs",
+      "function": "update_slot_last_used",
+      "line": 131,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/db_settings.rs",
+      "function": "compute_settings_mac",
+      "line": 71,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/db_settings.rs",
+      "function": "delete_db_setting",
+      "line": 22,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/db_settings.rs",
+      "function": "delete_db_setting_conn",
+      "line": 65,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/db_settings.rs",
+      "function": "get_db_setting",
+      "line": 12,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/db_settings.rs",
+      "function": "get_db_setting_conn",
+      "line": 41,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/db_settings.rs",
+      "function": "set_db_setting",
+      "line": 17,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/db_settings.rs",
+      "function": "set_db_setting_conn",
+      "line": 51,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/db_settings.rs",
+      "function": "verify_require_all_auth",
+      "line": 28,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/db_settings.rs",
+      "function": "verify_require_all_auth_conn",
+      "line": 84,
+      "cyclomatic": 7,
+      "coverage": 94.11764705882352,
+      "crap": 7.009973539588846,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 102,
+          "end": 102
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/db_settings.rs",
+      "function": "write_require_all_auth_mac",
+      "line": 34,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/db_settings.rs",
+      "function": "write_require_all_auth_mac_conn",
+      "line": 110,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/blank.rs",
+      "function": "entry_is_empty",
+      "line": 136,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/blank.rs",
+      "function": "is_blank_entry_text",
+      "line": 127,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/blank.rs",
+      "function": "is_blank_html",
+      "line": 62,
+      "cyclomatic": 15,
+      "coverage": 100,
+      "crap": 15,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/delete.rs",
+      "function": "delete_entry_by_id",
+      "line": 21,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/insert.rs",
+      "function": "insert_entry",
+      "line": 17,
+      "cyclomatic": 6,
+      "coverage": 100,
+      "crap": 6,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/insert.rs",
+      "function": "insert_entry_with_images",
+      "line": 56,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/lock.rs",
+      "function": "ensure_entry_unlocked",
+      "line": 16,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/lock.rs",
+      "function": "is_entry_locked",
+      "line": 49,
+      "cyclomatic": 4,
+      "coverage": 90,
+      "crap": 4.016,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 59,
+          "end": 59
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/lock.rs",
+      "function": "set_entry_locked",
+      "line": 30,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/mod.rs",
+      "function": "count_words",
+      "line": 91,
+      "cyclomatic": 11,
+      "coverage": 94.11764705882352,
+      "crap": 11.024628536535722,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 108,
+          "end": 109
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/mod.rs",
+      "function": "encrypt_metadata",
+      "line": 134,
+      "cyclomatic": 5,
+      "coverage": 93.75,
+      "crap": 5.006103515625,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 147,
+          "end": 147
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/mod.rs",
+      "function": "is_cjk",
+      "line": 76,
+      "cyclomatic": 1,
+      "coverage": 88.88888888888889,
+      "crap": 1.0013717421124828,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 80,
+          "end": 80
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/mod.rs",
+      "function": "normalize_metadata",
+      "line": 53,
+      "cyclomatic": 7,
+      "coverage": 100,
+      "crap": 7,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/read.rs",
+      "function": "get_all_entries",
+      "line": 160,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/read.rs",
+      "function": "get_all_entry_dates",
+      "line": 138,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/read.rs",
+      "function": "get_entries_by_date",
+      "line": 67,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/read.rs",
+      "function": "get_entries_in_range",
+      "line": 187,
+      "cyclomatic": 7,
+      "coverage": 100,
+      "crap": 7,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/read.rs",
+      "function": "get_entry_by_id",
+      "line": 105,
+      "cyclomatic": 5,
+      "coverage": 95,
+      "crap": 5.003125,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 127,
+          "end": 127
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/read.rs",
+      "function": "row_to_entry",
+      "line": 22,
+      "cyclomatic": 7,
+      "coverage": 100,
+      "crap": 7,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/recalculate.rs",
+      "function": "recalculate_all_word_counts",
+      "line": 22,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/timeline.rs",
+      "function": "get_entries_for_timeline",
+      "line": 67,
+      "cyclomatic": 6,
+      "coverage": 93.75,
+      "crap": 6.0087890625,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 105,
+          "end": 106
+        },
+        {
+          "start": 111,
+          "end": 111
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/timeline.rs",
+      "function": "get_locked_entry_dates",
+      "line": 154,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/timeline.rs",
+      "function": "get_tag_ids_by_entry",
+      "line": 131,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/timeline.rs",
+      "function": "preview_from_html",
+      "line": 12,
+      "cyclomatic": 7,
+      "coverage": 100,
+      "crap": 7,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/update.rs",
+      "function": "update_entry",
+      "line": 53,
+      "cyclomatic": 7,
+      "coverage": 100,
+      "crap": 7,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/entries/update.rs",
+      "function": "update_entry_with_images",
+      "line": 16,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/fonts.rs",
+      "function": "custom_font_has_weight",
+      "line": 26,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/fonts.rs",
+      "function": "delete_custom_font_family",
+      "line": 62,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/fonts.rs",
+      "function": "get_custom_font_weight_data",
+      "line": 73,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/fonts.rs",
+      "function": "list_custom_font_rows",
+      "line": 10,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/fonts.rs",
+      "function": "upsert_custom_font",
+      "line": 45,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/refs.rs",
+      "function": "extract_and_replace_image_refs",
+      "line": 47,
+      "cyclomatic": 16,
+      "coverage": 79.06976744186046,
+      "crap": 18.347265020690003,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 62,
+          "end": 64
+        },
+        {
+          "start": 93,
+          "end": 93
+        },
+        {
+          "start": 95,
+          "end": 95
+        },
+        {
+          "start": 99,
+          "end": 102
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/refs.rs",
+      "function": "extract_src_data_uri",
+      "line": 249,
+      "cyclomatic": 6,
+      "coverage": 100,
+      "crap": 6,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/refs.rs",
+      "function": "extract_src_image_ref",
+      "line": 178,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/refs.rs",
+      "function": "find_img_tag_end",
+      "line": 229,
+      "cyclomatic": 7,
+      "coverage": 93.75,
+      "crap": 7.011962890625,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 245,
+          "end": 245
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/refs.rs",
+      "function": "find_src_image_ref",
+      "line": 184,
+      "cyclomatic": 5,
+      "coverage": 94.73684210526315,
+      "crap": 5.003644846187491,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 198,
+          "end": 198
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/refs.rs",
+      "function": "replace_data_src",
+      "line": 208,
+      "cyclomatic": 4,
+      "coverage": 76.92307692307693,
+      "crap": 4.196631770596268,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 221,
+          "end": 225
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/refs.rs",
+      "function": "resolve_image_refs_in_entries",
+      "line": 13,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/refs.rs",
+      "function": "rewrite_image_id_srcs",
+      "line": 115,
+      "cyclomatic": 12,
+      "coverage": 80,
+      "crap": 13.152,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 127,
+          "end": 129
+        },
+        {
+          "start": 153,
+          "end": 156
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/refs.rs",
+      "function": "strip_image_id_refs",
+      "line": 169,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/storage.rs",
+      "function": "cleanup_orphaned_images",
+      "line": 253,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/storage.rs",
+      "function": "detect_image_mime_type",
+      "line": 45,
+      "cyclomatic": 12,
+      "coverage": 91.30434782608695,
+      "crap": 12.094682337470207,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 71,
+          "end": 73
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/storage.rs",
+      "function": "get_image_by_id",
+      "line": 204,
+      "cyclomatic": 5,
+      "coverage": 95.83333333333334,
+      "crap": 5.001808449074074,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 231,
+          "end": 231
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/storage.rs",
+      "function": "get_images_for_entry",
+      "line": 164,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/storage.rs",
+      "function": "image_exists",
+      "line": 236,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/storage.rs",
+      "function": "replace_entry_image_links",
+      "line": 139,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/storage.rs",
+      "function": "upsert_image",
+      "line": 80,
+      "cyclomatic": 7,
+      "coverage": 100,
+      "crap": 7,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/storage.rs",
+      "function": "validate_image_for_storage",
+      "line": 12,
+      "cyclomatic": 6,
+      "coverage": 88.46153846153845,
+      "crap": 6.0553026854802,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 14,
+          "end": 14
+        },
+        {
+          "start": 25,
+          "end": 26
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/summaries.rs",
+      "function": "backfill_summary_row",
+      "line": 38,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/summaries.rs",
+      "function": "list_image_summaries_filtered",
+      "line": 124,
+      "cyclomatic": 27,
+      "coverage": 83.46456692913385,
+      "crap": 30.295901694165597,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 133,
+          "end": 133
+        },
+        {
+          "start": 138,
+          "end": 138
+        },
+        {
+          "start": 194,
+          "end": 214
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/summaries.rs",
+      "function": "list_order_clause",
+      "line": 115,
+      "cyclomatic": 4,
+      "coverage": 83.33333333333334,
+      "crap": 4.0740740740740735,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 118,
+          "end": 118
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/summaries.rs",
+      "function": "summary_backfill_needed",
+      "line": 29,
+      "cyclomatic": 6,
+      "coverage": 100,
+      "crap": 6,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/summaries.rs",
+      "function": "summary_from_row",
+      "line": 48,
+      "cyclomatic": 9,
+      "coverage": 74.54545454545455,
+      "crap": 10.335921863260706,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 77,
+          "end": 92
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/summaries.rs",
+      "function": "validate_month_filter",
+      "line": 109,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/thumbnail.rs",
+      "function": "persist_image_storage_metadata",
+      "line": 63,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/images/thumbnail.rs",
+      "function": "prepare_image_storage_metadata",
+      "line": 25,
+      "cyclomatic": 6,
+      "coverage": 96.7741935483871,
+      "crap": 6.001208418649928,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 33,
+          "end": 33
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/meta.rs",
+      "function": "get_entry_date_word_counts",
+      "line": 92,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/meta.rs",
+      "function": "read_content_counts",
+      "line": 38,
+      "cyclomatic": 13,
+      "coverage": 100,
+      "crap": 13,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/meta.rs",
+      "function": "read_engine_versions",
+      "line": 76,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/meta.rs",
+      "function": "read_schema_version",
+      "line": 66,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/tags.rs",
+      "function": "add_tag_to_entry",
+      "line": 118,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/tags.rs",
+      "function": "create_tag",
+      "line": 17,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/tags.rs",
+      "function": "delete_tag",
+      "line": 107,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/tags.rs",
+      "function": "get_all_tags",
+      "line": 49,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/tags.rs",
+      "function": "get_entry_dates_by_tag",
+      "line": 224,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/tags.rs",
+      "function": "get_tags_for_entry",
+      "line": 153,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/tags.rs",
+      "function": "get_tags_names_map",
+      "line": 194,
+      "cyclomatic": 7,
+      "coverage": 100,
+      "crap": 7,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/tags.rs",
+      "function": "remove_tag_from_entry",
+      "line": 135,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/tags.rs",
+      "function": "rename_tag",
+      "line": 84,
+      "cyclomatic": 4,
+      "coverage": 93.33333333333333,
+      "crap": 4.004740740740741,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 98,
+          "end": 98
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/transaction.rs",
+      "function": "RollbackGuard::commit",
+      "line": 111,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/transaction.rs",
+      "function": "RollbackGuard::drop",
+      "line": 129,
+      "cyclomatic": 8,
+      "coverage": 96,
+      "crap": 8.004096,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 162,
+          "end": 162
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/queries/transaction.rs",
+      "function": "with_write_transaction",
+      "line": 59,
+      "cyclomatic": 9,
+      "coverage": 100,
+      "crap": 9,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/compat.rs",
+      "function": "ensure_backup_readable",
+      "line": 99,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/compat.rs",
+      "function": "ensure_journal_readable",
+      "line": 90,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/compat.rs",
+      "function": "schema_is_readable",
+      "line": 68,
+      "cyclomatic": 6,
+      "coverage": 100,
+      "crap": 6,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/create.rs",
+      "function": "configure_connection",
+      "line": 54,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/create.rs",
+      "function": "create_database",
+      "line": 63,
+      "cyclomatic": 6,
+      "coverage": 100,
+      "crap": 6,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/create.rs",
+      "function": "create_database_auto",
+      "line": 97,
+      "cyclomatic": 6,
+      "coverage": 100,
+      "crap": 6,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/create.rs",
+      "function": "create_schema",
+      "line": 127,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/create.rs",
+      "function": "open_connection",
+      "line": 15,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/create.rs",
+      "function": "open_connection_in_memory",
+      "line": 42,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/create.rs",
+      "function": "open_connection_readonly",
+      "line": 28,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/legacy.rs",
+      "function": "derive_key_from_hash",
+      "line": 25,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/legacy.rs",
+      "function": "get_metadata",
+      "line": 5,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/migrations/mod.rs",
+      "function": "apply_pending",
+      "line": 30,
+      "cyclomatic": 12,
+      "coverage": 100,
+      "crap": 12,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/migrations/mod.rs",
+      "function": "read_schema_version",
+      "line": 45,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/migrations/mod.rs",
+      "function": "run_migration_transaction",
+      "line": 51,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/migrations/v10_to_v11.rs",
+      "function": "migrate_v10_to_v11",
+      "line": 8,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/migrations/v11_to_v12.rs",
+      "function": "migrate_v11_to_v12",
+      "line": 8,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/migrations/v12_to_v13.rs",
+      "function": "migrate_v12_to_v13",
+      "line": 10,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/migrations/v13_to_v14.rs",
+      "function": "migrate_v13_to_v14",
+      "line": 15,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/migrations/v1_to_v2.rs",
+      "function": "migrate_v1_to_v2",
+      "line": 8,
+      "cyclomatic": 8,
+      "coverage": 63.829787234042556,
+      "crap": 11.02853895572272,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 50,
+          "end": 68
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/migrations/v2_to_v3.rs",
+      "function": "migrate_v2_to_v3",
+      "line": 17,
+      "cyclomatic": 7,
+      "coverage": 100,
+      "crap": 7,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/migrations/v2_to_v3.rs",
+      "function": "migrate_v2_to_v3_inner",
+      "line": 67,
+      "cyclomatic": 19,
+      "coverage": 100,
+      "crap": 19,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/migrations/v3_to_v4.rs",
+      "function": "migrate_v3_to_v4",
+      "line": 9,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/migrations/v4_to_v5.rs",
+      "function": "migrate_v4_to_v5",
+      "line": 12,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/migrations/v5_to_v6.rs",
+      "function": "migrate_v5_to_v6",
+      "line": 8,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/migrations/v6_to_v7.rs",
+      "function": "migrate_v6_to_v7",
+      "line": 9,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/migrations/v7_to_v8.rs",
+      "function": "migrate_v7_to_v8",
+      "line": 9,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/migrations/v8_to_v9.rs",
+      "function": "migrate_v8_to_v9",
+      "line": 8,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/migrations/v9_to_v10.rs",
+      "function": "migrate_v9_to_v10",
+      "line": 9,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/mod.rs",
+      "function": "DatabaseConnection::conn",
+      "line": 69,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/mod.rs",
+      "function": "DatabaseConnection::from_parts",
+      "line": 88,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/mod.rs",
+      "function": "DatabaseConnection::key",
+      "line": 78,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/mod.rs",
+      "function": "DatabaseConnection::new",
+      "line": 44,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/mod.rs",
+      "function": "DatabaseConnection::session_id",
+      "line": 60,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/open.rs",
+      "function": "migrate_with_pre_migration_snapshot",
+      "line": 22,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/open.rs",
+      "function": "open_database",
+      "line": 68,
+      "cyclomatic": 14,
+      "coverage": 96.55172413793103,
+      "crap": 14.008036409856903,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 102,
+          "end": 102
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/open.rs",
+      "function": "open_database_auto",
+      "line": 174,
+      "cyclomatic": 11,
+      "coverage": 84.375,
+      "crap": 11.461578369140625,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 187,
+          "end": 189
+        },
+        {
+          "start": 201,
+          "end": 203
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/open.rs",
+      "function": "open_database_with_keypair",
+      "line": 114,
+      "cyclomatic": 11,
+      "coverage": 87.5,
+      "crap": 11.236328125,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 131,
+          "end": 133
+        },
+        {
+          "start": 149,
+          "end": 151
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/db/schema/open.rs",
+      "function": "open_v3_with_password",
+      "line": 219,
+      "cyclomatic": 7,
+      "coverage": 91.30434782608695,
+      "crap": 7.032218295389168,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 233,
+          "end": 235
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/attachments.rs",
+      "function": "attachment_asset_filename",
+      "line": 28,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/attachments.rs",
+      "function": "attachment_names",
+      "line": 186,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/attachments.rs",
+      "function": "entry_attachments",
+      "line": 83,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/attachments.rs",
+      "function": "escape_html",
+      "line": 55,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/attachments.rs",
+      "function": "escape_md_label",
+      "line": 63,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/attachments.rs",
+      "function": "format_size",
+      "line": 70,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/attachments.rs",
+      "function": "markdown_metadata_only",
+      "line": 139,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/attachments.rs",
+      "function": "markdown_section",
+      "line": 156,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/attachments.rs",
+      "function": "markdown_with_asset_links",
+      "line": 106,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/attachments.rs",
+      "function": "print_rewrite_refs",
+      "line": 171,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/attachments.rs",
+      "function": "rewrite_refs_by_summary",
+      "line": 92,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/html.rs",
+      "function": "escape_html",
+      "line": 17,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/html.rs",
+      "function": "format_date",
+      "line": 24,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/html.rs",
+      "function": "generate_print_html",
+      "line": 40,
+      "cyclomatic": 10,
+      "coverage": 98.52941176470588,
+      "crap": 10.00031803378791,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 95,
+          "end": 95
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/json.rs",
+      "function": "export_entries_to_json",
+      "line": 24,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/markdown/assets.rs",
+      "function": "extract_and_replace_with_assets",
+      "line": 14,
+      "cyclomatic": 11,
+      "coverage": 70.73170731707317,
+      "crap": 14.033734275474817,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 28,
+          "end": 30
+        },
+        {
+          "start": 51,
+          "end": 62
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/markdown/assets.rs",
+      "function": "extract_src_data_uri",
+      "line": 116,
+      "cyclomatic": 6,
+      "coverage": 100,
+      "crap": 6,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/markdown/assets.rs",
+      "function": "inline_replace_images",
+      "line": 73,
+      "cyclomatic": 9,
+      "coverage": 75,
+      "crap": 10.265625,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 82,
+          "end": 84
+        },
+        {
+          "start": 103,
+          "end": 106
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/markdown/assets.rs",
+      "function": "mime_type_to_ext",
+      "line": 136,
+      "cyclomatic": 8,
+      "coverage": 100,
+      "crap": 8,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/markdown/blocks.rs",
+      "function": "number_ordered_lists",
+      "line": 14,
+      "cyclomatic": 5,
+      "coverage": 96,
+      "crap": 5.0016,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 39,
+          "end": 39
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/markdown/blocks.rs",
+      "function": "process_blockquotes",
+      "line": 79,
+      "cyclomatic": 5,
+      "coverage": 95.65217391304348,
+      "crap": 5.00205473822635,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 105,
+          "end": 105
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/markdown/blocks.rs",
+      "function": "process_code_blocks",
+      "line": 49,
+      "cyclomatic": 4,
+      "coverage": 95,
+      "crap": 4.002,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 69,
+          "end": 69
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/markdown/convert.rs",
+      "function": "apply_replacements",
+      "line": 77,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/markdown/convert.rs",
+      "function": "find_tag_end",
+      "line": 170,
+      "cyclomatic": 7,
+      "coverage": 93.75,
+      "crap": 7.011962890625,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 187,
+          "end": 187
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/markdown/convert.rs",
+      "function": "html_to_markdown",
+      "line": 101,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/markdown/convert.rs",
+      "function": "strip_remaining_tags",
+      "line": 194,
+      "cyclomatic": 6,
+      "coverage": 100,
+      "crap": 6,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/markdown/links.rs",
+      "function": "encode_url_for_markdown",
+      "line": 78,
+      "cyclomatic": 8,
+      "coverage": 66.66666666666666,
+      "crap": 10.370370370370374,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 83,
+          "end": 86
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/markdown/links.rs",
+      "function": "extract_href_attr",
+      "line": 95,
+      "cyclomatic": 4,
+      "coverage": 90,
+      "crap": 4.016,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 104,
+          "end": 104
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/markdown/links.rs",
+      "function": "process_links",
+      "line": 22,
+      "cyclomatic": 5,
+      "coverage": 74.28571428571429,
+      "crap": 5.425072886297376,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 33,
+          "end": 35
+        },
+        {
+          "start": 45,
+          "end": 46
+        },
+        {
+          "start": 65,
+          "end": 68
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/markdown/mod.rs",
+      "function": "export_entries_to_markdown",
+      "line": 58,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/markdown/mod.rs",
+      "function": "export_entries_to_markdown_inline",
+      "line": 178,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/markdown/mod.rs",
+      "function": "export_entries_to_markdown_with_assets",
+      "line": 149,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/markdown/mod.rs",
+      "function": "group_entries_by_date",
+      "line": 67,
+      "cyclomatic": 4,
+      "coverage": 83.33333333333334,
+      "crap": 4.0740740740740735,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 72,
+          "end": 73
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/markdown/mod.rs",
+      "function": "walk_date_groups",
+      "line": 81,
+      "cyclomatic": 11,
+      "coverage": 83.33333333333334,
+      "crap": 11.560185185185183,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 95,
+          "end": 100
+        },
+        {
+          "start": 114,
+          "end": 114
+        },
+        {
+          "start": 116,
+          "end": 116
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/export/markdown/mod.rs",
+      "function": "with_attachments_section",
+      "line": 124,
+      "cyclomatic": 3,
+      "coverage": 88.88888888888889,
+      "crap": 3.0123456790123457,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 129,
+          "end": 129
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/import/dayone.rs",
+      "function": "extract_title_and_text",
+      "line": 150,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/import/dayone.rs",
+      "function": "parse_dayone_json",
+      "line": 64,
+      "cyclomatic": 6,
+      "coverage": 100,
+      "crap": 6,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/import/dayone.rs",
+      "function": "parse_iso8601_to_date",
+      "line": 113,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/import/dayone.rs",
+      "function": "parse_iso8601_to_timestamp",
+      "line": 128,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/import/dayone_txt.rs",
+      "function": "extract_title_and_text",
+      "line": 148,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/import/dayone_txt.rs",
+      "function": "parse_day_one_date",
+      "line": 102,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/import/dayone_txt.rs",
+      "function": "parse_dayone_txt",
+      "line": 36,
+      "cyclomatic": 7,
+      "coverage": 100,
+      "crap": 7,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/import/dayone_txt.rs",
+      "function": "strip_metadata_lines",
+      "line": 127,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/import/jrnl.rs",
+      "function": "is_valid_date_format",
+      "line": 94,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/import/jrnl.rs",
+      "function": "parse_jrnl_json",
+      "line": 57,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/import/minidiary.rs",
+      "function": "is_valid_date_format",
+      "line": 177,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/import/minidiary.rs",
+      "function": "parse_mini_diary_object_format",
+      "line": 117,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/import/minidiary.rs",
+      "function": "parse_minidiary_array_format",
+      "line": 77,
+      "cyclomatic": 5,
+      "coverage": 86.66666666666667,
+      "crap": 5.059259259259259,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 83,
+          "end": 83
+        },
+        {
+          "start": 91,
+          "end": 92
+        },
+        {
+          "start": 96,
+          "end": 96
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/import/minidiary.rs",
+      "function": "parse_minidiary_json",
+      "line": 61,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/import/minidiary.rs",
+      "function": "parse_timestamp",
+      "line": 157,
+      "cyclomatic": 3,
+      "coverage": 70,
+      "crap": 3.2430000000000003,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 163,
+          "end": 163
+        },
+        {
+          "start": 169,
+          "end": 170
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/builtins.rs",
+      "function": "DayOneJsonImporter::info",
+      "line": 30,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/builtins.rs",
+      "function": "DayOneJsonImporter::parse",
+      "line": 39,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 39,
+          "end": 41
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/builtins.rs",
+      "function": "DayOneTxtImporter::info",
+      "line": 47,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/builtins.rs",
+      "function": "DayOneTxtImporter::parse",
+      "line": 56,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 56,
+          "end": 58
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/builtins.rs",
+      "function": "JrnlImporter::info",
+      "line": 64,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/builtins.rs",
+      "function": "JrnlImporter::parse",
+      "line": 73,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 73,
+          "end": 75
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/builtins.rs",
+      "function": "JsonExporter::export",
+      "line": 92,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/builtins.rs",
+      "function": "JsonExporter::info",
+      "line": 83,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/builtins.rs",
+      "function": "MarkdownExporter::export",
+      "line": 118,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/builtins.rs",
+      "function": "MarkdownExporter::info",
+      "line": 109,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/builtins.rs",
+      "function": "MarkdownInlineExporter::export",
+      "line": 146,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/builtins.rs",
+      "function": "MarkdownInlineExporter::info",
+      "line": 137,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/builtins.rs",
+      "function": "MiniDiaryImporter::info",
+      "line": 13,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/builtins.rs",
+      "function": "MiniDiaryImporter::parse",
+      "line": 22,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/builtins.rs",
+      "function": "register_all",
+      "line": 160,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/registry.rs",
+      "function": "PluginRegistry::find_exporter",
+      "line": 38,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/registry.rs",
+      "function": "PluginRegistry::find_importer",
+      "line": 31,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/registry.rs",
+      "function": "PluginRegistry::list_exporters",
+      "line": 27,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/registry.rs",
+      "function": "PluginRegistry::list_importers",
+      "line": 23,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/registry.rs",
+      "function": "PluginRegistry::new",
+      "line": 11,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/registry.rs",
+      "function": "PluginRegistry::register_exporter",
+      "line": 19,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/registry.rs",
+      "function": "PluginRegistry::register_importer",
+      "line": 15,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/rhai_loader/metadata.rs",
+      "function": "parse_metadata",
+      "line": 11,
+      "cyclomatic": 9,
+      "coverage": 96.42857142857143,
+      "crap": 9.003689868804665,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 36,
+          "end": 36
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/rhai_loader/mod.rs",
+      "function": "ensure_plugins_dir",
+      "line": 26,
+      "cyclomatic": 4,
+      "coverage": 61.53846153846154,
+      "crap": 4.9103322712790165,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 28,
+          "end": 33
+        },
+        {
+          "start": 38,
+          "end": 38
+        },
+        {
+          "start": 40,
+          "end": 40
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/rhai_loader/mod.rs",
+      "function": "load_plugins",
+      "line": 83,
+      "cyclomatic": 14,
+      "coverage": 67.3076923076923,
+      "crap": 20.848458124715524,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 88,
+          "end": 90
+        },
+        {
+          "start": 104,
+          "end": 106
+        },
+        {
+          "start": 113,
+          "end": 117
+        },
+        {
+          "start": 129,
+          "end": 131
+        },
+        {
+          "start": 147,
+          "end": 147
+        },
+        {
+          "start": 155,
+          "end": 155
+        },
+        {
+          "start": 159,
+          "end": 162
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/rhai_loader/mod.rs",
+      "function": "migrate_journal_plugins",
+      "line": 45,
+      "cyclomatic": 11,
+      "coverage": 0,
+      "crap": 132,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 45,
+          "end": 80
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/rhai_loader/runtime.rs",
+      "function": "RhaiExportPlugin::export",
+      "line": 158,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/rhai_loader/runtime.rs",
+      "function": "RhaiExportPlugin::info",
+      "line": 154,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/rhai_loader/runtime.rs",
+      "function": "RhaiImportPlugin::info",
+      "line": 130,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/rhai_loader/runtime.rs",
+      "function": "RhaiImportPlugin::parse",
+      "line": 134,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/rhai_loader/runtime.rs",
+      "function": "convert_to_entries",
+      "line": 42,
+      "cyclomatic": 6,
+      "coverage": 100,
+      "crap": 6,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/rhai_loader/runtime.rs",
+      "function": "create_sandboxed_engine",
+      "line": 9,
+      "cyclomatic": 1,
+      "coverage": 80.95238095238095,
+      "crap": 1.0069107007882518,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 27,
+          "end": 28
+        },
+        {
+          "start": 31,
+          "end": 32
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/plugin/rhai_loader/runtime.rs",
+      "function": "entries_to_rhai_array",
+      "line": 93,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/search/mod.rs",
+      "function": "search_entries",
+      "line": 50,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/search/text.rs",
+      "function": "build_snippet",
+      "line": 83,
+      "cyclomatic": 4,
+      "coverage": 96.42857142857143,
+      "crap": 4.0007288629737605,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 110,
+          "end": 110
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/search/text.rs",
+      "function": "escape_html",
+      "line": 131,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/search/text.rs",
+      "function": "fold_char",
+      "line": 15,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/search/text.rs",
+      "function": "lower_with_map",
+      "line": 65,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/search/text.rs",
+      "function": "matches_all",
+      "line": 20,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/search/text.rs",
+      "function": "normalize_terms",
+      "line": 27,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/search/text.rs",
+      "function": "snap_ceil",
+      "line": 122,
+      "cyclomatic": 3,
+      "coverage": 66.66666666666666,
+      "crap": 3.333333333333334,
+      "crate": "mini-diarium-core",
+      "uncovered": [
+        {
+          "start": 124,
+          "end": 125
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-core/src/search/text.rs",
+      "function": "snap_floor",
+      "line": 115,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-core/src/search/text.rs",
+      "function": "strip_html",
+      "line": 42,
+      "cyclomatic": 6,
+      "coverage": 100,
+      "crap": 6,
+      "crate": "mini-diarium-core"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/auth/auto_key.rs",
+      "function": "AutoKeyMethod::unwrap_master_key",
+      "line": 25,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/auth/auto_key.rs",
+      "function": "AutoKeyMethod::wrap_master_key",
+      "line": 17,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/auth/keypair.rs",
+      "function": "KeypairMethod::wrap_master_key",
+      "line": 27,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/auth/keypair.rs",
+      "function": "PrivateKeyMethod::unwrap_master_key",
+      "line": 63,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/auth/keypair.rs",
+      "function": "derive_public_key",
+      "line": 112,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/auth/keypair.rs",
+      "function": "generate_keypair",
+      "line": 99,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/auth/mod.rs",
+      "function": "SecretBytes::deref",
+      "line": 26,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/auth/mod.rs",
+      "function": "SecretBytes::eq",
+      "line": 38,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/auth/mod.rs",
+      "function": "SecretBytes::eq",
+      "line": 50,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/auth/mod.rs",
+      "function": "SecretBytes::fmt",
+      "line": 32,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium-crypto",
+      "uncovered": [
+        {
+          "start": 32,
+          "end": 34
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/auth/mod.rs",
+      "function": "Vec::eq",
+      "line": 44,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/auth/password.rs",
+      "function": "PasswordMethod::new",
+      "line": 17,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/auth/password.rs",
+      "function": "PasswordMethod::unwrap_master_key",
+      "line": 55,
+      "cyclomatic": 9,
+      "coverage": 96,
+      "crap": 9.005184,
+      "crate": "mini-diarium-crypto",
+      "uncovered": [
+        {
+          "start": 68,
+          "end": 68
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/auth/password.rs",
+      "function": "PasswordMethod::wrap_master_key",
+      "line": 22,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/crypto/cipher.rs",
+      "function": "CipherError::fmt",
+      "line": 58,
+      "cyclomatic": 5,
+      "coverage": 57.14285714285714,
+      "crap": 6.96793002915452,
+      "crate": "mini-diarium-crypto",
+      "uncovered": [
+        {
+          "start": 60,
+          "end": 60
+        },
+        {
+          "start": 62,
+          "end": 63
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/crypto/cipher.rs",
+      "function": "Key::as_bytes",
+      "line": 43,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/crypto/cipher.rs",
+      "function": "Key::fmt",
+      "line": 20,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium-crypto",
+      "uncovered": [
+        {
+          "start": 20,
+          "end": 22
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/crypto/cipher.rs",
+      "function": "Key::from_slice",
+      "line": 33,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/crypto/cipher.rs",
+      "function": "decrypt",
+      "line": 115,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/crypto/cipher.rs",
+      "function": "encrypt",
+      "line": 86,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/crypto/cipher.rs",
+      "function": "generate_nonce",
+      "line": 71,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/crypto/cipher.rs",
+      "function": "image_fingerprint",
+      "line": 159,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/crypto/cipher.rs",
+      "function": "tag_name_fingerprint",
+      "line": 144,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/crypto/password.rs",
+      "function": "PasswordError::fmt",
+      "line": 21,
+      "cyclomatic": 4,
+      "coverage": 0,
+      "crap": 20,
+      "crate": "mini-diarium-crypto",
+      "uncovered": [
+        {
+          "start": 21,
+          "end": 29
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/crypto/password.rs",
+      "function": "derive_key_from_phc_hash",
+      "line": 68,
+      "cyclomatic": 4,
+      "coverage": 91.66666666666666,
+      "crap": 4.0092592592592595,
+      "crate": "mini-diarium-crypto",
+      "uncovered": [
+        {
+          "start": 76,
+          "end": 76
+        }
+      ]
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/crypto/password.rs",
+      "function": "generate_salt",
+      "line": 35,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/crypto/password.rs",
+      "function": "hash_password",
+      "line": 47,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/crypto/password.rs",
+      "function": "verify_password",
+      "line": 89,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/format.rs",
+      "function": "decrypt_bytes",
+      "line": 40,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/format.rs",
+      "function": "decrypt_utf8",
+      "line": 33,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "crates/mini-diarium-crypto/src/format.rs",
+      "function": "encrypt_for_storage",
+      "line": 24,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium-crypto"
+    },
+    {
+      "file": "src-tauri/build.rs",
+      "function": "main",
+      "line": 1,
+      "cyclomatic": 1,
+      "coverage": null,
+      "crap": 2,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/attachments.rs",
+      "function": "add_entry_attachment",
+      "line": 184,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 184,
+          "end": 193
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/attachments.rs",
+      "function": "add_entry_attachment_inner",
+      "line": 144,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/attachments.rs",
+      "function": "add_entry_attachment_with",
+      "line": 163,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/attachments.rs",
+      "function": "ensure_safe_destination",
+      "line": 87,
+      "cyclomatic": 10,
+      "coverage": 97.05882352941177,
+      "crap": 10.002544270303277,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 94,
+          "end": 94
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/attachments.rs",
+      "function": "is_sqlite_file",
+      "line": 65,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/attachments.rs",
+      "function": "list_entry_attachments",
+      "line": 137,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 137,
+          "end": 142
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/attachments.rs",
+      "function": "list_entry_attachments_inner",
+      "line": 128,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/attachments.rs",
+      "function": "lower_extension",
+      "line": 22,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/attachments.rs",
+      "function": "normalized",
+      "line": 76,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/attachments.rs",
+      "function": "read_source_file",
+      "line": 30,
+      "cyclomatic": 8,
+      "coverage": 100,
+      "crap": 8,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/attachments.rs",
+      "function": "remove_entry_attachment",
+      "line": 212,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 212,
+          "end": 218
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/attachments.rs",
+      "function": "remove_entry_attachment_inner",
+      "line": 195,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/attachments.rs",
+      "function": "save_attachment_copy",
+      "line": 256,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 256,
+          "end": 263
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/attachments.rs",
+      "function": "save_attachment_copy_inner",
+      "line": 220,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_core.rs",
+      "function": "change_password",
+      "line": 367,
+      "cyclomatic": 8,
+      "coverage": 0,
+      "crap": 72,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 367,
+          "end": 402
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_core.rs",
+      "function": "check_diary_path",
+      "line": 324,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_core.rs",
+      "function": "check_require_all_auth_credential_count",
+      "line": 80,
+      "cyclomatic": 4,
+      "coverage": 93.75,
+      "crap": 4.00390625,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 93,
+          "end": 93
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_core.rs",
+      "function": "create_diary",
+      "line": 265,
+      "cyclomatic": 6,
+      "coverage": 0,
+      "crap": 42,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 265,
+          "end": 295
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_core.rs",
+      "function": "create_diary_auto",
+      "line": 441,
+      "cyclomatic": 8,
+      "coverage": 0,
+      "crap": 72,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 441,
+          "end": 482
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_core.rs",
+      "function": "diary_exists",
+      "line": 331,
+      "cyclomatic": 2,
+      "coverage": 0,
+      "crap": 6,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 331,
+          "end": 337
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_core.rs",
+      "function": "get_diary_path",
+      "line": 351,
+      "cyclomatic": 2,
+      "coverage": 0,
+      "crap": 6,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 351,
+          "end": 360
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_core.rs",
+      "function": "is_diary_unlocked",
+      "line": 341,
+      "cyclomatic": 2,
+      "coverage": 0,
+      "crap": 6,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 341,
+          "end": 347
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_core.rs",
+      "function": "lock_diary",
+      "line": 311,
+      "cyclomatic": 3,
+      "coverage": 0,
+      "crap": 12,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 311,
+          "end": 319
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_core.rs",
+      "function": "migrate_require_all_auth_to_db",
+      "line": 46,
+      "cyclomatic": 5,
+      "coverage": 60,
+      "crap": 6.6000000000000005,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 59,
+          "end": 69
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_core.rs",
+      "function": "perform_unlock",
+      "line": 152,
+      "cyclomatic": 29,
+      "coverage": 45.97701149425287,
+      "crap": 161.5964240102171,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 157,
+          "end": 157
+        },
+        {
+          "start": 188,
+          "end": 241
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_core.rs",
+      "function": "read_private_key_from_file",
+      "line": 29,
+      "cyclomatic": 4,
+      "coverage": 92.3076923076923,
+      "crap": 4.007282658170232,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 35,
+          "end": 35
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_core.rs",
+      "function": "reset_diary",
+      "line": 407,
+      "cyclomatic": 6,
+      "coverage": 0,
+      "crap": 42,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 407,
+          "end": 434
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_core.rs",
+      "function": "unlock_diary",
+      "line": 299,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 299,
+          "end": 301
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_core.rs",
+      "function": "unlock_diary_all_methods",
+      "line": 570,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 570,
+          "end": 575
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_core.rs",
+      "function": "unlock_diary_auto",
+      "line": 501,
+      "cyclomatic": 11,
+      "coverage": 0,
+      "crap": 132,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 501,
+          "end": 561
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_core.rs",
+      "function": "unlock_diary_with_keypair",
+      "line": 305,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 305,
+          "end": 307
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_core.rs",
+      "function": "verify_credentials_and_collect_slots",
+      "line": 102,
+      "cyclomatic": 14,
+      "coverage": 100,
+      "crap": 14,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_directory.rs",
+      "function": "change_diary_directory",
+      "line": 221,
+      "cyclomatic": 3,
+      "coverage": 0,
+      "crap": 12,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 221,
+          "end": 239
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_directory.rs",
+      "function": "change_diary_directory_inner",
+      "line": 10,
+      "cyclomatic": 19,
+      "coverage": 81.70731707317073,
+      "crap": 21.20973106890498,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 20,
+          "end": 20
+        },
+        {
+          "start": 67,
+          "end": 71
+        },
+        {
+          "start": 94,
+          "end": 96
+        },
+        {
+          "start": 101,
+          "end": 113
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_directory.rs",
+      "function": "change_diary_directory_with_auto_lock_inner",
+      "line": 133,
+      "cyclomatic": 8,
+      "coverage": 94.23076923076923,
+      "crap": 8.012289485662267,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 167,
+          "end": 167
+        },
+        {
+          "start": 187,
+          "end": 187
+        },
+        {
+          "start": 202,
+          "end": 202
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_identity.rs",
+      "function": "list_auth_methods",
+      "line": 37,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 37,
+          "end": 41
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_identity.rs",
+      "function": "list_auth_methods_inner",
+      "line": 29,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_identity.rs",
+      "function": "peek_auth_slot_types",
+      "line": 60,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 60,
+          "end": 62
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_identity.rs",
+      "function": "peek_auth_slot_types_inner",
+      "line": 44,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_identity.rs",
+      "function": "verify_password",
+      "line": 15,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 15,
+          "end": 26
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_journals.rs",
+      "function": "add_journal",
+      "line": 231,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 231,
+          "end": 238
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_journals.rs",
+      "function": "add_journal_inner",
+      "line": 169,
+      "cyclomatic": 8,
+      "coverage": 100,
+      "crap": 8,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_journals.rs",
+      "function": "check_journal_location",
+      "line": 127,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_journals.rs",
+      "function": "effective_db_filename",
+      "line": 138,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_journals.rs",
+      "function": "ensure_usable_dir",
+      "line": 245,
+      "cyclomatic": 4,
+      "coverage": 90,
+      "crap": 4.016,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 255,
+          "end": 255
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_journals.rs",
+      "function": "get_active_journal_id",
+      "line": 103,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 103,
+          "end": 105
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_journals.rs",
+      "function": "get_active_journal_id_inner",
+      "line": 89,
+      "cyclomatic": 1,
+      "coverage": 90.9090909090909,
+      "crap": 1.0007513148009015,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 91,
+          "end": 91
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_journals.rs",
+      "function": "get_default_journal_dir",
+      "line": 304,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 304,
+          "end": 312
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_journals.rs",
+      "function": "get_default_journal_dir_inner",
+      "line": 267,
+      "cyclomatic": 4,
+      "coverage": 85,
+      "crap": 4.054,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 281,
+          "end": 281
+        },
+        {
+          "start": 287,
+          "end": 288
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_journals.rs",
+      "function": "is_backup_location",
+      "line": 113,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_journals.rs",
+      "function": "is_portal_path",
+      "line": 20,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_journals.rs",
+      "function": "list_journals",
+      "line": 81,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 81,
+          "end": 83
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_journals.rs",
+      "function": "list_journals_inner",
+      "line": 75,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 75,
+          "end": 78
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_journals.rs",
+      "function": "remove_journal",
+      "line": 359,
+      "cyclomatic": 3,
+      "coverage": 0,
+      "crap": 12,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 359,
+          "end": 370
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_journals.rs",
+      "function": "remove_journal_inner",
+      "line": 314,
+      "cyclomatic": 9,
+      "coverage": 64.51612903225806,
+      "crap": 12.618911751871371,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 336,
+          "end": 344
+        },
+        {
+          "start": 350,
+          "end": 351
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_journals.rs",
+      "function": "rename_journal",
+      "line": 392,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 392,
+          "end": 394
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_journals.rs",
+      "function": "rename_journal_inner",
+      "line": 372,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_journals.rs",
+      "function": "same_db_filename",
+      "line": 161,
+      "cyclomatic": 2,
+      "coverage": 80,
+      "crap": 2.032,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 163,
+          "end": 163
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_journals.rs",
+      "function": "same_directory",
+      "line": 149,
+      "cyclomatic": 3,
+      "coverage": 50,
+      "crap": 4.125,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 152,
+          "end": 156
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_journals.rs",
+      "function": "startup_journal_paths",
+      "line": 40,
+      "cyclomatic": 3,
+      "coverage": 82.14285714285714,
+      "crap": 3.0512481778425657,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 45,
+          "end": 45
+        },
+        {
+          "start": 60,
+          "end": 63
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_journals.rs",
+      "function": "switch_journal",
+      "line": 425,
+      "cyclomatic": 2,
+      "coverage": 0,
+      "crap": 6,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 425,
+          "end": 433
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_journals.rs",
+      "function": "switch_journal_inner",
+      "line": 396,
+      "cyclomatic": 6,
+      "coverage": 100,
+      "crap": 6,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_policy.rs",
+      "function": "set_require_all_auth",
+      "line": 13,
+      "cyclomatic": 12,
+      "coverage": 0,
+      "crap": 156,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 13,
+          "end": 45
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_slots.rs",
+      "function": "generate_keypair",
+      "line": 12,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 12,
+          "end": 14
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_slots.rs",
+      "function": "register_keypair",
+      "line": 76,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 76,
+          "end": 116
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_slots.rs",
+      "function": "register_password",
+      "line": 49,
+      "cyclomatic": 2,
+      "coverage": 0,
+      "crap": 6,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 49,
+          "end": 68
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_slots.rs",
+      "function": "remove_auth_method",
+      "line": 194,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 194,
+          "end": 205
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_slots.rs",
+      "function": "remove_auth_method_inner",
+      "line": 119,
+      "cyclomatic": 18,
+      "coverage": 50.98039215686274,
+      "crap": 56.16405454915531,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 140,
+          "end": 140
+        },
+        {
+          "start": 146,
+          "end": 146
+        },
+        {
+          "start": 155,
+          "end": 185
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/auth_slots.rs",
+      "function": "write_key_file",
+      "line": 22,
+      "cyclomatic": 2,
+      "coverage": 0,
+      "crap": 6,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 22,
+          "end": 42
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/mod.rs",
+      "function": "DiaryState::ensure_journal_selected",
+      "line": 70,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/auth/mod.rs",
+      "function": "DiaryState::new",
+      "line": 47,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/auth/mod.rs",
+      "function": "DiaryState::placeholder_paths",
+      "line": 61,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/auth/mod.rs",
+      "function": "auto_lock_diary_if_unlocked",
+      "line": 155,
+      "cyclomatic": 3,
+      "coverage": 0,
+      "crap": 12,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 155,
+          "end": 169
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/mod.rs",
+      "function": "emit_diary_locked",
+      "line": 144,
+      "cyclomatic": 2,
+      "coverage": 0,
+      "crap": 6,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 144,
+          "end": 153
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/mod.rs",
+      "function": "emit_diary_locking",
+      "line": 138,
+      "cyclomatic": 2,
+      "coverage": 0,
+      "crap": 6,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 138,
+          "end": 142
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/mod.rs",
+      "function": "lock_diary_inner",
+      "line": 134,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/auth/mod.rs",
+      "function": "lock_diary_inner_with",
+      "line": 106,
+      "cyclomatic": 3,
+      "coverage": 92.85714285714286,
+      "crap": 3.003279883381924,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 126,
+          "end": 126
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/auth/mod.rs",
+      "function": "with_same_session",
+      "line": 193,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/auth/mod.rs",
+      "function": "with_unlocked_db",
+      "line": 174,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/backup.rs",
+      "function": "create_backup_now",
+      "line": 90,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 90,
+          "end": 92
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/backup.rs",
+      "function": "create_backup_now_inner",
+      "line": 96,
+      "cyclomatic": 6,
+      "coverage": 100,
+      "crap": 6,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/backup.rs",
+      "function": "delete_backup",
+      "line": 159,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 159,
+          "end": 161
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/backup.rs",
+      "function": "delete_backup_inner",
+      "line": 165,
+      "cyclomatic": 6,
+      "coverage": 100,
+      "crap": 6,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/backup.rs",
+      "function": "get_backup_health",
+      "line": 65,
+      "cyclomatic": 2,
+      "coverage": 0,
+      "crap": 6,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 65,
+          "end": 68
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/backup.rs",
+      "function": "journal_paths",
+      "line": 42,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/backup.rs",
+      "function": "list_backups",
+      "line": 58,
+      "cyclomatic": 2,
+      "coverage": 0,
+      "crap": 6,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 58,
+          "end": 61
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/backup.rs",
+      "function": "list_backups_unauthenticated",
+      "line": 77,
+      "cyclomatic": 3,
+      "coverage": 0,
+      "crap": 12,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 77,
+          "end": 83
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/backup.rs",
+      "function": "restore_backup",
+      "line": 262,
+      "cyclomatic": 3,
+      "coverage": 0,
+      "crap": 12,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 262,
+          "end": 286
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/backup.rs",
+      "function": "restore_backup_inner",
+      "line": 296,
+      "cyclomatic": 7,
+      "coverage": 100,
+      "crap": 7,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/backup.rs",
+      "function": "reveal_backups_folder",
+      "line": 195,
+      "cyclomatic": 3,
+      "coverage": 0,
+      "crap": 12,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 195,
+          "end": 200
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/backup.rs",
+      "function": "reveal_target",
+      "line": 211,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/backup.rs",
+      "function": "verify_backup",
+      "line": 128,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 128,
+          "end": 130
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/backup.rs",
+      "function": "verify_backup_inner",
+      "line": 134,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/backup_inspect.rs",
+      "function": "check_backup_credentials",
+      "line": 78,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 78,
+          "end": 83
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/backup_inspect.rs",
+      "function": "check_backup_credentials_inner",
+      "line": 86,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/backup_inspect.rs",
+      "function": "close_backup",
+      "line": 334,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 334,
+          "end": 340
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/backup_inspect.rs",
+      "function": "close_inspection",
+      "line": 348,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/backup_inspect.rs",
+      "function": "journal_paths",
+      "line": 60,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/backup_inspect.rs",
+      "function": "list_backup_entries",
+      "line": 176,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 176,
+          "end": 178
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/backup_inspect.rs",
+      "function": "list_backup_entries_inner",
+      "line": 181,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/backup_inspect.rs",
+      "function": "list_backup_entries_with_status",
+      "line": 202,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 202,
+          "end": 206
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/backup_inspect.rs",
+      "function": "list_backup_entries_with_status_inner",
+      "line": 210,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/backup_inspect.rs",
+      "function": "load_auto_key",
+      "line": 386,
+      "cyclomatic": 5,
+      "coverage": 0,
+      "crap": 30,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 386,
+          "end": 403
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/backup_inspect.rs",
+      "function": "open_backup_readonly",
+      "line": 115,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 115,
+          "end": 122
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/backup_inspect.rs",
+      "function": "open_backup_readonly_inner",
+      "line": 130,
+      "cyclomatic": 8,
+      "coverage": 100,
+      "crap": 8,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/backup_inspect.rs",
+      "function": "require_unlocked",
+      "line": 50,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/backup_inspect.rs",
+      "function": "resolve_credential",
+      "line": 364,
+      "cyclomatic": 6,
+      "coverage": 64.70588235294117,
+      "crap": 7.58273967026257,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 374,
+          "end": 383
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/backup_inspect.rs",
+      "function": "restore_entries_from_backup",
+      "line": 267,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 267,
+          "end": 275
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/backup_inspect.rs",
+      "function": "restore_entries_from_backup_inner",
+      "line": 278,
+      "cyclomatic": 10,
+      "coverage": 91.66666666666666,
+      "crap": 10.05787037037037,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 306,
+          "end": 306
+        },
+        {
+          "start": 310,
+          "end": 310
+        },
+        {
+          "start": 317,
+          "end": 317
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/backup_triggers.rs",
+      "function": "snapshot_after_unlock",
+      "line": 230,
+      "cyclomatic": 1,
+      "coverage": 53.84615384615385,
+      "crap": 1.0983158852981338,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 232,
+          "end": 233
+        },
+        {
+          "start": 237,
+          "end": 238
+        },
+        {
+          "start": 243,
+          "end": 244
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/backup_triggers.rs",
+      "function": "snapshot_before_destructive",
+      "line": 254,
+      "cyclomatic": 1,
+      "coverage": 64.70588235294117,
+      "crap": 1.043964990840627,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 256,
+          "end": 257
+        },
+        {
+          "start": 261,
+          "end": 262
+        },
+        {
+          "start": 267,
+          "end": 268
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/backup_triggers.rs",
+      "function": "snapshot_blocking",
+      "line": 52,
+      "cyclomatic": 4,
+      "coverage": 88.88888888888889,
+      "crap": 4.021947873799726,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 70,
+          "end": 74
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/backup_triggers.rs",
+      "function": "snapshot_detached",
+      "line": 92,
+      "cyclomatic": 1,
+      "coverage": 92.5925925925926,
+      "crap": 1.0004064421074024,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 117,
+          "end": 120
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/backup_triggers.rs",
+      "function": "take_connection_and_snapshot",
+      "line": 155,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/debug.rs",
+      "function": "build_debug_dump",
+      "line": 188,
+      "cyclomatic": 8,
+      "coverage": 98.49624060150376,
+      "crap": 8.000217628133877,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 304,
+          "end": 304
+        },
+        {
+          "start": 320,
+          "end": 320
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/debug.rs",
+      "function": "generate_debug_dump",
+      "line": 134,
+      "cyclomatic": 8,
+      "coverage": 0,
+      "crap": 72,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 134,
+          "end": 186
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/debug.rs",
+      "function": "read_backup_stats",
+      "line": 383,
+      "cyclomatic": 1,
+      "coverage": 88.88888888888889,
+      "crap": 1.0013717421124828,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 386,
+          "end": 386
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/debug.rs",
+      "function": "redact_json_strings",
+      "line": 413,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/debug.rs",
+      "function": "retention_policy_summary",
+      "line": 402,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/entries.rs",
+      "function": "create_entry",
+      "line": 24,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 24,
+          "end": 44
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/entries.rs",
+      "function": "delete_entry",
+      "line": 161,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 161,
+          "end": 163
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/entries.rs",
+      "function": "delete_entry_if_empty",
+      "line": 131,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 131,
+          "end": 138
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/entries.rs",
+      "function": "delete_entry_if_empty_inner",
+      "line": 93,
+      "cyclomatic": 1,
+      "coverage": 95.83333333333334,
+      "crap": 1.000072337962963,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 106,
+          "end": 106
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/entries.rs",
+      "function": "delete_entry_inner",
+      "line": 141,
+      "cyclomatic": 1,
+      "coverage": 76.92307692307693,
+      "crap": 1.0122894856622666,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 149,
+          "end": 149
+        },
+        {
+          "start": 154,
+          "end": 155
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/entries.rs",
+      "function": "entry_has_content",
+      "line": 179,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 179,
+          "end": 181
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/entries.rs",
+      "function": "entry_has_content_inner",
+      "line": 166,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/entries.rs",
+      "function": "get_all_entry_dates",
+      "line": 205,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 205,
+          "end": 207
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/entries.rs",
+      "function": "get_entries_for_date",
+      "line": 77,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 77,
+          "end": 82
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/entries.rs",
+      "function": "get_locked_entry_dates",
+      "line": 197,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 197,
+          "end": 199
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/entries.rs",
+      "function": "get_timeline_entries",
+      "line": 231,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 231,
+          "end": 246
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/entries.rs",
+      "function": "recalculate_word_counts",
+      "line": 220,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 220,
+          "end": 224
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/entries.rs",
+      "function": "recalculate_word_counts_inner",
+      "line": 210,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/entries.rs",
+      "function": "save_entry",
+      "line": 65,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 65,
+          "end": 73
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/entries.rs",
+      "function": "save_entry_inner",
+      "line": 47,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/entries.rs",
+      "function": "set_entry_locked",
+      "line": 187,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 187,
+          "end": 193
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/export.rs",
+      "function": "export_json",
+      "line": 88,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 88,
+          "end": 117
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/export.rs",
+      "function": "export_markdown",
+      "line": 123,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 123,
+          "end": 156
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/export.rs",
+      "function": "fetch_entries",
+      "line": 22,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/export.rs",
+      "function": "print_entries",
+      "line": 160,
+      "cyclomatic": 2,
+      "coverage": 0,
+      "crap": 6,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 160,
+          "end": 191
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/export.rs",
+      "function": "read_attachment_asset",
+      "line": 78,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/export.rs",
+      "function": "write_export_assets",
+      "line": 39,
+      "cyclomatic": 9,
+      "coverage": 83.33333333333334,
+      "crap": 9.374999999999998,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 58,
+          "end": 59
+        },
+        {
+          "start": 70,
+          "end": 72
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/files.rs",
+      "function": "read_file_bytes",
+      "line": 6,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/files.rs",
+      "function": "read_text_file",
+      "line": 44,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/files.rs",
+      "function": "write_pdf_file",
+      "line": 22,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/fonts.rs",
+      "function": "delete_custom_font_family",
+      "line": 226,
+      "cyclomatic": 2,
+      "coverage": 0,
+      "crap": 6,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 226,
+          "end": 232
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/fonts.rs",
+      "function": "delete_custom_font_family_impl",
+      "line": 221,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/fonts.rs",
+      "function": "family_colon",
+      "line": 335,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 335,
+          "end": 337
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/fonts.rs",
+      "function": "family_from_stem",
+      "line": 89,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/fonts.rs",
+      "function": "get_custom_font_data",
+      "line": 234,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/fonts.rs",
+      "function": "get_font_data",
+      "line": 267,
+      "cyclomatic": 6,
+      "coverage": 0,
+      "crap": 42,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 267,
+          "end": 290
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/fonts.rs",
+      "function": "import_custom_font",
+      "line": 206,
+      "cyclomatic": 3,
+      "coverage": 0,
+      "crap": 12,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 206,
+          "end": 219
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/fonts.rs",
+      "function": "import_custom_font_impl",
+      "line": 192,
+      "cyclomatic": 4,
+      "coverage": 100,
+      "crap": 4,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/fonts.rs",
+      "function": "list_bundled_fonts",
+      "line": 80,
+      "cyclomatic": 3,
+      "coverage": 0,
+      "crap": 12,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 80,
+          "end": 87
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/fonts.rs",
+      "function": "list_custom_fonts",
+      "line": 162,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 162,
+          "end": 164
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/fonts.rs",
+      "function": "list_custom_fonts_impl",
+      "line": 141,
+      "cyclomatic": 6,
+      "coverage": 93.33333333333333,
+      "crap": 6.010666666666666,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 154,
+          "end": 154
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/fonts.rs",
+      "function": "list_fonts_in_dir",
+      "line": 59,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/fonts.rs",
+      "function": "mime_from_bytes",
+      "line": 322,
+      "cyclomatic": 7,
+      "coverage": 100,
+      "crap": 7,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/fonts.rs",
+      "function": "read_font_file",
+      "line": 292,
+      "cyclomatic": 5,
+      "coverage": 0,
+      "crap": 30,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 292,
+          "end": 320
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/fonts.rs",
+      "function": "resolve_font_dir",
+      "line": 9,
+      "cyclomatic": 6,
+      "coverage": 0,
+      "crap": 42,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 9,
+          "end": 57
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/fonts.rs",
+      "function": "stem_from_family",
+      "line": 122,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/fonts.rs",
+      "function": "validate_font_input",
+      "line": 168,
+      "cyclomatic": 6,
+      "coverage": 82.6086956521739,
+      "crap": 6.189364674940413,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 179,
+          "end": 182
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/images.rs",
+      "function": "get_entry_images",
+      "line": 7,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 7,
+          "end": 9
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/images.rs",
+      "function": "get_image_data",
+      "line": 27,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 27,
+          "end": 32
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/images.rs",
+      "function": "list_journal_image_summaries",
+      "line": 13,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 13,
+          "end": 23
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/import.rs",
+      "function": "import_entries",
+      "line": 37,
+      "cyclomatic": 5,
+      "coverage": 90,
+      "crap": 5.025,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 54,
+          "end": 55
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/import.rs",
+      "function": "read_import_file",
+      "line": 6,
+      "cyclomatic": 3,
+      "coverage": 55.55555555555556,
+      "crap": 3.7901234567901234,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 8,
+          "end": 11
+        },
+        {
+          "start": 21,
+          "end": 24
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/menu.rs",
+      "function": "labels_for_locale",
+      "line": 14,
+      "cyclomatic": 7,
+      "coverage": 51.515151515151516,
+      "crap": 12.584884659264825,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 17,
+          "end": 20
+        },
+        {
+          "start": 22,
+          "end": 25
+        },
+        {
+          "start": 27,
+          "end": 30
+        },
+        {
+          "start": 32,
+          "end": 35
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/menu.rs",
+      "function": "update_menu_locale",
+      "line": 54,
+      "cyclomatic": 3,
+      "coverage": 0,
+      "crap": 12,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 54,
+          "end": 73
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/mod.rs",
+      "function": "run_blocking",
+      "line": 40,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 40,
+          "end": 58
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/mod.rs",
+      "function": "run_blocking_or_lock",
+      "line": 65,
+      "cyclomatic": 4,
+      "coverage": 92.85714285714286,
+      "crap": 4.005830903790088,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 80,
+          "end": 80
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/navigation.rs",
+      "function": "navigate_next_day",
+      "line": 15,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/navigation.rs",
+      "function": "navigate_next_month",
+      "line": 46,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/navigation.rs",
+      "function": "navigate_previous_day",
+      "line": 5,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/navigation.rs",
+      "function": "navigate_previous_month",
+      "line": 32,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/navigation.rs",
+      "function": "navigate_to_today",
+      "line": 25,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/platform.rs",
+      "function": "is_flatpak_sandbox",
+      "line": 9,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 9,
+          "end": 11
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/plugin.rs",
+      "function": "list_export_plugins",
+      "line": 38,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 38,
+          "end": 42
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/plugin.rs",
+      "function": "list_export_plugins_inner",
+      "line": 44,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/plugin.rs",
+      "function": "list_import_plugins",
+      "line": 27,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 27,
+          "end": 31
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/plugin.rs",
+      "function": "list_import_plugins_inner",
+      "line": 33,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/plugin.rs",
+      "function": "lock_registry",
+      "line": 17,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/plugin.rs",
+      "function": "read_asset_in_session",
+      "line": 140,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/plugin.rs",
+      "function": "run_export_plugin",
+      "line": 113,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 113,
+          "end": 131
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/plugin.rs",
+      "function": "run_export_plugin_inner",
+      "line": 154,
+      "cyclomatic": 11,
+      "coverage": 76.92307692307693,
+      "crap": 12.487027765134272,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 174,
+          "end": 177
+        },
+        {
+          "start": 198,
+          "end": 200
+        },
+        {
+          "start": 204,
+          "end": 207
+        },
+        {
+          "start": 214,
+          "end": 214
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/plugin.rs",
+      "function": "run_import_plugin",
+      "line": 49,
+      "cyclomatic": 7,
+      "coverage": 0,
+      "crap": 56,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 49,
+          "end": 106
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/search.rs",
+      "function": "search_entries",
+      "line": 22,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 22,
+          "end": 26
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/spellcheck.rs",
+      "function": "get_spellcheck_status",
+      "line": 52,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 52,
+          "end": 54
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/spellcheck.rs",
+      "function": "languages_for",
+      "line": 7,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/spellcheck.rs",
+      "function": "pick_locale",
+      "line": 17,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/spellcheck.rs",
+      "function": "set_spellcheck_enabled",
+      "line": 37,
+      "cyclomatic": 2,
+      "coverage": 0,
+      "crap": 6,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 37,
+          "end": 46
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/spellcheck.rs",
+      "function": "system_locale",
+      "line": 26,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/stats.rs",
+      "function": "calculate_best_streak",
+      "line": 78,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/stats.rs",
+      "function": "calculate_current_streak",
+      "line": 106,
+      "cyclomatic": 7,
+      "coverage": 95,
+      "crap": 7.006125,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 132,
+          "end": 132
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/stats.rs",
+      "function": "calculate_statistics",
+      "line": 28,
+      "cyclomatic": 7,
+      "coverage": 100,
+      "crap": 7,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/stats.rs",
+      "function": "days_between",
+      "line": 140,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/stats.rs",
+      "function": "get_statistics",
+      "line": 23,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 23,
+          "end": 25
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/stats.rs",
+      "function": "get_statistics_inner",
+      "line": 17,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/tags.rs",
+      "function": "add_tag_to_entry",
+      "line": 36,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 36,
+          "end": 42
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/tags.rs",
+      "function": "add_tag_to_entry_inner",
+      "line": 26,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/tags.rs",
+      "function": "create_tag",
+      "line": 6,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 6,
+          "end": 8
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/tags.rs",
+      "function": "delete_tag",
+      "line": 21,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 21,
+          "end": 23
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/tags.rs",
+      "function": "get_all_tags",
+      "line": 11,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 11,
+          "end": 13
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/tags.rs",
+      "function": "get_entry_dates_by_tag",
+      "line": 69,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 69,
+          "end": 74
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/tags.rs",
+      "function": "get_tags_for_entry",
+      "line": 64,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 64,
+          "end": 66
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/tags.rs",
+      "function": "remove_tag_from_entry",
+      "line": 55,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 55,
+          "end": 61
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/commands/tags.rs",
+      "function": "remove_tag_from_entry_inner",
+      "line": 45,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/commands/tags.rs",
+      "function": "rename_tag",
+      "line": 16,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 16,
+          "end": 18
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/lib.rs",
+      "function": "has_legacy_app_state",
+      "line": 52,
+      "cyclomatic": 2,
+      "coverage": 0,
+      "crap": 6,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 52,
+          "end": 54
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/lib.rs",
+      "function": "install_exit_snapshot_hook",
+      "line": 92,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 92,
+          "end": 135
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/lib.rs",
+      "function": "is_e2e_mode",
+      "line": 71,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 71,
+          "end": 73
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/lib.rs",
+      "function": "resolve_app_data_dir",
+      "line": 56,
+      "cyclomatic": 4,
+      "coverage": 0,
+      "crap": 20,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 56,
+          "end": 69
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/lib.rs",
+      "function": "run",
+      "line": 137,
+      "cyclomatic": 3,
+      "coverage": 0,
+      "crap": 12,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 137,
+          "end": 452
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/log_capture.rs",
+      "function": "CapturingLogger::enabled",
+      "line": 64,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 64,
+          "end": 66
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/log_capture.rs",
+      "function": "CapturingLogger::flush",
+      "line": 82,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 82,
+          "end": 84
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/log_capture.rs",
+      "function": "CapturingLogger::log",
+      "line": 68,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/log_capture.rs",
+      "function": "CapturingLogger::new",
+      "line": 58,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/log_capture.rs",
+      "function": "buffer",
+      "line": 48,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/log_capture.rs",
+      "function": "clear",
+      "line": 126,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/log_capture.rs",
+      "function": "consume_path_run",
+      "line": 201,
+      "cyclomatic": 7,
+      "coverage": 95.83333333333334,
+      "crap": 7.003544560185185,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 215,
+          "end": 215
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/log_capture.rs",
+      "function": "home_dir",
+      "line": 132,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/log_capture.rs",
+      "function": "install",
+      "line": 102,
+      "cyclomatic": 2,
+      "coverage": 0,
+      "crap": 6,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 102,
+          "end": 107
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/log_capture.rs",
+      "function": "is_run_terminator",
+      "line": 189,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/log_capture.rs",
+      "function": "path_start_len",
+      "line": 235,
+      "cyclomatic": 7,
+      "coverage": 100,
+      "crap": 7,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/log_capture.rs",
+      "function": "push",
+      "line": 87,
+      "cyclomatic": 3,
+      "coverage": 87.5,
+      "crap": 3.017578125,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 94,
+          "end": 94
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/log_capture.rs",
+      "function": "redact",
+      "line": 154,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/log_capture.rs",
+      "function": "scrub_absolute_paths",
+      "line": 167,
+      "cyclomatic": 3,
+      "coverage": 100,
+      "crap": 3,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/log_capture.rs",
+      "function": "snapshot",
+      "line": 110,
+      "cyclomatic": 3,
+      "coverage": 91.66666666666666,
+      "crap": 3.0052083333333335,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 113,
+          "end": 113
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/main.rs",
+      "function": "main",
+      "line": 4,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 4,
+          "end": 6
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/menu.rs",
+      "function": "build_menu",
+      "line": 27,
+      "cyclomatic": 24,
+      "coverage": 0,
+      "crap": 600,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 27,
+          "end": 97
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/screen_lock.rs",
+      "function": "init",
+      "line": 27,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/screen_lock.rs",
+      "function": "init",
+      "line": 142,
+      "cyclomatic": 2,
+      "coverage": 100,
+      "crap": 2,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/screen_lock.rs",
+      "function": "init",
+      "line": 223,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 223,
+          "end": 225
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/screen_lock.rs",
+      "function": "screen_lock_subclass_proc",
+      "line": 96,
+      "cyclomatic": 7,
+      "coverage": 100,
+      "crap": 7,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/screen_lock.rs",
+      "function": "trigger_auto_lock",
+      "line": 76,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/screen_lock.rs",
+      "function": "trigger_auto_lock",
+      "line": 203,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/spellcheck.rs",
+      "function": "apply",
+      "line": 197,
+      "cyclomatic": 2,
+      "coverage": 0,
+      "crap": 6,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 197,
+          "end": 229
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/spellcheck.rs",
+      "function": "enchant_dictionary_exists",
+      "line": 122,
+      "cyclomatic": 2,
+      "coverage": 70,
+      "crap": 2.108,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 130,
+          "end": 130
+        },
+        {
+          "start": 136,
+          "end": 136
+        },
+        {
+          "start": 144,
+          "end": 144
+        },
+        {
+          "start": 149,
+          "end": 149
+        },
+        {
+          "start": 152,
+          "end": 152
+        },
+        {
+          "start": 157,
+          "end": 157
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/spellcheck.rs",
+      "function": "parse_locale",
+      "line": 40,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/spellcheck.rs",
+      "function": "resolve_languages",
+      "line": 65,
+      "cyclomatic": 5,
+      "coverage": 100,
+      "crap": 5,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/spellcheck.rs",
+      "function": "status",
+      "line": 168,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/spellcheck.rs",
+      "function": "status_for",
+      "line": 99,
+      "cyclomatic": 1,
+      "coverage": 100,
+      "crap": 1,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/sync_detect.rs",
+      "function": "detect_sync_tool",
+      "line": 54,
+      "cyclomatic": 6,
+      "coverage": 100,
+      "crap": 6,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/webview_security/macos.rs",
+      "function": "install_content_rule_list",
+      "line": 9,
+      "cyclomatic": 2,
+      "coverage": null,
+      "crap": 6,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/webview_security/mod.rs",
+      "function": "install_platform_handlers",
+      "line": 21,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 21,
+          "end": 27
+        }
+      ]
+    },
+    {
+      "file": "src-tauri/src/webview_security/windows.rs",
+      "function": "install_webresource_requested_handler",
+      "line": 6,
+      "cyclomatic": 2,
+      "coverage": null,
+      "crap": 6,
+      "crate": "mini-diarium"
+    },
+    {
+      "file": "src-tauri/src/window_focus.rs",
+      "function": "init",
+      "line": 24,
+      "cyclomatic": 1,
+      "coverage": 0,
+      "crap": 2,
+      "crate": "mini-diarium",
+      "uncovered": [
+        {
+          "start": 24,
+          "end": 44
+        }
+      ]
+    }
+  ],
+  "diagnostics": {
+    "analyzed_files": 117,
+    "lcov_files": 119,
+    "matched_files": 114,
+    "source_only": {
+      "count": 3,
+      "examples": [
+        "src-tauri/build.rs",
+        "src-tauri/src/webview_security/macos.rs",
+        "src-tauri/src/webview_security/windows.rs"
+      ]
+    },
+    "lcov_only": {
+      "count": 5,
+      "examples": [
+        "crates/mini-diarium-core/src/db/queries/entries/test_support.rs",
+        "crates/mini-diarium-core/src/db/queries/images/test_support.rs",
+        "crates/mini-diarium-core/src/export/markdown/test_support.rs",
+        "crates/mini-diarium-core/src/import/mod.rs",
+        "crates/mini-diarium-core/src/plugin/rhai_loader/test_support.rs"
+      ]
+    }
+  }
+}
