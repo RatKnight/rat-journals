@@ -71,6 +71,9 @@ jobs:
       - name: CRAP normalizer self-test
         run: node scripts/normalize-crap-baseline.mjs --self-test
 
+      - name: CRAP policy self-test
+        run: node scripts/check-crap-gate.mjs --self-test
+
       - name: Network isolation static check
         run: pwsh scripts/check-no-network.ps1
 
@@ -231,8 +234,8 @@ jobs:
           files: ./src-tauri/lcov.info
           flags: backend
 
-      # Phase 0 is advisory for every failure mode. Keep all CRAP work after
-      # coverage uploads, including installation, and do not enable fail flags.
+      # Preserve advisory reports and provenance independently of the policy
+      # gate. All CRAP work stays after Codecov, including installation.
       - name: Cache cargo-crap binary (advisory)
         id: cache-cargo-crap
         if: always()
@@ -302,6 +305,34 @@ jobs:
           path: |
             crap-report.json
             crap-report.provenance.txt
+          if-no-files-found: ignore
+
+      - name: CRAP policy gate (whole-function, repository-wide)
+        if: always()
+        env:
+          BACKEND_COVERAGE_OUTCOME: ${{ steps.backend-coverage.outcome }}
+        run: |
+          if [ "$BACKEND_COVERAGE_OUTCOME" != success ] || [ ! -s src-tauri/lcov.info ]; then
+            echo '::error title=CRAP input/tool failure::No successful same-run backend coverage'
+            exit 2
+          fi
+          if ! version=$(cargo crap --version) || [ "$version" != 'cargo-crap 0.6.1' ]; then
+            echo '::error title=CRAP input/tool failure::Expected cargo-crap 0.6.1'
+            exit 2
+          fi
+          node scripts/normalize-crap-baseline.mjs --input ci/crap-baseline.json --root "$GITHUB_WORKSPACE" --for-comparison --output crap-baseline-input.json
+          if ! cargo crap --workspace --lcov src-tauri/lcov.info --baseline crap-baseline-input.json --format json --sort file --missing pessimistic --epsilon 0.01 --exclude '**/tests.rs' --exclude '**/test_support.rs' --output crap-delta.json; then
+            echo '::error title=CRAP input/tool failure::cargo-crap analysis failed'
+            exit 2
+          fi
+          node scripts/check-crap-gate.mjs --report crap-delta.json --threshold 30 --epsilon 0.01
+
+      - name: Upload CRAP policy delta
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: crap-delta
+          path: crap-delta.json
           if-no-files-found: ignore
 
   build-linux:

@@ -2,7 +2,7 @@
 // Path-only transformation of cargo-crap 0.6.1 report-v1 envelopes.
 // The producer root is explicit: the consumer can run on a different OS.
 import assert from 'node:assert/strict';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, realpathSync, existsSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -12,7 +12,13 @@ const slash = (value) => value.replaceAll('\\', '/');
 const windowsAbsolute = (value) => /^[a-z]:\//i.test(value) || value.startsWith('//');
 const absolute = (value) => windowsAbsolute(value) || value.startsWith('/');
 
-export function normalizeReport(report, { root, forBaseline = false, warn = console.error }) {
+export function normalizeReport(
+  report,
+  { root, forBaseline = false, forComparison = false, warn = console.error },
+) {
+  if (forBaseline && forComparison) {
+    throw new Error('--for-baseline and --for-comparison are mutually exclusive');
+  }
   if (
     !report ||
     report.version !== '0.6.1' ||
@@ -48,8 +54,9 @@ export function normalizeReport(report, { root, forBaseline = false, warn = cons
       const resolved = slash(api.resolve(producerRoot, value));
       const check = windows ? resolved.toLowerCase() : resolved;
       if (!check.startsWith(comparisonRoot)) outside.push(raw);
-      return value;
+      return forComparison ? resolved : value;
     }
+    if (forComparison) throw new Error(`Comparison input path must be relative: ${raw}`);
     const sameStyle = windowsAbsolute(value) === windows;
     const normalized = slash((windowsAbsolute(value) ? path.win32 : path.posix).normalize(value));
     const check = windows ? normalized.toLowerCase() : normalized;
@@ -80,7 +87,7 @@ export function normalizeReport(report, { root, forBaseline = false, warn = cons
   }
   if (outside.length) {
     const message = `Paths outside producer root ${root}:\n${outside.join('\n')}`;
-    if (forBaseline) throw new Error(message);
+    if (forBaseline || forComparison) throw new Error(message);
     warn(
       `Warning: ${message}\nOutside-root paths retained; do not commit this report as a baseline.`,
     );
@@ -220,6 +227,37 @@ export function selfTest() {
   const overflow = fixture(['/repo/a.rs']);
   overflow.entries[0].crap = Infinity;
   assert.throws(() => normalizeReport(overflow, options), /Non-finite/);
+  const relative = normalizeReport(input, options);
+  const saved = structuredClone(relative);
+  for (const root of ['/repo', 'C:/Repo', '\\\\server\\share\\repo']) {
+    const restored = normalizeReport(relative, { root, forComparison: true });
+    const prefix = slash(root);
+    assert.deepEqual(
+      restored.entries.map((e) => e.file),
+      [`${prefix}/src/a.rs`, `${prefix}/src/a.rs`, `${prefix}/src/b.rs`],
+    );
+    assert.deepEqual(normalizeReport(restored, { root, forBaseline: true }), relative);
+    assert.deepEqual(relative, saved, 'comparison does not mutate the baseline');
+  }
+  const comparisonDuplicates = normalizeReport(duplicates, options);
+  assert.deepEqual(
+    normalizeReport(comparisonDuplicates, { root: '/repo', forComparison: true }),
+    duplicates,
+  );
+  for (const file of [
+    '/repo/a.rs',
+    'C:/Repo/a.rs',
+    '../outside.rs',
+    'src/../../outside.rs',
+    'C:outside.rs',
+    '.',
+  ]) {
+    assert.throws(() => normalizeReport(fixture([file]), { root: '/repo', forComparison: true }));
+  }
+  assert.throws(
+    () => normalizeReport(relative, { ...options, forComparison: true }),
+    /mutually exclusive/,
+  );
   console.log(
     'CRAP normalizer self-test passed (paths, diagnostics, duplicates, precision, input errors)',
   );
@@ -229,7 +267,7 @@ function main(args) {
   if (args.length === 1 && args[0] === '--self-test') return selfTest();
   if (args.length === 1 && args[0] === '--help') {
     console.log(
-      'Usage: node scripts/normalize-crap-baseline.mjs --input <report.json> --root <producer-root> [--output <file>] [--for-baseline]',
+      'Usage: node scripts/normalize-crap-baseline.mjs --input <report.json> --root <producer-root> [--output <file>] [--for-baseline | --for-comparison]',
     );
     return;
   }
@@ -237,6 +275,7 @@ function main(args) {
   for (let i = 0; i < args.length; i++) {
     const flag = args[i];
     if (flag === '--for-baseline' && !options.forBaseline) options.forBaseline = true;
+    else if (flag === '--for-comparison' && !options.forComparison) options.forComparison = true;
     else if (
       ['--input', '--root', '--output'].includes(flag) &&
       !Object.hasOwn(options, flag.slice(2)) &&
@@ -248,6 +287,17 @@ function main(args) {
   }
   if (!options.input || !options.root)
     throw new Error('--input and --root are required; use --help');
+  if (options.output) {
+    const identity = (file) => (existsSync(file) ? realpathSync(file) : path.resolve(file));
+    if (
+      identity(options.input) === identity(options.output) ||
+      (options.forComparison && identity(options.output) === identity('ci/crap-baseline.json'))
+    ) {
+      throw new Error(
+        'Refusing to overwrite the input or canonical baseline; use a temporary output',
+      );
+    }
+  }
   const report = JSON.parse(readFileSync(options.input, 'utf8'));
   const text = JSON.stringify(normalizeReport(report, options), null, 2) + '\n';
   if (options.output) writeFileSync(options.output, text);

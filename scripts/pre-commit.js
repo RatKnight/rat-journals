@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 import { execSync } from 'child_process';
-import { existsSync } from 'fs';
+import { existsSync, statSync } from 'fs';
+import { runCrapAdvisory } from './crap-advisory.mjs';
 
 const COLORS = {
   reset: '\x1b[0m',
@@ -175,12 +176,26 @@ async function main() {
     results.failed.push('Script Tests');
   }
 
+  // 6c. These pure policy/path tests are blocking; local score comparisons are advisory.
+  header('CRAP Policy Self-Tests');
+  const crapPaths = run('node scripts/normalize-crap-baseline.mjs --self-test', 'CRAP path self-test');
+  const crapPolicy = run('node scripts/check-crap-gate.mjs --self-test', 'CRAP policy self-test');
+  if (crapPaths.success && crapPolicy.success) {
+    success('CRAP path and policy self-tests passed');
+    results.passed.push('CRAP Policy Self-Tests');
+  } else {
+    error('CRAP path or policy self-test failed');
+    results.failed.push('CRAP Policy Self-Tests');
+  }
+
   // 7. Backend Tests (Rust) — with coverage when cargo-llvm-cov is available
   header('Backend Tests (Rust)');
   const cargoPath = 'src-tauri';
+  let freshBackendCoverage = false;
   if (existsSync(cargoPath)) {
     const hasCov = run('cargo llvm-cov --version', 'Checking cargo-llvm-cov', { silent: true });
     if (hasCov.success) {
+      const coverageStartedAt = Date.now();
       const backendCov = run(
         // --workspace covers the mini-diarium-core crate too; lcov lands at src-tauri/lcov.info.
         'cargo llvm-cov nextest --workspace --lcov --output-path lcov.info',
@@ -188,6 +203,11 @@ async function main() {
         { cwd: cargoPath },
       );
       if (backendCov.success) {
+        const lcovPath = 'src-tauri/lcov.info';
+        if (existsSync(lcovPath)) {
+          const lcov = statSync(lcovPath);
+          freshBackendCoverage = lcov.size > 0 && lcov.mtimeMs > coverageStartedAt;
+        }
         success('All backend tests passed (coverage written)');
         results.passed.push('Backend Tests');
       } else {
@@ -209,6 +229,17 @@ async function main() {
   } else {
     warning('Backend directory not found, skipping');
     results.warnings.push('Backend tests skipped');
+  }
+
+  // 7b. Whole-function scores are advisory on every local OS, never a CI mirror.
+  header('CRAP Check (ADVISORY; blocking comparison is Linux CI)');
+  const advisory = runCrapAdvisory({ root: process.cwd(), freshCoverage: freshBackendCoverage, run });
+  if (advisory.kind === 'pass') {
+    success(advisory.message);
+    results.passed.push('CRAP Advisory');
+  } else {
+    warning(advisory.message);
+    results.warnings.push(advisory.message);
   }
 
   // 8. Rust Clippy

@@ -121,3 +121,41 @@ test('normalizer report mode warns and retains an outside-root absolute path', (
   assert.match(result.stderr, /Warning: Paths outside producer root/);
   assert.equal(JSON.parse(readFileSync(files.output, 'utf8')).entries[0].file, '/outside/a.rs');
 });
+
+test('comparison CLI restores roots and preserves the relative input baseline', (t) => {
+  const files = fixture(t);
+  const input = report();
+  for (const entry of input.entries) entry.file = 'src/a.rs';
+  const text = JSON.stringify(input);
+  const result = files.run(text, ['--for-comparison']);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(readFileSync(files.input, 'utf8'), text);
+  assert.deepEqual(JSON.parse(readFileSync(files.output, 'utf8')), report());
+});
+
+test('comparison CLI refuses absolute inputs, conflicting modes, and input overwrite', (t) => {
+  const files = fixture(t);
+  assert.equal(files.run(JSON.stringify(report()), ['--for-comparison']).status, 2);
+  assert.equal(
+    files.run(JSON.stringify(report()), ['--for-baseline', '--for-comparison']).status,
+    2,
+  );
+  writeFileSync(files.input, JSON.stringify(report()));
+  const result = spawnSync(
+    process.execPath,
+    [
+      fileURLToPath(new URL('normalize-crap-baseline.mjs', import.meta.url)),
+      '--input',
+      files.input,
+      '--root',
+      '/repo',
+      '--for-comparison',
+      '--output',
+      files.input,
+    ],
+    { encoding: 'utf8' },
+  );
+  assert.equal(result.status, 2);
+  assert.match(result.stderr, /Refusing to overwrite/);
+  assert.deepEqual(JSON.parse(readFileSync(files.input, 'utf8')), report());
+});

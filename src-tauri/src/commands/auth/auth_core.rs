@@ -439,6 +439,10 @@ pub fn reset_diary(state: State<DiaryState>, app: AppHandle<Wry>) -> Result<(), 
 /// in config.json, and creates the database with an 'auto' auth slot.
 #[tauri::command]
 pub fn create_diary_auto(state: State<DiaryState>) -> Result<(), String> {
+    create_diary_auto_inner(&state)
+}
+
+fn create_diary_auto_inner(state: &DiaryState) -> Result<(), String> {
     let db_path = state
         .db_path
         .lock()
@@ -464,10 +468,9 @@ pub fn create_diary_auto(state: State<DiaryState>) -> Result<(), String> {
     crate::config::save_journal_auto_key(&state.app_data_dir, &active_id, Some(&auto_key_hex))?;
 
     // Create the database. auto_key_bytes drops (and zeroizes) at end of scope regardless of outcome.
-    let db_conn = create_database_auto(&db_path, &auto_key_bytes).map_err(|e| {
+    let db_conn = create_database_auto(&db_path, &auto_key_bytes).inspect_err(|_| {
         // Roll back config change on failure
         let _ = crate::config::save_journal_auto_key(&state.app_data_dir, &active_id, None);
-        e
     })?;
     // auto_key_bytes zeroizes here on drop (Zeroizing<T>)
 
@@ -580,6 +583,60 @@ pub fn unlock_diary_all_methods(
 mod tests {
     use super::super::test_helpers::*;
     use crate::db::{create_database, open_database};
+
+    fn configure_auto_journal(state: &super::DiaryState) {
+        std::fs::create_dir_all(&state.app_data_dir).unwrap();
+        let db_path = state.db_path.lock().unwrap().clone();
+        let journal = crate::config::JournalConfig {
+            id: "auto-test".to_string(),
+            name: "Auto test".to_string(),
+            path: db_path.parent().unwrap().to_str().unwrap().to_string(),
+            auto_key: None,
+            db_filename: None,
+            require_all_auth: None,
+        };
+        crate::config::save_journals(&state.app_data_dir, &[journal], "auto-test").unwrap();
+    }
+
+    #[test]
+    fn test_create_diary_auto_keeps_key_after_success() {
+        let (_fixture, state, db_path, backups_dir) = make_state("auto_create_success");
+        configure_auto_journal(&state);
+
+        super::create_diary_auto_inner(&state).unwrap();
+
+        assert!(db_path.exists());
+        assert!(state.db.lock().unwrap().is_some());
+        let journals = crate::config::load_journals(&state.app_data_dir);
+        let auto_key_hex = journals[0].auto_key.as_ref().unwrap();
+        let key = zeroize::Zeroizing::new(hex::decode(auto_key_hex).unwrap());
+        let key_bytes: &[u8; 32] = key.as_slice().try_into().unwrap();
+        // Prove that the saved key opens the created journal, without printing it.
+        state.db.lock().unwrap().take();
+        assert!(crate::db::open_database_auto(&db_path, key_bytes, &backups_dir).is_ok());
+    }
+
+    #[test]
+    fn test_create_diary_auto_clears_key_and_preserves_database_error() {
+        let (fixture, state, _db_path, _backups_dir) = make_state("auto_create_failure");
+        let blocker = fixture.path().join("not-a-directory");
+        std::fs::write(&blocker, b"block database creation").unwrap();
+        let blocked_path = blocker.join("diary.db");
+        *state.db_path.lock().unwrap() = blocked_path.clone();
+        configure_auto_journal(&state);
+        let expected_error = crate::db::create_database_auto(&blocked_path, &[0; 32])
+            .err()
+            .unwrap();
+
+        let error = super::create_diary_auto_inner(&state).unwrap_err();
+
+        assert_eq!(error, expected_error);
+        assert!(state.db.lock().unwrap().is_none());
+        assert!(!blocked_path.exists());
+        let journals = crate::config::load_journals(&state.app_data_dir);
+        assert_eq!(journals.len(), 1);
+        assert!(journals[0].auto_key.is_none());
+    }
 
     #[test]
     fn test_check_diary_path() {

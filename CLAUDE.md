@@ -124,6 +124,7 @@ cmd.exe /c bun run diagrams             # Regenerate all docs/diagrams/ SVGs
 cmd.exe /c bun run coverage:diff            # gate existing lcov files (see Gotcha #6)
 cmd.exe /c bun run coverage:check           # generate coverage (--generate), then gate
 cmd.exe /c bun run coverage:self-test       # parser self-test
+node scripts/check-crap-gate.mjs --self-test # CRAP policy self-test
 # `bun run pre-commit` runs the gate too (step 9, --working-tree) after generating both lcov files.
 ```
 
@@ -144,6 +145,8 @@ cmd.exe /c bun run coverage:self-test       # parser self-test
 5. **SonarCloud PR comments only summarize — they never name the offending files.** When the "SonarCloud Code Analysis" check fails, query the public SonarCloud API for the per-file breakdown instead of guessing. Recipes: `ci-gate-diagnosis` skill.
 
 6. **Codecov patch check — the Vitest thresholds in `vitest.config.ts` do NOT catch it**: they are a coarse frontend-only global floor, so you can pass locally and still fail Codecov's `patch ≥ 80%` on new/changed lines. Mirror the gate before pushing with `cmd.exe /c bun run coverage:diff` (also step 9 of `bun run pre-commit`). Full mechanics, lcov generation, and flags: `ci-gate-diagnosis` skill.
+
+7. **Rust CRAP is blocking only in Linux CI; local comparisons are advisory.** Do not raise a baseline in a feature change or treat unscored closures as covered code. Policy, provenance rules, and analyzer limits: [CI best practices](docs/best-practices/CI_BEST_PRACTICES.md#rust-crap-gate); diagnosis: `ci-gate-diagnosis` skill.
 
 ## Security Rules
 
