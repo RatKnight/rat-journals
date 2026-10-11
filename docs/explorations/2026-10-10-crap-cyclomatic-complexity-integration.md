@@ -124,7 +124,7 @@ PR #328 is closed without merging, and its clean disposable worktree plus local/
 
 The user approved the advisory merge after the self-check. PR #327 merged at 2026-10-11T00:44:08Z as 8a345d70abe8fb5c3aba842150f5b0c2af5a66d9, without a check bypass. All four probe commits still return exactly 1 from ancestor checks against freshly fetched post-merge origin/master. Master CI run 38099433982 passed all seven jobs on that merge SHA. Its verified report has 619 functions, 17 above CRAP 30, no probes/helpers, complete production provenance, and unchanged non-path values through normalization. This completed Task 1.4's master artifact check, not canonical baseline production. Independent lint, Vitest, and auth commits in the primary worktree were not part of this advisory merge.
 
-Task 1.5 is now complete. After the user-requested master sync, all seven jobs in master run [38103562280](https://github.com/fjrevoredo/mini-diarium/actions/runs/38103562280) passed on source `f1bb84f73f44dd40028299682d0b6ef2f2326ca7`. Dedicated commit `189bb55` contains only the normalized canonical baseline and exact producer-record sidecar under `ci/`: 624 functions across all three crates, 17 above 30, no scored probes/helpers, and no unexplained reviewed score or coverage mismatch. The source changes explain the five new helper names since the advisory merge. Fresh integrated local checks passed all 14 checks (1277 frontend, 950 backend, 67 script tests; patch coverage 95.8%). Windows results remain diagnostic only. Separate Task 1.6 approval is still pending; no comparison mode or blocking gate exists.
+Task 1.5 is now complete. After the user-requested master sync, all seven jobs in master run [38103562280](https://github.com/fjrevoredo/mini-diarium/actions/runs/38103562280) passed on source `f1bb84f73f44dd40028299682d0b6ef2f2326ca7`. Dedicated commit `189bb55` contains only the normalized canonical baseline and exact producer-record sidecar under `ci/`: 624 functions across all three crates, 17 above 30, no scored probes/helpers, and no unexplained reviewed score or coverage mismatch. The source changes explain the five new helper names since the advisory merge. Fresh integrated local checks passed all 14 checks (1277 frontend, 950 backend, 67 script tests; patch coverage 95.8%). Windows results remain diagnostic only. The user then approved Task 1.6 after the acceptance review (DEC-019). Task 2.1's policy interpreter and comparison mode pass all 74 local script tests; unchanged/seeded Linux acceptance is running in disposable draft PR #330. Production blocking wiring is not yet enabled.
 
 ### Phase 1 — Rust CRAP regression gate
 
@@ -191,7 +191,7 @@ Adopt **cargo-crap for Rust CRAP** (Phase 0 advisory with acceptance checks → 
 - [x] Implement advisory reporting, normalization, Linux acceptance, and independent complexity lints
 - [x] Finish the requested pre-merge self-check and merge advisory PR #327 with user approval
 - [x] Produce and review the canonical baseline from post-merge master Linux CI
-- [ ] Obtain separate Task 1.6 approval before any blocking-gate implementation
+- [x] Obtain separate Task 1.6 approval before any blocking-gate implementation
 
 ## Second opinion (coding agent, Herdr tab wK:t4)
 
@@ -241,4 +241,4 @@ Reviewer additions (all adopted): automated gate-script tests against the real p
 
 Reviewer removals/adjustments (all adopted): dedup-timeout fix out; local Windows step not described as a blocking mirror; annotations preferably emitted by the policy script from the same delta JSON (a second `--format github` pass acceptable but must not be confused with the gate verdict).
 
-**Resulting plan**: `docs/plans/2026-10-10-crap-complexity-gates-plan.md` (manual-planning v2.0.0, four milestones). The current primary-worktree plan and companion decisions file are the execution ledger; its initial tracking warning was resolved when the plan was committed. Tasks 1.7 and 1.8 were added for the inherited security prerequisite and the user-requested full self-check. The advisory merge and canonical master baseline are complete. Separate blocking-gate approval remains pending.
+**Resulting plan**: `docs/plans/2026-10-10-crap-complexity-gates-plan.md` (manual-planning v2.0.0, four milestones). The current primary-worktree plan and companion decisions file are the execution ledger; its initial tracking warning was resolved when the plan was committed. Tasks 1.7 and 1.8 were added for the inherited security prerequisite and the user-requested full self-check. The advisory merge, canonical master baseline, and separate blocking-gate approval are complete. M2 implementation is in progress.
