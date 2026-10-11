@@ -113,3 +113,10 @@ Companion to [the implementation plan](2026-10-10-crap-complexity-gates-plan.md)
 - Task: 1.8
 - Decision: Reject Windows drive-relative report paths such as `C:outside.rs` on every consumer OS, and reject malformed producer roots. Put normalizer-only controls in their own script suite so the advisory PR can execute them without the independent ESLint configuration change. Add maintained CLI success and failure controls, including no output overwrite on failure. Correct stale current-state documentation separately from the source fix.
 - Rationale: A direct negative control accepted `C:outside.rs` with both `/repo` and `C:/Repo` roots in baseline mode. This violates the portable baseline contract and can resolve through a drive's current directory later. Existing inline tests did not cover this ambiguity or CLI behavior. The fix stays within Task 1.3's path-only contract; it adds no comparison mode, metrics calculation, baseline, or gate.
+
+### DEC-017 — Conditional advisory merge approval
+
+- Date: 2026-10-11
+- Task: 1.4, 1.8
+- Decision: The user instructed: “finish the self-check and then merge the pr 327 when finished”. Finish Task 1.8, require every current PR check to pass, then mark PR #327 ready and merge its checked head without bypassing branch protection. Verify the post-merge master CI report before completing Task 1.4. Keep Task 1.6's approval separate.
+- Rationale: This is explicit conditional approval for the advisory-only merge after validation, not permission to merge while checks run or enable a blocking CRAP gate. At approval, Linux/macOS builds, tests, lint, SonarCloud, CodeQL, and Codecov pass; Windows build, Flatpak, and E2E still run.
