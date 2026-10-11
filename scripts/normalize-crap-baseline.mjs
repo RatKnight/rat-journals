@@ -22,7 +22,12 @@ export function normalizeReport(report, { root, forBaseline = false, warn = cons
   ) {
     throw new Error('Expected a cargo-crap 0.6.1 report-v1 envelope, not a delta report');
   }
-  if (typeof root !== 'string' || !absolute(slash(root))) {
+  if (
+    typeof root !== 'string' ||
+    root.includes('\0') ||
+    !absolute(slash(root)) ||
+    (slash(root).startsWith('//') && !/^\/\/[^/]+\/[^/]+(?:\/|$)/.test(slash(root)))
+  ) {
     throw new Error('--root must be the absolute workspace root recorded by the producer');
   }
   const windows = windowsAbsolute(slash(root));
@@ -35,6 +40,9 @@ export function normalizeReport(report, { root, forBaseline = false, warn = cons
       throw new Error('Report path must be a non-empty string without NUL');
     }
     const value = slash(raw);
+    if (/^[a-z]:(?!\/)/i.test(value)) {
+      throw new Error(`Ambiguous Windows drive-relative report path: ${raw}`);
+    }
     if (!absolute(value)) {
       // Resolve solely to check containment. Preserve relative spelling/order.
       const resolved = slash(api.resolve(producerRoot, value));
@@ -196,6 +204,19 @@ export function selfTest() {
   assert.throws(() => normalizeReport({ ...input, version: '0.7.0' }, options), /0.6.1/);
   assert.throws(() => normalizeReport({ ...input, removed: [] }, options), /delta report/);
   assert.throws(() => normalizeReport(input, { root: 'repo' }), /absolute workspace root/);
+  for (const root of ['/repo\0', '//server', '//server/']) {
+    assert.throws(() => normalizeReport(input, { root }), /absolute workspace root/);
+  }
+  for (const root of ['/repo', 'C:/Repo']) {
+    for (const file of ['C:outside.rs', 'C:', 'd:src\\a.rs']) {
+      for (const forBaseline of [true, false]) {
+        assert.throws(
+          () => normalizeReport(fixture([file]), { root, forBaseline }),
+          /drive-relative report path/,
+        );
+      }
+    }
+  }
   const overflow = fixture(['/repo/a.rs']);
   overflow.entries[0].crap = Infinity;
   assert.throws(() => normalizeReport(overflow, options), /Non-finite/);
