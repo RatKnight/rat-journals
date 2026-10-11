@@ -803,6 +803,7 @@
     "journalAlreadyRegistered": "Ese diario ya está en tu lista. Ábrelo desde la lista de arriba en vez de añadirlo otra vez.",
     "invalidJournalFilename": "Este nombre de archivo no se puede usar para un diario. Usa un nombre más corto sin caracteres especiales como / o *.",
     "noBackupsYet": "Todavía no hay copias de seguridad. La carpeta aparece después de la primera copia.",
+    "backgroundTaskFailed": "Algo salió mal en segundo plano, así que el diario se bloqueó para mantenerlo seguro. Desbloquéalo para continuar.",
     "internalError": "Ocurrió un error interno.",
     "unexpectedError": "Ocurrió un error inesperado."
   }

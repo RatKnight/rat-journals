@@ -379,9 +379,13 @@ the directory and deciding what to do when it cannot.
   `mapTauriError` matches.
 - `journal_db_paths(dir, db_filename: Option<&str>) -> Result<(PathBuf, PathBuf), String>` —
   the database path and backups folder (`dir/backups/<stem>`) of a saved journal, with `None`
-  meaning `diary.db`. Runs `validate_db_filename` with this host's rules first, because a
-  `config.json` copied from another OS can hold a name that leaves `dir` here (`..\x.db`,
-  `C:x.db`). The app builds every live database path from saved config through it.
+  meaning `diary.db`. Runs the `validate_db_filename` rules with this host's rule set first,
+  because a `config.json` copied from another OS can hold a name that leaves `dir` here
+  (`..\x.db`, `C:x.db`). The app builds every live database path from saved config through it.
+  Only the length cap differs: a saved name may be up to **233** UTF-8 bytes, because versions
+  before 0.7.5 registered names longer than 200 bytes. 233 plus the longest sibling suffix
+  (`.restoring.tmp-journal`, the SQLite rollback journal of the restore stage) is 255. So
+  registration (`validate_db_filename`) caps at 200, use (`journal_db_paths`) at 233.
 
 ---
 

@@ -351,6 +351,11 @@ pub(crate) fn close_inspection(state: &DiaryState) {
         // A poisoned mutex still yields the value; dropping it is the whole point here.
         Err(poisoned) => poisoned.into_inner().take(),
     };
+    // `None` is a consistent value, so the next inspection may use the mutex again.
+    // Why the allow: `.clippy.toml` says MSRV 1.75, but tauri 2.12 already needs Rust 1.90,
+    // and `clear_poison` is stable since 1.77.
+    #[allow(clippy::incompatible_msrv)]
+    state.inspection.clear_poison();
     if taken.is_some() {
         info!("Closed the backup opened for inspection");
     }
@@ -571,6 +576,28 @@ mod tests {
         assert!(
             state.inspection.lock().unwrap().is_none(),
             "the inspection connection survived the lock path"
+        );
+    }
+
+    /// A panic while the inspection mutex was held must not block the next inspection.
+    #[test]
+    fn test_close_inspection_clears_a_poisoned_mutex() {
+        let (_dir, state, _, _) = make_state("close_poisoned");
+        let result = std::thread::scope(|scope| {
+            scope
+                .spawn(|| {
+                    let _guard = state.inspection.lock().unwrap();
+                    panic!("deliberately poisoning this mutex for a test");
+                })
+                .join()
+        });
+        assert!(result.is_err());
+
+        close_inspection(&state);
+
+        assert!(
+            state.inspection.lock().is_ok(),
+            "the poison must be cleared"
         );
     }
 

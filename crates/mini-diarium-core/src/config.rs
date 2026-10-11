@@ -178,6 +178,14 @@ pub fn default_journal_dir(app_data_dir: &Path, documents_dir: Option<&Path>) ->
 /// `.staging` — so the cap leaves room for the longest of those suffixes, with a margin.
 const MAX_DB_FILENAME_BYTES: usize = 200;
 
+/// Longest saved journal database filename that is still used, in UTF-8 bytes.
+///
+/// Versions before 0.7.5 registered names up to about 247 bytes, and those journals still
+/// work on disk, so a saved name is held to a looser cap than a new one. 233 is the longest
+/// name for which every sibling file fits in 255 bytes: the longest one is the SQLite rollback
+/// journal of the restore stage, `<name>.restoring.tmp-journal` (22 more bytes).
+const MAX_DB_FILENAME_BYTES_IN_USE: usize = 233;
+
 /// Windows device names. A path component matching one of these — with or without an
 /// extension — cannot be created on Windows at all.
 const RESERVED_DEVICE_NAMES: [&str; 22] = [
@@ -197,7 +205,8 @@ const ERR_INVALID_DB_FILENAME: &str = "Invalid journal filename";
 ///
 /// Refused everywhere: an empty name, `.` and `..`, the separators `/` and `\` (either would
 /// escape the chosen folder on some platform, and a config.json may move between platforms),
-/// control characters, and names longer than [`MAX_DB_FILENAME_BYTES`] UTF-8 bytes. Refused on
+/// control characters, and names longer than [`MAX_DB_FILENAME_BYTES`] UTF-8 bytes (a saved
+/// name is held to [`MAX_DB_FILENAME_BYTES_IN_USE`] instead). Refused on
 /// Windows only, where the filesystem cannot hold them: the reserved characters
 /// `< > : " | ? *`, trailing dots and spaces (Windows drops them, so `"Work."` and `"Work"`
 /// would be one file), and the device names (`CON`, `NUL`, `COM1`…). These are legal names on
@@ -206,20 +215,37 @@ const ERR_INVALID_DB_FILENAME: &str = "Invalid journal filename";
 /// The rules are this host's, so a `config.json` written on another OS is checked again when
 /// it is used — see [`journal_db_paths`].
 pub fn validate_db_filename(name: &str) -> Result<(), String> {
-    if is_valid_db_filename(name, cfg!(windows)) {
+    check_db_filename(name, FilenameCheck::Register)
+}
+
+/// Which length cap a filename check applies. Every other rule is the same for both.
+#[derive(Clone, Copy)]
+enum FilenameCheck {
+    /// A name about to be registered: [`MAX_DB_FILENAME_BYTES`].
+    Register,
+    /// A name already saved in `config.json`: [`MAX_DB_FILENAME_BYTES_IN_USE`].
+    Use,
+}
+
+fn check_db_filename(name: &str, check: FilenameCheck) -> Result<(), String> {
+    if is_valid_db_filename(name, cfg!(windows), check) {
         Ok(())
     } else {
         Err(ERR_INVALID_DB_FILENAME.to_string())
     }
 }
 
-/// The rules behind [`validate_db_filename`], with the Windows set as a parameter so tests
-/// cover both rule sets on every platform.
-fn is_valid_db_filename(name: &str, windows_rules: bool) -> bool {
+/// The rules behind [`validate_db_filename`] and [`journal_db_paths`], with the Windows set as
+/// a parameter so tests cover both rule sets on every platform.
+fn is_valid_db_filename(name: &str, windows_rules: bool, check: FilenameCheck) -> bool {
     if name.is_empty() || name == "." || name == ".." {
         return false;
     }
-    if name.len() > MAX_DB_FILENAME_BYTES {
+    let max_bytes = match check {
+        FilenameCheck::Register => MAX_DB_FILENAME_BYTES,
+        FilenameCheck::Use => MAX_DB_FILENAME_BYTES_IN_USE,
+    };
+    if name.len() > max_bytes {
         return false;
     }
     if name
@@ -253,13 +279,15 @@ fn is_valid_db_filename(name: &str, windows_rules: bool) -> bool {
 /// Every live database path built from saved config goes through here. `config.json` can be
 /// copied from another OS, where a name such as `..\other.db` or `C:x.db` is one ordinary
 /// component; joined on this host it would leave `dir`. So the filename is checked with this
-/// host's [`validate_db_filename`] rules and refused, never rewritten or redirected.
+/// host's [`validate_db_filename`] rules and refused, never rewritten or redirected. Only the
+/// length cap differs: a saved name may be up to [`MAX_DB_FILENAME_BYTES_IN_USE`] bytes, so a
+/// journal registered by an older version with a longer name keeps working.
 pub fn journal_db_paths(
     dir: &Path,
     db_filename: Option<&str>,
 ) -> Result<(PathBuf, PathBuf), String> {
     let db_filename = db_filename.unwrap_or("diary.db");
-    validate_db_filename(db_filename)?;
+    check_db_filename(db_filename, FilenameCheck::Use)?;
     let stem = Path::new(db_filename)
         .file_stem()
         .and_then(|s| s.to_str())

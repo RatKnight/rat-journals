@@ -803,6 +803,7 @@
     "journalAlreadyRegistered": "Ce journal est déjà dans votre liste. Ouvrez-le depuis la liste ci-dessus au lieu de l'ajouter à nouveau.",
     "invalidJournalFilename": "Ce nom de fichier ne peut pas être utilisé pour un journal. Utilisez un nom plus court sans caractères spéciaux comme / ou *.",
     "noBackupsYet": "Il n'y a pas encore de sauvegarde. Le dossier apparaît après la première sauvegarde.",
+    "backgroundTaskFailed": "Un problème est survenu en arrière-plan, le journal a donc été verrouillé pour le protéger. Déverrouillez-le pour continuer.",
     "internalError": "Une erreur interne s'est produite.",
     "unexpectedError": "Une erreur inattendue s'est produite."
   }

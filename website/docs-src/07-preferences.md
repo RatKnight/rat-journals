@@ -3,7 +3,7 @@ title: Preferences
 slug: preferences
 description: Configure Mini Diarium from the Preferences panel: choose a theme, set auto-lock timeout, adjust editor font and size, manage authentication methods, and more.
 order: 8
-updated: 2026-10-08
+updated: 2026-10-11
 tags: preferences, settings, theme, auto-lock, configuration
 ---
 
@@ -87,6 +87,8 @@ Name them after the locale you want checked, for example `nl_NL.aff` and `nl_NL.
 ![Security preferences tab showing registered authentication methods and the key file registration form](/assets/docs/preferences-01-security.webp "The Security preferences tab")
 
 At least one authentication method must remain registered. Removing the last one is blocked.
+
+Mini Diarium also locks the journal by itself if an internal task fails unexpectedly, whatever these settings are. The unlock screen then says so. Unlock the journal to continue. Entries that were already saved are not affected.
 
 ## Data Settings
 

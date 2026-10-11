@@ -129,19 +129,21 @@ pub(crate) fn snapshot_detached(
 
 /// Removes the journal handle from `state` and snapshots it on a background thread.
 ///
-/// This is the lock/exit primitive. `Ok(None)` means the journal was already locked.
-/// `Err` means a state mutex was poisoned — the connection's fate was never decided, so it
-/// is left in place rather than silently dropped. `Ok(Some(rx))` is the normal case: a
-/// receiver that fires once the snapshot has finished and the connection has been dropped.
+/// This is the lock/exit primitive. `None` means the journal was already locked.
+/// `Some(rx)` is a receiver that fires once the connection has been dropped.
+///
+/// A poisoned state mutex never blocks a lock: the master key must not stay in memory
+/// because some thread panicked. Each guard is recovered with `PoisonError::into_inner`. If
+/// any of them was poisoned, the connection is dropped on this thread with no snapshot —
+/// a poisoned `db_path`/`backups_dir` pair may not match each other — and `rx` has already
+/// fired. The `db` poison is cleared once the value is `None`, which is always consistent,
+/// so the journal can be unlocked again. The path mutexes keep their poison.
 ///
 /// `backup_ops` is acquired **before** `db_path`, matching the order every IPC backup command
 /// uses. Holding it through the connection hand-off guarantees no IPC command's directory
 /// mutation is in flight the instant `state.db` goes to `None`; it is released as soon as the
 /// hand-off is done; see the module-level doc for why the detached worker then acquires its
 /// own clone of the same lock rather than receiving this guard.
-///
-/// Paths are read before the connection is taken so a poisoned path mutex cannot strand an
-/// already-removed connection.
 ///
 /// Each state guard below (other than `backup_ops`, held for the whole function) is a
 /// temporary that drops at the end of its own statement, so this function never holds two
@@ -153,44 +155,67 @@ pub(crate) fn snapshot_detached(
 pub(crate) fn take_connection_and_snapshot(
     state: &DiaryState,
     trigger: SnapshotTrigger,
-) -> Result<Option<mpsc::Receiver<()>>, String> {
-    let backup_ops = state
-        .backup_ops
-        .lock()
-        .map_err(|_| "Journal state lock failed".to_string())?;
+) -> Option<mpsc::Receiver<()>> {
+    let mut poisoned = false;
+
+    let backup_ops = state.backup_ops.lock().unwrap_or_else(|e| {
+        poisoned = true;
+        e.into_inner()
+    });
 
     let db_path = state
         .db_path
         .lock()
-        .map_err(|_| "Journal state lock failed".to_string())?
+        .unwrap_or_else(|e| {
+            poisoned = true;
+            e.into_inner()
+        })
         .clone();
     let backups_dir = state
         .backups_dir
         .lock()
-        .map_err(|_| "Journal state lock failed".to_string())?
+        .unwrap_or_else(|e| {
+            poisoned = true;
+            e.into_inner()
+        })
         .clone();
 
-    let Some(db) = state
+    let taken = state
         .db
         .lock()
-        .map_err(|_| "Journal state lock failed".to_string())?
-        .take()
-    else {
-        return Ok(None);
-    };
+        .unwrap_or_else(|e| {
+            poisoned = true;
+            e.into_inner()
+        })
+        .take();
+    // `None` is a consistent value whatever the panicking thread was doing.
+    // Why the allow: `.clippy.toml` says MSRV 1.75, but tauri 2.12 already needs Rust 1.90,
+    // and `clear_poison` is stable since 1.77.
+    #[allow(clippy::incompatible_msrv)]
+    state.db.clear_poison();
+    let db = taken?;
 
     // The connection is already out of `state.db` — any IPC backup command still waiting on
     // `backup_ops` will now fail its own unlocked-state check instead of interleaving with the
     // detached snapshot below, so this guard's job is done.
     drop(backup_ops);
 
-    Ok(Some(snapshot_detached(
+    if poisoned {
+        // Dropping closes SQLite (any open transaction rolls back) and zeroizes the key.
+        drop(db);
+        warn!("A journal state lock was poisoned; locked without a snapshot");
+        let (tx, rx) = mpsc::channel();
+        let _ = tx.send(());
+        return Some(rx);
+    }
+
+    Some(snapshot_detached(
         db,
         db_path,
         backups_dir,
         trigger,
         Arc::clone(&state.backup_ops),
-    )))
+    ))
 }
 
 /// Snapshots the journal just unlocked, on the calling thread.
@@ -279,7 +304,6 @@ mod tests {
         *state.db.lock().unwrap() = Some(db);
 
         let done = take_connection_and_snapshot(&state, SnapshotTrigger::Lock)
-            .unwrap()
             .expect("an unlocked journal yields a receiver");
 
         // The security-relevant assertion: the backend is locked the instant the call
@@ -301,9 +325,7 @@ mod tests {
     #[test]
     fn test_taking_the_connection_of_a_locked_journal_is_a_no_op() {
         let (_fixture, state, _db_path, _backups) = make_state("snapshot_locked");
-        assert!(take_connection_and_snapshot(&state, SnapshotTrigger::Lock)
-            .unwrap()
-            .is_none());
+        assert!(take_connection_and_snapshot(&state, SnapshotTrigger::Lock).is_none());
     }
 
     fn poison<T: Send>(mutex: &std::sync::Mutex<T>) {
@@ -318,37 +340,55 @@ mod tests {
         assert!(result.is_err(), "the spawned thread should have panicked");
     }
 
-    #[test]
-    fn test_take_connection_and_snapshot_does_not_drop_the_connection_when_db_path_is_poisoned() {
-        let (_fixture, state, db_path, _backups) = make_state("poison_db_path");
+    /// An unlocked journal whose `poisoned` mutex was poisoned by a panicking thread must
+    /// still lock: no connection left in `state.db`, the `db` poison cleared so the journal
+    /// can be unlocked again, the receiver already fired, and no snapshot written.
+    fn assert_lock_survives_poison(name: &str, poisoned: impl FnOnce(&DiaryState)) {
+        let (_fixture, state, db_path, backups_dir) = make_state(name);
         let db = create_database(&db_path, "test".to_string()).unwrap();
         insert_entry(&db, &entry("Seed")).unwrap();
         *state.db.lock().unwrap() = Some(db);
 
-        poison(&state.db_path);
+        poisoned(&state);
 
-        assert!(take_connection_and_snapshot(&state, SnapshotTrigger::Lock).is_err());
+        let done = take_connection_and_snapshot(&state, SnapshotTrigger::Lock)
+            .expect("an unlocked journal yields a receiver, even with a poisoned mutex");
+        done.recv_timeout(Duration::from_secs(5))
+            .expect("the receiver must fire");
+
+        let db_state = state.db.lock().expect("the db poison must be cleared");
+        assert!(db_state.is_none(), "the connection must be gone");
+        drop(db_state);
         assert!(
-            state.db.lock().unwrap().is_some(),
-            "the connection must not be dropped when db_path is poisoned"
+            crate::backup::list_snapshots(&backups_dir)
+                .unwrap_or_default()
+                .is_empty(),
+            "no snapshot may be taken from poisoned state"
         );
+
+        // The journal can be unlocked again.
+        *state.db.lock().unwrap() =
+            Some(create_database(db_path.with_file_name("again.db"), "test".to_string()).unwrap());
     }
 
     #[test]
-    fn test_take_connection_and_snapshot_does_not_drop_the_connection_when_backups_dir_is_poisoned()
-    {
-        let (_fixture, state, db_path, _backups) = make_state("poison_backups_dir");
-        let db = create_database(&db_path, "test".to_string()).unwrap();
-        insert_entry(&db, &entry("Seed")).unwrap();
-        *state.db.lock().unwrap() = Some(db);
+    fn test_lock_takes_the_connection_from_a_poisoned_db_mutex() {
+        assert_lock_survives_poison("poison_db", |state| poison(&state.db));
+    }
 
-        poison(&state.backups_dir);
+    #[test]
+    fn test_lock_takes_the_connection_when_backup_ops_is_poisoned() {
+        assert_lock_survives_poison("poison_backup_ops", |state| poison(&state.backup_ops));
+    }
 
-        assert!(take_connection_and_snapshot(&state, SnapshotTrigger::Lock).is_err());
-        assert!(
-            state.db.lock().unwrap().is_some(),
-            "the connection must not be dropped when backups_dir is poisoned"
-        );
+    #[test]
+    fn test_lock_drops_the_connection_without_a_snapshot_when_db_path_is_poisoned() {
+        assert_lock_survives_poison("poison_db_path", |state| poison(&state.db_path));
+    }
+
+    #[test]
+    fn test_lock_drops_the_connection_without_a_snapshot_when_backups_dir_is_poisoned() {
+        assert_lock_survives_poison("poison_backups_dir", |state| poison(&state.backups_dir));
     }
 
     #[test]
@@ -419,7 +459,7 @@ mod tests {
         // Calls `snapshot_detached` directly, bypassing `take_connection_and_snapshot`'s own
         // synchronous `backup_ops` gate entirely (that gate is proven separately by
         // `test_backup_ops_serializes_unlock_and_destructive_triggers`'s sibling coverage and
-        // the two `take_connection_and_snapshot` poison tests above). By the time a real
+        // `test_lock_snapshot_waits_for_delete_after_the_unlocked_check` below). By the time a real
         // caller's synchronous hand-off has returned, any concurrent IPC holder it raced
         // against is already gone — so isolating this call is what proves the *detached
         // worker's own* guard acquisition, not the synchronous hand-off, is what serializes
@@ -483,7 +523,6 @@ mod tests {
 
             scope.spawn(move || {
                 let rx = take_connection_and_snapshot(state_ref, SnapshotTrigger::Lock)
-                    .unwrap()
                     .expect("an unlocked journal yields a receiver");
                 rx.recv_timeout(Duration::from_secs(30))
                     .expect("the lock snapshot never completed");

@@ -142,9 +142,7 @@ pub fn generate_debug_dump(
     // does hold both, so it fixes one: registry is the outer lock. Taking the DB first
     // here would be the inversion half of a deadlock the moment any future command holds
     // the registry across a DB access.
-    let registry = registry
-        .lock()
-        .map_err(|_| "Plugin registry lock poisoned".to_string())?;
+    let registry = crate::commands::plugin::lock_registry(&registry);
 
     let db_state = state
         .db

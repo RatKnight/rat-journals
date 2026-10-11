@@ -5,28 +5,44 @@ use crate::commands::run_blocking;
 use crate::export::AttachmentAsset;
 use crate::plugin::{PluginInfo, PluginRegistry};
 use log::{debug, error, info};
-use std::sync::Mutex;
+use std::sync::{Mutex, MutexGuard};
 use tauri::{AppHandle, Manager, State};
 use zeroize::Zeroizing;
+
+/// Locks the plugin registry, recovering it when a plugin panicked while it was held.
+///
+/// The registry holds no journal data and a panic cannot leave it half-changed: plugins are
+/// registered once at startup, and parse/export only read it. A user Rhai script that panics
+/// must not disable every plugin command until restart, so the poison is cleared.
+pub(crate) fn lock_registry(registry: &Mutex<PluginRegistry>) -> MutexGuard<'_, PluginRegistry> {
+    let guard = registry.lock().unwrap_or_else(|e| e.into_inner());
+    // `clear_poison` is stable since Rust 1.77; the clippy MSRV setting (1.75) is older than
+    // the toolchain the workspace builds with.
+    #[allow(clippy::incompatible_msrv)]
+    registry.clear_poison();
+    guard
+}
 
 #[tauri::command]
 pub fn list_import_plugins(
     registry: State<Mutex<PluginRegistry>>,
 ) -> Result<Vec<PluginInfo>, String> {
-    let reg = registry
-        .lock()
-        .map_err(|_| "Registry lock poisoned".to_string())?;
-    Ok(reg.list_importers())
+    list_import_plugins_inner(&registry)
+}
+
+fn list_import_plugins_inner(registry: &Mutex<PluginRegistry>) -> Result<Vec<PluginInfo>, String> {
+    Ok(lock_registry(registry).list_importers())
 }
 
 #[tauri::command]
 pub fn list_export_plugins(
     registry: State<Mutex<PluginRegistry>>,
 ) -> Result<Vec<PluginInfo>, String> {
-    let reg = registry
-        .lock()
-        .map_err(|_| "Registry lock poisoned".to_string())?;
-    Ok(reg.list_exporters())
+    list_export_plugins_inner(&registry)
+}
+
+fn list_export_plugins_inner(registry: &Mutex<PluginRegistry>) -> Result<Vec<PluginInfo>, String> {
+    Ok(lock_registry(registry).list_exporters())
 }
 
 #[tauri::command]
@@ -50,9 +66,7 @@ pub fn run_import_plugin(
 
     // Parse with registry lock only (no DB lock needed for parsing)
     let entries = {
-        let reg = registry
-            .lock()
-            .map_err(|_| "Registry lock poisoned".to_string())?;
+        let reg = lock_registry(&registry);
         let plugin = reg
             .find_importer(&plugin_id)
             .ok_or_else(|| format!("Import plugin '{}' not found", plugin_id))?;
@@ -175,9 +189,7 @@ fn run_export_plugin_inner(
 
     // Format with registry lock only (DB lock released)
     let output = {
-        let reg = registry
-            .lock()
-            .map_err(|_| "Registry lock poisoned".to_string())?;
+        let reg = lock_registry(registry);
         let plugin = reg
             .find_exporter(&plugin_id)
             .ok_or_else(|| format!("Export plugin '{}' not found", plugin_id))?;
@@ -233,6 +245,54 @@ mod tests {
         let list = registry.list_exporters();
         assert_eq!(list.len(), 3);
         assert!(list.iter().all(|p| p.builtin));
+    }
+
+    /// A registry whose mutex a plugin panic poisoned (a user Rhai script panics inside
+    /// `parse`/`export` while the registry guard is held).
+    fn poisoned_registry() -> Mutex<PluginRegistry> {
+        let mut registry = PluginRegistry::new();
+        register_all(&mut registry);
+        let registry = Mutex::new(registry);
+        let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let _guard = registry.lock().unwrap();
+            panic!("plugin panicked while the registry was held");
+        }));
+        assert!(registry.is_poisoned());
+        registry
+    }
+
+    #[test]
+    fn test_plugin_lists_recover_after_a_plugin_panic() {
+        let registry = poisoned_registry();
+
+        assert_eq!(list_import_plugins_inner(&registry).unwrap().len(), 4);
+        assert_eq!(list_export_plugins_inner(&registry).unwrap().len(), 3);
+        assert!(!registry.is_poisoned(), "the poison must be cleared");
+    }
+
+    #[test]
+    fn test_export_plugin_runs_after_a_plugin_panic() {
+        let (_fixture, state, db_path, _backups) =
+            crate::commands::auth::test_helpers::make_state("plugin_export_poisoned");
+        *state.db.lock().unwrap() =
+            Some(crate::db::create_database(&db_path, "test".to_string()).unwrap());
+        let registry = poisoned_registry();
+        let out_dir = tempfile::tempdir().unwrap();
+
+        let result = run_export_plugin_inner(
+            "builtin:json".to_string(),
+            out_dir
+                .path()
+                .join("export.json")
+                .to_string_lossy()
+                .to_string(),
+            None,
+            None,
+            &state,
+            &registry,
+        );
+
+        assert_eq!(result.unwrap().entries_exported, 0);
     }
 
     /// A journal (password `test`) whose first entry has one attachment with `bytes`, so

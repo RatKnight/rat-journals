@@ -136,6 +136,7 @@ Mutex guards should be scoped so the reader can see when they are released.
 - Drop DB guards before backup rotation, menu updates, or event emission.
 - Do not hold locks across async work.
 - Avoid changing user-facing lock errors casually; frontend sanitization may map those strings.
+- A poisoned mutex never blocks a lock path. The lock primitive (`take_connection_and_snapshot`) recovers every guard with `PoisonError::into_inner`, drops the connection without a snapshot when any guard was poisoned, and clears the `db` poison once the value is `None`. A teardown path that cannot fail (such as `close_inspection`) recovers and clears poison the same way. Ordinary commands may still return `"Journal state lock failed"` on poison; only the paths that remove secrets from memory must not.
 
 Current DB-only command pattern:
 

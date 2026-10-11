@@ -803,6 +803,7 @@
     "journalAlreadyRegistered": "Dieses Tagebuch ist bereits in deiner Liste. Öffne es oben aus der Liste, statt es erneut hinzuzufügen.",
     "invalidJournalFilename": "Dieser Dateiname kann nicht für ein Tagebuch verwendet werden. Verwende einen kürzeren Namen ohne Sonderzeichen wie / oder *.",
     "noBackupsYet": "Es gibt noch keine Sicherungen. Der Ordner erscheint nach der ersten Sicherung.",
+    "backgroundTaskFailed": "Im Hintergrund ist ein Fehler aufgetreten, deshalb wurde das Tagebuch zum Schutz gesperrt. Entsperre es, um fortzufahren.",
     "internalError": "Ein interner Fehler ist aufgetreten.",
     "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten."
   }

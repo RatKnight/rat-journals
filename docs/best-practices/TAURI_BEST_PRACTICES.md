@@ -102,6 +102,7 @@ On Windows a synchronous command runs on the WebView2 event thread: the window c
 - Do file I/O before taking the journal mutex when the command can.
 - A command that releases the journal mutex and takes it again must check that the same **session** is still open before it uses ids it read earlier: capture `db.session_id()` under the mutex, then use `with_same_session` (check and use under one guard). A `db_path` compare is not enough: lock and re-unlock, A → B → A, and a whole-journal restore keep the path.
 - Never do file I/O inside a core write unit (`BEGIN IMMEDIATE` holds SQLite's write reservation).
+- A panic inside the `run_blocking` closure locks the journal: the helper sees the panicked join, calls `auto_lock_diary_if_unlocked` with reason `background-task-failed`, and returns `"Background task failed"`. The unlock screen then shows `errors.backgroundTaskFailed`. Do not catch panics inside the closure to avoid this lock; a panic can leave the journal mutex poisoned with the connection still in it.
 
 ### Put Behavior In Testable Command Cores
 

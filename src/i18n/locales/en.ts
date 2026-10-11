@@ -967,6 +967,8 @@ const en = {
     invalidJournalFilename:
       'This filename cannot be used for a journal. Use a shorter name without special characters such as / or *.',
     noBackupsYet: 'There are no backups to show yet. The folder appears after the first backup.',
+    backgroundTaskFailed:
+      'Something went wrong in the background, so the journal was locked to keep it safe. Unlock it to continue.',
     internalError: 'An internal error occurred.',
     unexpectedError: 'An unexpected error occurred.',
   },
