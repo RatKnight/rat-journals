@@ -127,3 +127,10 @@ Companion to [the implementation plan](2026-10-10-crap-complexity-gates-plan.md)
 - Task: 1.5
 - Decision: The user requested updating this branch from latest master and continuing the plan. Merge master `f1bb84f73f44dd40028299682d0b6ef2f2326ca7` without rewriting this branch. Resolve the changelog conflict by retaining the newer filename rules and all independent branch entries. Use master CI run 38103562280 for Task 1.5 after its coverage/report and checks pass, rather than the older merge report. Run fresh local integrated checks after the merge. Keep Task 1.6 approval separate.
 - Rationale: Master now contains panic-lock recovery and legacy filename fixes that change the analyzed Rust source. A baseline from the older merge SHA would omit that work. The continuation request permits baseline preparation but does not replace the explicit blocking-gate approval required by Task 1.6.
+
+### DEC-019 — User approves the Linux blocking gate
+
+- Date: 2026-10-11
+- Task: 1.6
+- Decision: After the Task 1.6 acceptance summary and the question asking approval to enable the Linux blocking CRAP gate, the user replied: “ok we need to continue”. Record this affirmative reply as approval to implement M2 with new functions at CRAP ≤30 and existing functions allowed no increase above epsilon 0.01. Keep local checks advisory on every platform, preserve Codecov uploads and failure artifacts, and retain the reviewed Linux baseline.
+- Rationale: The approval question followed the completed dedicated baseline review: 624 functions, 17 above 30, explained coverage/source differences, numeric repeatability below 0.01, verified root alignment, measured runtime, exclusions, and closure/macro/inactive-code limits. This is the separate Task 1.6 checkpoint, not the earlier advisory merge approval.

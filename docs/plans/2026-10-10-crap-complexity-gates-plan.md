@@ -31,7 +31,7 @@
 - The primary branch contains advisory reporting/normalization, workspace Clippy and frontend ESLint settings, Vitest failure reporting, the equivalent auth cleanup helper/tests, and the separately approved inherited Git-selection fix.
 - Merged PR #327 contains only the advisory reporting/normalization work and inherited runner infrastructure with its approved Git-selection fix. It deliberately excludes the independent Clippy, ESLint, Vitest, and auth commits. Local full-gate results validate the primary branch; PR CI results validate that narrower PR, not the independent changes.
 - Tasks 1.8 and 1.4 are COMPLETED. The normalizer boundary fix is primary `d7b8dfc` and advisory `926d30f`; replacement CI run 38097918038 and every PR check passed on exact head `926d30f9a7ae5234a0e8ebf6bbdf736d3a2eeb99`. PR #327 merged under DEC-017 as `8a345d70abe8fb5c3aba842150f5b0c2af5a66d9`. Master CI run 38099433982 passed all seven jobs, and its probe-free Linux report and production provenance are verified.
-- The user requested a latest-master update and plan continuation. Merge `4a88bd7` includes master `f1bb84f73f44dd40028299682d0b6ef2f2326ca7`, including panic-lock recovery and legacy filename fixes (DEC-018). Master CI run 38103562280 passed all seven jobs; the fresh integrated local gate passed all 14 checks. Task 1.5 is COMPLETED: dedicated commit `189bb55` contains only the canonical 624-entry Linux baseline and exact producer-record sidecar. Task 1.6 is IN PROGRESS, awaiting explicit blocking-gate approval. All M2 work remains unstarted; no reusable comparison mode or blocking CRAP gate exists. This primary-worktree plan and companion decisions file remain the current execution ledger.
+- The user requested a latest-master update and plan continuation. Merge `4a88bd7` includes master `f1bb84f73f44dd40028299682d0b6ef2f2326ca7`, including panic-lock recovery and legacy filename fixes (DEC-018). Master CI run 38103562280 passed all seven jobs; the fresh integrated local gate passed all 14 checks. Task 1.5 is COMPLETED: dedicated commit `189bb55` contains only the canonical 624-entry Linux baseline and exact producer-record sidecar. The user's affirmative reply to the Task 1.6 approval question authorizes M2 under DEC-019. M2 implementation can now start. This primary-worktree plan and companion decisions file remain the current execution ledger.
 
 ### Initial repository facts (before implementation)
 
@@ -104,13 +104,13 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 ## Open Questions
 
-- None. Tasks 1.7, 1.8, the approved advisory merge, and canonical baseline review are complete. Task 1.6 awaits separate, explicit approval for blocking checks; no finding dismissal or gate change is authorized.
+- None. Tasks 1.7, 1.8, the approved advisory merge, canonical baseline review, and Task 1.6 approval are complete. DEC-019 approves the planned Linux blocking policy, not finding dismissal or changes to other gates.
 
 ## Milestones
 
 ### Milestone 1: Phase 0 — advisory CRAP report + canonical Linux baseline
 
-- Status: IN PROGRESS
+- Status: COMPLETED
 - Purpose: prove the toolchain end-to-end on Linux CI without gating anything, and produce the reviewed baseline M2 gates against.
 - Exit Criteria: the M1 advisory PR (Task 1.4) is merged and its master CI run produces the report artifact; acceptance probes document closure, cfg-dead-code, path-matching, and numeric repeatability behavior; `ci/crap-baseline.json` + `ci/crap-baseline.provenance.md` committed — Linux-produced, normalized (`--for-baseline` rejects outside-repo paths), probe-free, with the test-helper exclusion list applied; **Task 1.6 approval gate passed**: user reviewed the Linux results (unexplained coverage mismatches, runtime cost, repeatability) and the explicit approval is recorded in the Decision Log before any M2 task starts.
 
@@ -178,7 +178,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 #### Task 1.6: M1→M2 approval gate
 
-- Status: IN PROGRESS
+- Status: COMPLETED
 - Depends On: 1.5
 - Objective: explicit user go/no-go for enabling blocking checks, based on actual Linux results.
 - Steps:
@@ -214,13 +214,13 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 ### Milestone 2: Phase 1 — CRAP policy gate
 
-- Status: TO BE DONE
+- Status: IN PROGRESS
 - Purpose: convert the advisory report into a blocking, correctly-scoped gate with a local advisory mirror and full documentation.
 - Exit Criteria: Linux CI fails on a seeded new function with CRAP > 30 and on a seeded regression of an existing function, and the policy script exits 0 on unchanged code in that canonical CI environment; artifacts still upload when the gate fails; Codecov uploads unaffected; pre-commit prints a clearly labeled advisory CRAP verdict locally (explicit skip notice when the tool is missing or has the wrong version), without requiring local policy exit 0 against the Linux baseline; docs state the gate mechanics, the whole-function repo-wide policy, the baseline-update rules, and the blind spots; M1→M2 user approval recorded in the Decision Log.
 
 #### Task 2.1: `scripts/check-crap-gate.mjs` + self-tests
 
-- Status: TO BE DONE
+- Status: IN PROGRESS
 - Depends On: 1.6
 - Objective: small policy interpreter over cargo-crap delta JSON: fail on new functions with CRAP > 30 or existing functions regressed beyond epsilon 0.01; never computes metrics itself.
 - Steps:
@@ -393,7 +393,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 ## Decision Log
 
-Entries live in [2026-10-10-crap-complexity-gates-decisions.md](2026-10-10-crap-complexity-gates-decisions.md) (18 entries). The timing rule is unchanged: write an entry before moving to the next task.
+Entries live in [2026-10-10-crap-complexity-gates-decisions.md](2026-10-10-crap-complexity-gates-decisions.md) (19 entries). The timing rule is unchanged: write an entry before moving to the next task.
 
 ## Final Verification
 
@@ -401,7 +401,7 @@ Task 4.2: successful fresh coverage generation, the full pre-flight list, all th
 
 ## Approval Gate
 
-Approved by the user on 2026-10-10: “Do an exploration on the plan … Then implement it.” The additional M1→M2 gate still requires explicit user approval after review of the Linux acceptance results. No M2 task may start before that approval.
+Approved by the user on 2026-10-10: “Do an exploration on the plan … Then implement it.” The additional M1→M2 gate was approved on 2026-10-11: after the acceptance review and explicit Linux blocking-gate approval question, the user replied “ok we need to continue” (DEC-019). Local checks remain advisory.
 
 ## Plan Self-Check
 
@@ -418,6 +418,8 @@ The earlier W001 warning is resolved: the plan is now tracked in commit `4f480f0
 
 ## Execution Notes
 
+- Task 2.1 local implementation controls passed: comparison-mode normalization restores the explicit current root without changing baseline metrics, diagnostics, duplicate locations, or input data; both normalizer modes are mutually exclusive and refuse input/canonical baseline overwrite. The policy interpreter accepts only pinned 0.6.1 delta-v2 reports with matched LCOV data, validates locations and delta status, returns 0/1/2, and emits annotations from its offender list. The real Windows workspace delta supplied maintained fixture shapes, not canonical metrics. Local analysis exited 0; the advisory policy verdict exited 1 on four entries: Windows screen-lock `init`, `screen_lock_subclass_proc`, `trigger_auto_lock`, and backup-store `dir_state` (increase 0.20391442876650068). This is not a Linux gate verdict and does not change the baseline. Both inline self-tests and all 74 script tests passed. Dependency lockfiles and Nix metadata are unchanged. Linux unchanged-code and seeded-offender checks remain required before Task 2.1 completes; no Task 2.2/2.3 implementation started.
+- Task 1.6 is COMPLETED under DEC-019. The user approved M2 after the acceptance findings and explicit approval question. Milestone 1 now meets all exit criteria. No policy code was written before that approval.
 - Task 1.5 is COMPLETED in dedicated baseline commit `189bb55`, containing only `ci/crap-baseline.json` and `ci/crap-baseline.provenance.md`. Continuation verified master CI run 38103562280 completed successfully on exact source `f1bb84f73f44dd40028299682d0b6ef2f2326ca7`: all seven jobs passed, with final E2E completion at `2026-10-11T02:27:26Z`. The sidecar now records that result. Revalidation passed: JSON parsing, baseline-mode path-only equality with the downloaded report, unchanged parsed non-path values and entry order, exact producer text, all three recorded SHA-256 checksums, no absolute/backslash paths or probes, 624 unique source locations, 17 above 30, and crate counts 247/346/31. All four probe ancestry controls again returned exactly 1 against the producer source. Excluded test helpers remain only in coverage diagnostics, not scored entries; an initially overbroad validation searched diagnostics as well, then the corrected scored-entry check passed. Normalizer self-test and plan checker passed with zero errors/warnings; staged diff checks passed. No source, dependency, threshold, or workflow changed. Task 1.6 is IN PROGRESS; explicit approval is still required before M2. Baseline provenance is covered by the existing Internal advisory-report changelog entry; the final gate entry remains Task 3.5. No originating TODO or rendered-output change applies.
 - Fresh integrated checks after master sync passed all 14 `bun run pre-commit` checks: 1277 frontend tests in 116 files, 950 backend tests, 67 script tests, 131 tracked test files owned by a gated runner, Clippy, formatting, and patch coverage 46/48 (95.8%) at the unchanged 80% threshold against merge-base `f1bb84f73f`. The latest Linux artifact has 624 entries (app 247, core 346, crypto 31), 17 above 30, zero scored probes/helpers, all non-path values/order preserved, and five expected production helper names added since `8a345d7`. The baseline and sidecar were prepared while master CI finished; both are now committed as recorded above. A fresh local diagnostic has 625 entries; 16 of the Linux top 17 exactly match, and the only difference is the independent `create_diary_auto_inner` extraction absent from master. Its report remains outside the repo. The source/coverage mismatch diagnostics are fully explained in the sidecar.
 - Latest-master sync completed as merge `4a88bd7`: origin/master `f1bb84f73f44dd40028299682d0b6ef2f2326ca7` is an ancestor of HEAD. The only conflict was `CHANGELOG.md`; resolution retains master's 233-byte legacy filename description, one advisory-report entry, and this branch's independent lint/reporting/diagnosis entries. Staged formatting and diff checks passed. At that point Task 1.5 awaited master CI run 38103562280 and fresh local `bun run pre-commit`; both subsequently passed. No M2 work or gate approval is implied (DEC-018).
