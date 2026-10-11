@@ -8,10 +8,38 @@ The full task-completion checklist (tests, formatting, CHANGELOG, TODO closure, 
 
 | Script | Purpose | Duration |
 |--------|---------|----------|
-| `bun run check` | Type-check + ESLint + Prettier + locale validation (no tests) | ~5-10 s |
-| `bun run pre-commit` | The above + locale validation + frontend tests + backend tests + clippy + rustfmt + patch-coverage gate | ~40-60 s |
+| `bun run check` | Type-check + ESLint + Prettier + locale validation + repo guards (no tests) | ~5-10 s |
+| `bun run pre-commit` | The above + frontend tests + script tests + backend tests + clippy + rustfmt + patch-coverage gate | ~40-60 s |
+| `bun run test:scripts` | `node:test` suites for the build-tooling scripts (`scripts/*.test.{js,mjs,cjs}`) | ~1 s |
+| `bun run check:test-runners` | Fails when a tracked `*.test.*` / `*.spec.*` file is outside every runner below | <1 s |
 
 Use `bun run check` for fast feedback during development; use `bun run pre-commit` before pushing.
+
+## Test Runners
+
+Every test file must belong to a runner that a gate executes (rule: [CI Best Practices → Test Runner Ownership](../docs/best-practices/CI_BEST_PRACTICES.md#test-runner-ownership)). `scripts/check-test-runners.mjs` enforces this mapping in `bun run check`, `bun run pre-commit`, and the CI `lint` job:
+
+| Files | Runner | Gate |
+|-------|--------|------|
+| `*.{test,spec}.*` outside `e2e/`, `tests/`, `scripts/` (mostly `src/**`) | Vitest (`bun run test:coverage`) | `pre-commit`, CI `test` job |
+| `scripts/*.test.{js,mjs,cjs}` (top level only, plain JS) | `node:test` (`bun run test:scripts`) | `pre-commit`, CI `test` job |
+| `tests/print/**` | Playwright (`bun run test:print`) | CI `test` job |
+| `e2e/specs/**/*.spec.ts`, no hidden (`.`-prefixed) file or folder | WebdriverIO (`bun run test:e2e`) | CI `e2e` job |
+
+Script tests use `node:test` + `node:assert/strict`, not Vitest: Vitest and coverage exclude `scripts/**`, so these suites have no effect on the Codecov patch gate. When you change a runner's include or exclude list, change the matching rule in `scripts/check-test-runners.mjs` in the same commit; the guard parses the configs and fails when the two disagree.
+
+### Git executable for the ownership guard
+
+The ownership guard executes Git by an absolute path, without a shell or a search of the caller's `PATH`. Defaults are `/usr/bin/git` on Linux/macOS and `Git\cmd\git.exe` under the Windows OS Program Files location (`ProgramW6432`, then `ProgramFiles`). An unavailable executable fails the check; there is no PATH fallback.
+
+For a nonstandard installation, explicitly select a trusted absolute executable with `MINI_DIARIUM_GIT_EXECUTABLE`:
+
+```powershell
+$env:MINI_DIARIUM_GIT_EXECUTABLE = 'D:\Trusted tools\Git\cmd\git.exe'
+cmd.exe /c bun run check:test-runners
+```
+
+Relative paths, Windows drive-relative paths, and empty values are refused. Keep the chosen executable and OS installation settings trusted. This protects the initial Git selection from PATH shadowing; it does not sandbox Git or protect a compromised installation or an unsafe explicit override.
 
 ## Local Git Hook (auto-installed)
 
