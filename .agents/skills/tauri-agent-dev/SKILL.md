@@ -1,7 +1,7 @@
 ---
 name: tauri-agent-dev
 description: |
-  Spawn, probe, and stop Mini Diarium's live Windows Tauri dev app with WebView2 CDP enabled, then hand control to agent-browser for real UI inspection. Use this whenever the user wants to manually test the real desktop UI, drive the dev app, verify a bug or preference in the actual window, inspect localStorage, take a real screenshot, or "actually try it in the app" instead of relying only on unit tests or WDIO. Triggers: manually test the UI, drive the dev app, verify in the real UI, agent dev mode, spawn the dev app, open the running app and check, inspect the live Tauri window.
+  Spawn, probe, and stop Mini Diarium's live Windows Tauri dev app with WebView2 CDP enabled, then hand control to agent-browser for real UI inspection. Use this whenever the user wants to manually test the real desktop UI, drive the dev app, verify a bug or preference in the actual window, inspect localStorage, take a real screenshot, or "actually try it in the app" instead of relying only on unit tests or WDIO. Also covers flows that open a native file/save dialog and async race tests (fake the dialog, hold a backend call, then navigate away) through IPC interception. Triggers: manually test the UI, drive the dev app, verify in the real UI, agent dev mode, spawn the dev app, open the running app and check, inspect the live Tauri window.
 ---
 
 # Tauri Agent Dev
@@ -327,6 +327,80 @@ Use this pattern when:
 - You need to read state immediately after opening a dialog (before refs can go stale)
 - You're verifying that a setting persisted after Save + re-open in one shot
 
+### Fake Native Dialogs And Slow Backend Calls (IPC Interception)
+
+Use this for any flow that opens a native OS dialog (file open/save, `confirm` from
+`src/lib/dialog.ts`) and for race tests ("the reply arrives after the user navigated away").
+
+**Never click a control that opens a native dialog until the interceptor below is installed and
+verified.** CDP cannot see or drive a native dialog. The click opens a real OS window that stays
+open until the user closes it by hand, and the app's `await` hangs until then.
+
+**Intercept `window.fetch`, not `__TAURI_INTERNALS__.invoke`.** `invoke` (and `ipc`) are
+non-writable, non-configurable properties: an assignment to them fails silently in non-strict
+eval code, so the "wrapped" check passes while the real `invoke` still runs. Every IPC call
+goes through `fetch('http://ipc.localhost/<command>', { body: JSON args })`, and `fetch` is
+writable. Plugin commands are URL-encoded in the path (`plugin:dialog|open` →
+`plugin%3Adialog%7Copen`). A fake reply needs the `Tauri-Response: ok` header (or `error`) and
+a JSON content type.
+
+```powershell
+$js = @'
+(function(){
+  if (!window.__origFetch) window.__origFetch = window.fetch.bind(window);
+  window.__ipcLog = [];
+  window.__ipcSeen = 0; // every IPC call, to prove the wrapper is on the real path
+  // Edit these per test. FAKES: command -> reply. DELAYS: command -> ms before the real call.
+  const FAKES = { 'plugin:dialog|open': ['C:\\path\\to\\scratchpad\\test-file.pdf'] };
+  const DELAYS = { 'add_entry_attachment': 6000 };
+  window.fetch = async (input, init) => {
+    const url = String(input?.url ?? input);
+    if (!url.startsWith('http://ipc.localhost/')) return window.__origFetch(input, init);
+    const cmd = decodeURIComponent(url.slice('http://ipc.localhost/'.length));
+    window.__ipcSeen++;
+    if (cmd in FAKES) {
+      window.__ipcLog.push(`${cmd}: faked`);
+      return new Response(JSON.stringify(FAKES[cmd]),
+        { headers: { 'Content-Type': 'application/json', 'Tauri-Response': 'ok' } });
+    }
+    if (cmd in DELAYS) {
+      window.__ipcLog.push(`${cmd}: held ${DELAYS[cmd]} ms, args ${init?.body}`);
+      await new Promise(r => setTimeout(r, DELAYS[cmd]));
+      const res = await window.__origFetch(input, init);
+      window.__ipcLog.push(`${cmd}: ${res.headers.get('Tauri-Response')} ${(await res.clone().text()).slice(0, 150)}`);
+      return res;
+    }
+    return window.__origFetch(input, init);
+  };
+  return { installed: window.fetch !== window.__origFetch };
+})()
+'@
+agent-browser eval $js
+```
+
+Rules:
+
+- Verify before the first dialog click: `installed: true`, then do a harmless action that
+  calls the backend (for example click a `calendar-day-*`) and check `window.__ipcSeen > 0`. A page reload (HMR, `location.reload()`)
+  removes the wrapper; reinstall after any reload.
+- A delayed command still runs on the **real** backend, so a race test gets the real error text.
+  Put the delay before the real call to copy a slow backend step that runs before the write.
+- Create test files in the scratchpad directory, never in the repo.
+- Read the outcome from `window.__ipcLog` plus a state eval (testids, `[role=alert]`,
+  `disabled`), taken at fixed points: before the context change, right after it, and after the
+  held call settles.
+
+**Editor facts that shape race tests:**
+
+- A day has no entry (and no tag/attachment strip) until the first keystroke in the title or
+  body. Type one character to create the entry.
+- Leaving an entry whose saved content would be lost opens the in-app leave dialog
+  (`confirm-dialog`, "Delete entry"). Navigation waits for it. Use
+  `confirm-dialog-confirm-button` to delete the entry during a held call, or
+  `confirm-dialog-cancel-button` to stay. Check for `confirm-dialog` after each navigation click.
+- For the "target" side of a switch, give the other day an entry first; otherwise the strip
+  unmounts and there is nothing to observe.
+
 ### Capture A Screenshot
 
 Use agent-browser's screenshot flow after the app is in the exact state the user cares about. Prefer this over describing the UI from memory.
@@ -366,6 +440,8 @@ If `agent:dev:stop` fails during sandbox deletion with a transient WebView file 
 - **`agent:dev:start` or `agent-browser connect` "times out" / gets force-backgrounded**: expected — neither returns through this tool chain. Launch both with `run_in_background: true` and poll `bun run agent:dev:probe` for readiness. See "Start A Session".
 - **Clicks report `✓ Done` but nothing happens, then the next selector is `Element not found`**: on a fresh sandbox this is the onboarding tour overlay intercepting the click, not a broken control. Check for `[data-testid=onboarding-next-btn]` and dismiss it — see "Dismiss The Onboarding Tour".
 - **`eval` fails with `'…' is not a valid selector` on JS you know is correct**: PowerShell stripped the escaped inner quotes. Re-send the script as a `@'…'@` here-string — see the PowerShell notes under "Drive The UI".
+- **A wrapper around `__TAURI_INTERNALS__.invoke` "installs" but sees no calls**: `invoke` is non-writable, so the assignment failed silently. Wrap `window.fetch` instead — see "Fake Native Dialogs And Slow Backend Calls".
+- **A click hangs the flow and the user reports an open OS file dialog**: a native dialog opened without a fake. Ask the user to click Cancel (the app treats it as "nothing picked"), then install the IPC interceptor before you click again.
 - If port `9222` is already taken, restart with `--port 9223` and connect agent-browser to that port.
 - If start succeeds but the page target is not immediately recorded, run `bun run agent:dev:probe` (poll it — see "Detecting readiness" above). Probe resolves the current page target from the live `/json` list.
 - If probe says `cdp unreachable`, inspect `.agent-dev/dev.log`.
