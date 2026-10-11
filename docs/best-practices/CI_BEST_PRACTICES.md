@@ -362,22 +362,52 @@ diff-cover coverage/lcov.info --compare-branch=origin/main --fail-under=80
 
 ---
 
-## Rust CRAP Reports (Phase 0, Advisory)
+## Rust CRAP Gate
 
-The CI `test` job runs pinned `cargo-crap 0.6.1` after both Codecov upload attempts. It reuses successful same-run workspace coverage from `src-tauri/lcov.info`. Cache, install, analysis, and artifact upload failures are non-blocking. The `crap-report` artifact contains the JSON report and production-time provenance, including source commit, run URL, producer root, runner, tool versions, coverage command, analyzer flags, configuration, and UTC time. Analysis time is printed even on failure. If backend coverage did not succeed, analysis is explicitly skipped; a provenance-only artifact is not a usable baseline.
+The Linux CI `test` job enforces a **whole-function, repository-wide** policy. This policy is stricter than a patch-only check:
 
-There is **no blocking CRAP gate yet**. Linux acceptance, a reviewed post-merge master baseline, and separate user approval must come first. No local report is a canonical baseline. Analysis retains the default exclusions and adds `--exclude '**/tests.rs' --exclude '**/test_support.rs'` for confirmed test-only sources. Record the same scope in provenance and verify it before baseline production; do not filter functions in the normalizer.
+- New functions must have CRAP **≤30**.
+- Existing functions must not increase by more than **0.01** against `ci/crap-baseline.json`, including functions that already exceed 30. Unchanged legacy scores pass; improvements pass.
+- cargo-crap computes the metrics and function identities. `scripts/check-crap-gate.mjs` only interprets its pinned `delta-v2` JSON. Renamed or ambiguous functions that the analyzer reports as New use the new-function limit. The policy does not guess identity matches.
 
-The normalizer changes paths only. Use the root from the report's provenance, not the machine that downloads it:
+### CI reports and failure behavior
+
+CI uses pinned `cargo-crap 0.6.1` and successful same-run workspace coverage from `src-tauri/lcov.info`. All CRAP steps follow both Codecov upload attempts. The independent advisory report remains non-blocking for cache, install, analysis, and upload failures. Its `crap-report` artifact includes JSON and production-time provenance: source commit, run URL, producer root, runner, tool versions, coverage command, analyzer flags/configuration, checksums, and UTC time. Analysis time is printed even on failure. If backend coverage did not succeed, advisory analysis skips; a provenance-only artifact is not a usable baseline.
+
+The separate policy gate fails when coverage is missing or unsuccessful, the analyzer is missing or has the wrong version, normalization fails, or the delta input is invalid. Exit **0** means pass, **1** means a policy violation, and **2** means an input/tool failure. The offender list and GitHub annotations use the same delta entries. The separate `crap-delta` artifact upload runs after the gate with `if: always()` and tolerates an absent file when analysis failed. Codecov uploads are not blocked by a CRAP failure.
+
+Use identical analyzer scope for reports, baselines, and comparisons: default `tests/**`, `benches/**`, `examples/**` exclusions, plus `--exclude "**/tests.rs" --exclude "**/test_support.rs"` for confirmed test-only sources. Keep `--missing pessimistic`, epsilon 0.01, and default try-weight 1. Do not filter functions or change scores in the normalizer.
+
+### Local comparison is advisory
+
+`cmd.exe /c bun run pre-commit` checks both script self-tests as blocking checks. Its optional score comparison is **advisory on every local OS**, not a blocking CI mirror. It requires non-empty lcov written by successful backend coverage in that same run. It reports stale input, a missing analyzer, a wrong version, analyzer failure, or a policy verdict without failing the local run. It never installs a tool automatically. Windows-versus-Linux baseline differences are not a Linux gate verdict. A local input/tool error must still be diagnosed before claiming a successful analysis.
+
+For a manual diagnostic, first generate fresh successful workspace coverage. Then, from the repository root, prepare a temporary comparison input and run the pinned analyzer:
 
 ```powershell
-node scripts/normalize-crap-baseline.mjs --input crap-report.json --root <producer-root> --for-baseline --output <normalized-report.json>
-node scripts/normalize-crap-baseline.mjs --self-test
+node scripts/normalize-crap-baseline.mjs --input ci/crap-baseline.json --root <current-absolute-root> --for-comparison --output crap-baseline-input.json
+cargo crap --workspace --lcov src-tauri/lcov.info --baseline crap-baseline-input.json --format json --sort file --missing pessimistic --epsilon 0.01 --exclude "**/tests.rs" --exclude "**/test_support.rs" --output crap-delta.json
+node scripts/check-crap-gate.mjs --report crap-delta.json --threshold 30 --epsilon 0.01
 ```
 
-Baseline mode refuses paths outside that root, including diagnostic paths. Both modes reject ambiguous Windows drive-relative paths such as `C:source.rs`; the producer root must be a fully qualified absolute path without NUL. It retains function order, duplicate names, schema, and all parsed numeric values without rounding. The normalizer-only script suite tests the CLI, including failure without overwriting an existing output. A canonical baseline must come from probe-free master Linux CI and must be committed with its production provenance in a dedicated reviewed change. Do not raise a baseline inside a feature change to make that change pass.
+Comparison mode requires contained relative input paths and restores the current root in an ignored copy. It refuses to overwrite its input or the canonical baseline. cargo-crap 0.6.1 does not align relative baseline paths with absolute current paths itself; direct comparison can falsely mark repeated names as New.
 
-Limits of this analyzer: closure branches do not increase cyclomatic complexity, including `with_unlocked_db(|db| ...)`, although closure lines can affect coverage; macros are not expanded; cfg-dead function spans in matched files can show 100% coverage. Keep `--missing pessimistic` in CI. `skip` is for diagnosis only. A green report is not proof that these paths have tests. cargo-crap 0.6.1 also does not align relative baseline paths with absolute current paths; direct comparison can falsely mark repeated function names as new. The Linux acceptance control confirmed that restoring the current producer root to a disposable input copy matches all unchanged identities. The reusable comparison mode is still pending and must never alter the committed relative baseline. See the [implementation plan](../plans/2026-10-10-crap-complexity-gates-plan.md) for acceptance evidence and the remaining approval checks.
+### Baseline maintenance
+
+Baseline changes need a **dedicated reviewed commit**, separate from feature changes. Do not raise the baseline to make a failing feature pass. Policy-only enforcement is acceptable initially; baseline refresh is not automatic. Reviewed improvements and identity updates are permitted. Unexplained increases are prohibited.
+
+1. Obtain a probe-free report and its production-time provenance from successful **master Linux CI**, with the pinned analyzer and identical scope. A Windows report, scratch-PR report, failed coverage run, or provenance-only artifact is not canonical input.
+2. Verify the producer facts and use the recorded producer root, not the machine that downloads the report:
+   `node scripts/normalize-crap-baseline.mjs --input crap-report.json --root <recorded-producer-root> --for-baseline --output <review-copy.json>`.
+3. Review identities, all score changes, counts, scope diagnostics, and probe absence. Preserve parsed numbers and order. Commit the reviewed relative JSON with an updated `ci/crap-baseline.provenance.md` that includes exact producer facts, source/run, tool/configuration versions, checksums, normalization command, and review outcome. See the [current provenance record](../../ci/crap-baseline.provenance.md).
+
+Baseline mode refuses paths outside the producer root, including diagnostic paths. All modes reject ambiguous Windows drive-relative paths such as `C:source.rs`; roots must be fully qualified absolute paths without NUL. Normalization retains duplicate names, schema, order, and every parsed non-path value without rounding. The CLI and self-tests verify these properties.
+
+### Analyzer limits and diagnosis
+
+Closure branches are **not scored** in cyclomatic complexity, including `with_unlocked_db(|db| ...)`, although closure lines can affect coverage. Macros are not expanded. cfg-dead function spans in matched files can show 100% coverage. A passing gate does not prove those paths have tests. Keep `--missing pessimistic` in CI; `skip` is for diagnosis only. An all-0% table can indicate a producer-path mismatch, not absent tests. Check source/LCOV diagnostics before changing coverage or a baseline.
+
+Use the [CI gate diagnosis skill](../../.agents/skills/ci-gate-diagnosis/SKILL.md) for failure recipes and the [implementation plan](../plans/2026-10-10-crap-complexity-gates-plan.md) for Linux acceptance evidence.
 
 ---
 

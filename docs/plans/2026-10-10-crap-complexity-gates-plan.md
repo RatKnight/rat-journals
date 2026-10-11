@@ -234,7 +234,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 #### Task 2.2: CI gating step
 
-- Status: IN PROGRESS
+- Status: COMPLETED
 - Depends On: 2.1
 - Objective: `ci.yml` runs cargo-crap against the committed baseline and gates via the policy script, without endangering Codecov uploads or artifacts.
 - Steps:
@@ -259,7 +259,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 #### Task 2.4: Policy + docs
 
-- Status: TO BE DONE
+- Status: COMPLETED
 - Depends On: 2.2, 2.3
 - Objective: the gate, its whole-function policy, baseline-maintenance rules, and blind spots are documented where devs and agents look.
 - Steps:
@@ -324,7 +324,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 #### Task 3.5: CHANGELOG entry
 
-- Status: TO BE DONE
+- Status: IN PROGRESS
 - Depends On: 2.2, 2.4, 3.2, 3.3, 3.4
 - Objective: the new gates/lints are recorded per repo convention.
 - Steps:
@@ -430,6 +430,10 @@ The earlier W001 warning is resolved: the plan is now tracked in commit `4f480f0
 
 ## Execution Notes
 
+- Task 2.4 is COMPLETED: CI best practices now state the whole-function/repository-wide Linux policy, 0/1/2 failure contract, coverage/artifact ordering, all-local-platform advisory behavior, path alignment, reviewed baseline update/provenance rules, and closure/macro/cfg-dead limits. Canonical `ci-gate-diagnosis` includes artifact-first recipes, all-0% path checks, and the same policy/limits. Root `CLAUDE.md` adds only a self-test command and a short gotcha with pointers. All new relative links resolve, required anchors are present, `sync-skills` exits 0 without DRIFT, and no generated mirror is edited or staged. No website docs change applies to this developer-only check.
+- Task 2.2 is COMPLETED: unchanged-source run 38142680713 passed all seven jobs on `3e296fdd5e1ede64f2be77a4964734ecffcefd8e`, including the production gate, both lint self-tests, Windows/macOS/Linux builds, Flatpak, and clean/stateful Linux E2E. Both Codecov uploads and both CRAP artifacts succeeded. Independently parsed delta reports policy exit 0, 625 functions, zero violations, no probes, and unchanged `build_menu` at CRAP 600. Report/provenance/delta evidence is retained in `C:\Users\Francisco\AppData\Local\Temp\opencode\crap-gate-unchanged-evidence-38142680713`. Together with the two expected exit-1 negative controls below, this proves blocking behavior and upload preservation. All watchers have finished. Task 2.4 can now start; final post-cleanup verification remains Task 4.2.
+- Task 2.2 new-offender negative control passed its acceptance condition in run 38142680404 on `761fa966440e1a1358cb2429014af5cdc0fb70db`: only the production gate failed, exit 1, with the accurate `crap_gate_new_offender` annotation. Independently parsed delta has 626 functions and exactly one offender: New, CC 6, coverage 0%, CRAP 42, null baseline/delta. Frontend/script/backend/print tests, both lint self-tests, both Codecov uploads, and both report/delta uploads succeeded; dependent builds correctly skipped. Report, provenance, and delta are retained in `C:\Users\Francisco\AppData\Local\Temp\opencode\crap-gate-new-evidence-38142680404`; failed-step log is `crap-gate-new-failed-step-38142680404.log` in the parent approved temp directory. Both negative controls now pass; the unchanged-source watcher still owns the remaining Task 2.2 result.
+- Task 2.2 existing-regression negative control passed its acceptance condition in run 38142680872 on `d53c75e69d82697e2c5e75d915f8478f219e5535`: only the real CRAP gate failed, with policy exit 1 and the accurate `build_menu` annotation. Downloaded delta independently evaluates to exactly one violation: existing `build_menu`, line 27, CC 25, coverage 0%, CRAP 600→650, delta 50, status regressed; 625 functions. Frontend, script, backend, print tests, both lint self-tests, both Codecov upload attempts, and both CRAP artifact uploads succeeded. Dependent build/E2E jobs correctly skipped due to the blocking gate. Report, provenance, delta, and failed-step log are retained in `C:\Users\Francisco\AppData\Local\Temp\opencode\crap-gate-regression-evidence-38142680872`. This expected workflow failure is not a production defect. Task 2.2 still requires the unchanged and new-offender controls; their watchers remain active.
 - Task 2.3 is COMPLETED in `3e296fd`: the maintained advisory caller uses only successful fresh same-run backend coverage, checks pinned tool version, creates an ignored root-aligned input, refuses stale deltas, and reports local policy exits without blocking. Seven new maintained controls cover stale lcov, missing/wrong-version tools, canonical preservation, analyzer and policy failures, invalid baseline, real empty-PATH skip, and caller freshness/warning wiring. Fresh comprehensive run `sh_12b1a40e0001MuUWSnZ7pTRdfX` passed all 15 checks, 1277 frontend tests in 116 files, 950 backend tests, and 82 script tests; ownership covers 133 tracked files. The explicit local `VITEST_MAX_WORKERS=4` control is supported by installed Vitest `index.DpLw24bj.js:14592`; no source/timeouts/thresholds/CI concurrency changed. Both lcov files and the advisory delta were freshly written at 13:16:26/13:18:39/13:18:40 UTC. The policy returned 1 on the same four Windows differences (625 functions), while the comprehensive run returned 0. Fresh patch coverage remains 46/48 (95.8%) at 80%. Log: `C:\Users\Francisco\AppData\Local\Temp\opencode\crap-gated-local-advisory-20261011.log`. This does not claim default-concurrency success or a Linux verdict.
 - Task 2.2 controls use isolated NEVER-MERGE draft PRs: unchanged [#332](https://github.com/fjrevoredo/mini-diarium/pull/332) at `3e296fd`, run 38142680713; new-offender [#331](https://github.com/fjrevoredo/mini-diarium/pull/331) at `761fa96`, run 38142680404; existing-regression [#333](https://github.com/fjrevoredo/mini-diarium/pull/333) at `d53c75e`, run 38142680872. The negative branches change only workflow seeding before fresh backend coverage; no production source or baseline is committed. The real production gate remains unchanged and is expected to fail with exit 1 in each negative run; Codecov uploads and both artifacts must still succeed. The existing control adds one branch inside untested `build_menu`, preserving its signature/location identity. Watchers `sh_12b1e17560013Pk1AgmIkeAwAC`, `sh_12b1e1775001YLLSmHj5gJEZKt`, and `sh_12b1e17a0001RuFig3UWZZ1T6X` are active; await completion notifications, do not poll or push over them.
 - Task 2.2 production wiring is committed as `7942411`: gate follows both Codecov uploads and the independent advisory artifact upload; missing same-run coverage, missing/wrong-version analyzer, and analyzer failure fail as input/tool errors; policy exit 1 remains blocking; a separate `if: always()` delta upload follows the gate. Lint and pre-commit run both self-tests. All 75 script tests, ownership for 132 tracked files, actionlint, targeted formatting, and diff checks passed. Live unchanged/new/regression gate controls are still required before Task 2.2 completes. Task 2.3 will use the maintained caller helper under DEC-022; the canonical baseline remains unchanged.

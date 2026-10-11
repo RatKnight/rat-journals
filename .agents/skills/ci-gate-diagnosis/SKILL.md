@@ -1,11 +1,11 @@
 ---
 name: ci-gate-diagnosis
-description: Diagnose a failing SonarCloud quality gate or Codecov patch-coverage check on a Mini Diarium PR, and mirror the Codecov patch gate locally before pushing. Use when the "SonarCloud Code Analysis" check fails, when Codecov reports patch or project coverage below threshold, or when the user asks why CI coverage/duplication is red. Triggers: SonarCloud, quality gate, new_duplicated_lines_density, new_coverage, Codecov, patch coverage, coverage:diff, lcov, cargo-llvm-cov.
+description: Diagnose a failing SonarCloud, Codecov, or Rust CRAP gate on a Mini Diarium PR, and mirror the Codecov patch gate locally before pushing. Use when CI reports coverage, duplication, or CRAP failures, including missing inputs or tool errors. Triggers: SonarCloud, quality gate, new_duplicated_lines_density, new_coverage, Codecov, patch coverage, coverage:diff, lcov, cargo-llvm-cov, CRAP, cargo-crap, crap-delta, crap-baseline.
 ---
 
-# CI gate diagnosis (SonarCloud + Codecov)
+# CI gate diagnosis (SonarCloud + Codecov + CRAP)
 
-Two gates fail most often on Mini Diarium PRs. Both are diagnosable without logging into anything.
+Read the failing check's evidence before changing code or thresholds. SonarCloud has a public API; GitHub artifacts and logs require repository access.
 
 ## SonarCloud quality gate — read the API, don't guess
 
@@ -62,3 +62,25 @@ Generating the lcov files by hand:
 Flags for `coverage:diff`: `--generate` (run both), `--base <ref>`, `--fail-under <pct>`, `--no-fail`, `--frontend`/`--backend`.
 
 See [CI Best Practices → Coverage Gating](../../../docs/best-practices/CI_BEST_PRACTICES.md#coverage-gating).
+
+## Rust CRAP gate — use the delta, not a second analyzer pass
+
+The blocking comparison runs only in Linux CI. It checks **whole functions across the repository**, not only changed lines: New functions must score ≤30; existing functions must not increase by more than epsilon 0.01. Unchanged legacy debt passes. Local comparisons in `bun run pre-commit` are advisory on every OS, and cannot replace a Linux verdict.
+
+1. Read the `CRAP policy gate (whole-function, repository-wide)` step. Exit **1** means policy violations; stdout and annotations identify the same offenders. Download the `crap-delta` artifact, then run `node scripts/check-crap-gate.mjs --report <downloaded-crap-delta.json>` to interpret that exact input. Do not compute alternative metrics or add another `--format github` pass.
+2. For exit **2**, diagnose inputs/tools first: successful same-run backend coverage, non-empty `src-tauri/lcov.info`, exact `cargo-crap 0.6.1`, a valid committed baseline, successful `--for-comparison` normalization, and a valid pinned `delta-v2` report. A missing artifact after analyzer failure is expected; an absent report is never a pass.
+3. Download `crap-report` for producer provenance and scope diagnostics. Both Codecov upload attempts occur before CRAP; report and delta uploads run even after gate failure. Check their actual step results rather than assuming uploads succeeded.
+
+```powershell
+gh run download <run-id> --name crap-delta --dir <evidence-directory>
+gh run download <run-id> --name crap-report --dir <evidence-directory>
+node scripts/check-crap-gate.mjs --report <evidence-directory>/crap-delta.json
+node scripts/check-crap-gate.mjs --self-test
+node scripts/normalize-crap-baseline.mjs --self-test
+```
+
+An all-0% table can mean **path mismatch**. Compare LCOV `SF:` paths, the recorded producer root, matched-file diagnostics, and analyzer scope. The committed baseline is relative; comparisons need an ignored root-aligned `crap-baseline-input.json` made with `--for-comparison`. Direct relative-versus-absolute comparison can mark repeated names as New. Preserve `--missing pessimistic`, `--exclude "**/tests.rs" --exclude "**/test_support.rs"`, and the baseline's pinned configuration. `skip` is for diagnosis only; do not use it to pass CI.
+
+Do not raise the baseline in a feature change. Baseline updates require a separate reviewed commit from probe-free master Linux CI, with exact production provenance. Reviewed improvements and identity updates are permitted; unexplained increases are not. See [CI Best Practices → Rust CRAP Gate](../../../docs/best-practices/CI_BEST_PRACTICES.md#rust-crap-gate) for the full policy and commands.
+
+Limits apply even when the gate passes: closure branches, including `with_unlocked_db(|db| ...)`, do not increase scored complexity; macros are not expanded; cfg-dead spans in matched files can show 100% coverage. Do not treat a passing score as proof of command-layer test coverage.
