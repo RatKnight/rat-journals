@@ -289,7 +289,7 @@ Asked 2026-10-10 with the question tool; all answered:
 
 ### Task 4: A Rhai plugin panic does not disable the plugin commands
 
-- Status: TO BE DONE
+- Status: COMPLETED
 - Depends On: 1
 - Objective: With the `Mutex<PluginRegistry>` poisoned, `list_import_plugins`,
   `list_export_plugins`, `run_import_plugin`, `run_export_plugin`, and `generate_debug_dump` still
@@ -313,7 +313,7 @@ Asked 2026-10-10 with the question tool; all answered:
 
 ### Task 5: Fix the use-time cap from the sibling-file inventory
 
-- Status: TO BE DONE
+- Status: COMPLETED
 - Depends On: 1
 - Objective: A Decision Log entry fixes `MAX_DB_FILENAME_BYTES_IN_USE` with evidence.
 - Steps:
