@@ -305,14 +305,27 @@ fn test_default_journal_dir_falls_back_to_app_data() {
 #[test]
 fn test_db_filename_accepts_ordinary_names_on_every_platform() {
     for windows_rules in [false, true] {
-        assert!(is_valid_db_filename("diary.db", windows_rules));
+        assert!(is_valid_db_filename(
+            "diary.db",
+            windows_rules,
+            FilenameCheck::Register
+        ));
         assert!(is_valid_db_filename(
             "Jon's Journal (2026).db",
-            windows_rules
+            windows_rules,
+            FilenameCheck::Register
         ));
         // Only whole stems are device names; a name that merely starts with one is fine.
-        assert!(is_valid_db_filename("Console.db", windows_rules));
-        assert!(is_valid_db_filename("COM10.db", windows_rules));
+        assert!(is_valid_db_filename(
+            "Console.db",
+            windows_rules,
+            FilenameCheck::Register
+        ));
+        assert!(is_valid_db_filename(
+            "COM10.db",
+            windows_rules,
+            FilenameCheck::Register
+        ));
     }
     assert!(validate_db_filename("diary.db").is_ok());
 }
@@ -322,12 +335,28 @@ fn test_db_filename_accepts_ordinary_names_on_every_platform() {
 fn test_db_filename_accepts_names_the_old_sanitizer_rewrote() {
     let long = format!("{}.db", "a".repeat(65));
     for windows_rules in [false, true] {
-        assert!(is_valid_db_filename(&long, windows_rules));
-        assert!(is_valid_db_filename("work  notes.db", windows_rules));
+        assert!(is_valid_db_filename(
+            &long,
+            windows_rules,
+            FilenameCheck::Register
+        ));
+        assert!(is_valid_db_filename(
+            "work  notes.db",
+            windows_rules,
+            FilenameCheck::Register
+        ));
     }
     // `:` is legal on Linux and macOS, and reserved on Windows.
-    assert!(is_valid_db_filename("work:notes.db", false));
-    assert!(!is_valid_db_filename("work:notes.db", true));
+    assert!(is_valid_db_filename(
+        "work:notes.db",
+        false,
+        FilenameCheck::Register
+    ));
+    assert!(!is_valid_db_filename(
+        "work:notes.db",
+        true,
+        FilenameCheck::Register
+    ));
 }
 
 /// The load-bearing case: a separator would escape the folder the caller chose.
@@ -344,7 +373,7 @@ fn test_db_filename_rejects_separators_and_control_characters_everywhere() {
             "..",
         ] {
             assert!(
-                !is_valid_db_filename(name, windows_rules),
+                !is_valid_db_filename(name, windows_rules, FilenameCheck::Register),
                 "accepted {name:?}"
             );
         }
@@ -353,9 +382,21 @@ fn test_db_filename_rejects_separators_and_control_characters_everywhere() {
     // it is refused everywhere. On Linux and macOS the picker keeps it in the filename, and the
     // user gets this refusal instead of a different file.
     for windows_rules in [false, true] {
-        assert!(!is_valid_db_filename("C:\\Users\\jon.db", windows_rules));
-        assert!(!is_valid_db_filename("back\\slash.db", windows_rules));
-        assert!(!is_valid_db_filename("..\\outside.db", windows_rules));
+        assert!(!is_valid_db_filename(
+            "C:\\Users\\jon.db",
+            windows_rules,
+            FilenameCheck::Register
+        ));
+        assert!(!is_valid_db_filename(
+            "back\\slash.db",
+            windows_rules,
+            FilenameCheck::Register
+        ));
+        assert!(!is_valid_db_filename(
+            "..\\outside.db",
+            windows_rules,
+            FilenameCheck::Register
+        ));
     }
 }
 
@@ -405,8 +446,14 @@ fn test_db_filename_rejects_windows_reserved_names_only_on_windows() {
         "a*.db",
         "a|b.db",
     ] {
-        assert!(!is_valid_db_filename(name, true), "accepted {name:?}");
-        assert!(is_valid_db_filename(name, false), "refused {name:?}");
+        assert!(
+            !is_valid_db_filename(name, true, FilenameCheck::Register),
+            "accepted {name:?}"
+        );
+        assert!(
+            is_valid_db_filename(name, false, FilenameCheck::Register),
+            "refused {name:?}"
+        );
     }
 }
 
@@ -414,8 +461,14 @@ fn test_db_filename_rejects_windows_reserved_names_only_on_windows() {
 fn test_db_filename_rejects_trailing_dots_and_spaces_on_windows() {
     // Windows drops these silently, so "Work." and "Work" would resolve to one file.
     for name in ["Work.", "Work...", "Work "] {
-        assert!(!is_valid_db_filename(name, true), "accepted {name:?}");
-        assert!(is_valid_db_filename(name, false), "refused {name:?}");
+        assert!(
+            !is_valid_db_filename(name, true, FilenameCheck::Register),
+            "accepted {name:?}"
+        );
+        assert!(
+            is_valid_db_filename(name, false, FilenameCheck::Register),
+            "refused {name:?}"
+        );
     }
 }
 
@@ -438,21 +491,68 @@ fn test_db_filename_caps_the_length_in_bytes() {
         for name in names_of_byte_length(MAX_DB_FILENAME_BYTES) {
             assert_eq!(name.len(), MAX_DB_FILENAME_BYTES);
             assert!(
-                is_valid_db_filename(&name, windows_rules),
+                is_valid_db_filename(&name, windows_rules, FilenameCheck::Register),
                 "refused {name:?}"
             );
         }
         for name in names_of_byte_length(MAX_DB_FILENAME_BYTES + 1) {
             assert!(
-                !is_valid_db_filename(&name, windows_rules),
+                !is_valid_db_filename(&name, windows_rules, FilenameCheck::Register),
                 "accepted {name:?}"
             );
         }
     }
 }
 
-/// The cap must leave room for the files SQLite and the app create next to the database: a
-/// name at the limit has to survive creation and a write, which needs the `-journal` file.
+/// A journal registered by an older version with a name longer than today's registration cap
+/// must keep working: the saved name is checked against the looser use-time cap.
+#[test]
+fn test_journal_db_paths_accepts_a_saved_name_up_to_the_use_time_cap() {
+    let dir = PathBuf::from("journal-dir");
+
+    for name in names_of_byte_length(MAX_DB_FILENAME_BYTES_IN_USE) {
+        assert_eq!(name.len(), MAX_DB_FILENAME_BYTES_IN_USE);
+        assert_eq!(
+            journal_db_paths(&dir, Some(&name)).unwrap().0,
+            dir.join(&name)
+        );
+        for windows_rules in [false, true] {
+            assert!(
+                is_valid_db_filename(&name, windows_rules, FilenameCheck::Use),
+                "refused {name:?}"
+            );
+        }
+    }
+    for name in names_of_byte_length(MAX_DB_FILENAME_BYTES_IN_USE + 1) {
+        assert_eq!(
+            journal_db_paths(&dir, Some(&name)).unwrap_err(),
+            "Invalid journal filename"
+        );
+        for windows_rules in [false, true] {
+            assert!(
+                !is_valid_db_filename(&name, windows_rules, FilenameCheck::Use),
+                "accepted {name:?}"
+            );
+        }
+    }
+}
+
+#[test]
+fn test_registration_still_refuses_names_over_200_bytes() {
+    for len in [MAX_DB_FILENAME_BYTES + 1, MAX_DB_FILENAME_BYTES_IN_USE] {
+        for name in names_of_byte_length(len) {
+            assert_eq!(
+                validate_db_filename(&name).unwrap_err(),
+                "Invalid journal filename",
+                "registered {len} bytes"
+            );
+        }
+    }
+}
+
+/// The caps must leave room for the files SQLite and the app create next to the database: a
+/// name at either limit has to survive creation and a write, which needs the `-journal` file,
+/// and the longest sibling (the restore stage's own rollback journal) must fit too.
 #[test]
 fn test_a_database_at_the_filename_limit_can_be_created_and_written() {
     use crate::db::{create_database_auto, insert_entry, DiaryEntry};
@@ -462,9 +562,10 @@ fn test_a_database_at_the_filename_limit_can_be_created_and_written() {
     // separate 260-character total path limit.
     let dir = tmp.path().canonicalize().unwrap();
 
-    for name in names_of_byte_length(MAX_DB_FILENAME_BYTES) {
-        validate_db_filename(&name).unwrap();
-        let (db_path, _) = journal_db_paths(&dir, Some(&name)).unwrap();
+    let registered = names_of_byte_length(MAX_DB_FILENAME_BYTES);
+    let in_use = names_of_byte_length(MAX_DB_FILENAME_BYTES_IN_USE);
+    for name in registered.iter().chain(in_use.iter()) {
+        let (db_path, _) = journal_db_paths(&dir, Some(name)).unwrap();
 
         let db = create_database_auto(&db_path, &[7u8; 32])
             .unwrap_or_else(|e| panic!("could not create {name:?}: {e}"));
@@ -482,9 +583,10 @@ fn test_a_database_at_the_filename_limit_can_be_created_and_written() {
         insert_entry(&db, &entry).unwrap_or_else(|e| panic!("could not write {name:?}: {e}"));
         drop(db);
 
-        // The longest sibling name the app itself creates must also fit.
-        let staged = dir.join(format!("{name}.restoring.tmp"));
-        std::fs::write(&staged, b"x").unwrap();
+        // The longest sibling name: SQLite's rollback journal of the restore stage.
+        let staged = dir.join(format!("{name}.restoring.tmp-journal"));
+        std::fs::write(&staged, b"x")
+            .unwrap_or_else(|e| panic!("could not create the sibling of {name:?}: {e}"));
         std::fs::remove_file(&staged).unwrap();
     }
 }

@@ -870,6 +870,73 @@ mod tests {
         assert_eq!(get_active_journal_id_inner(&env.app_dir).unwrap(), None);
     }
 
+    /// A 220-byte name: refused for a new journal, but older versions registered such names, so
+    /// a saved one must keep working.
+    fn legacy_long_filename() -> String {
+        format!("{}.db", "a".repeat(217))
+    }
+
+    #[test]
+    fn test_a_saved_legacy_long_filename_stays_usable() {
+        let env = make_test_env("legacy_long_filename");
+        let dir = make_journal_dir(&env, "journal");
+        let filename = legacy_long_filename();
+        assert_eq!(filename.len(), 220);
+        let id = save_foreign_journal(&env, &dir, &filename, true);
+
+        let (_, db_path, _) = startup_journal_paths(&env.app_dir, None);
+        assert_eq!(db_path, dir.join(&filename));
+        assert_eq!(
+            get_active_journal_id_inner(&env.app_dir).unwrap(),
+            Some(id.clone())
+        );
+        switch_journal_inner(id, &env.state).unwrap();
+        assert_eq!(*env.state.db_path.lock().unwrap(), dir.join(&filename));
+    }
+
+    #[test]
+    fn test_add_journal_refuses_a_legacy_long_filename() {
+        let env = make_test_env("add_legacy_long_filename");
+        let dir = make_journal_dir(&env, "journal");
+
+        let err = add_journal_inner(
+            "Long".to_string(),
+            dir.to_str().unwrap().to_string(),
+            Some(legacy_long_filename()),
+            &env.app_dir,
+        )
+        .unwrap_err();
+
+        assert_eq!(err, "Invalid journal filename");
+    }
+
+    /// The looser use-time cap changes only the length rule: a control character and a name
+    /// over that cap are still refused when the journal is used.
+    #[test]
+    fn test_saved_filenames_refused_at_use_time_select_nothing() {
+        let too_long = format!("{}.db", "a".repeat(231));
+        assert_eq!(too_long.len(), 234);
+        for (i, filename) in ["line\nbreak.db", too_long.as_str()]
+            .into_iter()
+            .enumerate()
+        {
+            let env = make_test_env(&format!("use_time_refused_{i}"));
+            let dir = make_journal_dir(&env, "journal");
+            let id = save_foreign_journal(&env, &dir, filename, true);
+
+            assert_eq!(get_active_journal_id_inner(&env.app_dir).unwrap(), None);
+            let (_, db_path, backups_dir) = startup_journal_paths(&env.app_dir, None);
+            assert_eq!(
+                (db_path, backups_dir),
+                DiaryState::placeholder_paths(&env.app_dir)
+            );
+            assert_eq!(
+                switch_journal_inner(id, &env.state).unwrap_err(),
+                "Invalid journal filename"
+            );
+        }
+    }
+
     #[test]
     fn test_removal_does_not_fall_back_to_an_invalid_saved_filename() {
         let env = make_test_env("remove_foreign");

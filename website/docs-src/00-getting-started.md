@@ -3,7 +3,7 @@ title: Getting Started
 slug: getting-started
 description: System requirements, creating your first encrypted journal, setting a password, the welcome tour, multiple journals, key file auth, and local-only mode.
 order: 1
-updated: 2026-10-10
+updated: 2026-10-11
 tags: setup, password, first launch, system requirements
 ---
 
@@ -73,6 +73,8 @@ You can maintain separate journals for different purposes: personal, work, trave
 - **A backup snapshot.** Files named `backup-*.db`, and anything inside a `backups` folder, cannot be opened as a journal, because opening one would write to it and destroy the restore point. To read an old snapshot, copy it out of the `backups` folder first and open the copy.
 - **A temporary sandbox location (Flatpak only).** On the Flathub build, browsing to a folder outside the app's sandbox returns a temporary path under `/run/user/…/doc/` rather than the real one. It works at first and stops working later, so it is refused. Use the default location, or grant the app permanent access to the folder you want with [Flatseal](https://flathub.org/apps/com.github.tchx84.Flatseal) before selecting it.
 - **A filename that cannot be used.** A filename that is empty, contains `/`, `\`, or control characters, or is longer than 200 bytes is refused. That is 200 letters of plain English text, and fewer for accented or non-Latin letters, which take 2 to 4 bytes each. The app keeps the rest of the filesystem's 255-unit limit free for the files it and SQLite create next to the journal. On Windows, names with `< > : " | ? *`, names that end with a dot or a space, and device names such as `CON` or `NUL` are refused too. Choose a different name. On Flatpak, spaces at the start and end of the Filename field are removed before the app checks the file. If you copy the app's settings to a different operating system and a saved journal filename is not valid there, the app does not open that journal automatically. It shows the journal list, and opening that journal shows the same error.
+
+  The 200-byte limit applies when you add a journal. A journal that is already in your list can have a name of up to 233 bytes, so a journal added by an older version with a longer name still opens. If a journal shows "Invalid journal filename", do these steps: close Mini Diarium, give the journal's `.db` file a shorter name, open the app, add the file again with **Open existing**, and remove the old list entry. Your entries are in the file, so nothing is lost. These steps work for journals that use a password or a key file. Do not rename the file of a local-only journal: its key is saved with the old list entry, so the new entry cannot unlock it. Use **Send feedback** on the unlock screen to get help instead.
 
 **Switching journals:** Open the Journal Picker, choose the journal you want, and then unlock it. On a shared device, this lets each person select their own journal before any authentication prompt appears.
 

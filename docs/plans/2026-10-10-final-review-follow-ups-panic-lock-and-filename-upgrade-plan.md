@@ -331,7 +331,7 @@ Asked 2026-10-10 with the question tool; all answered:
 
 ### Task 6: Split the filename cap: registration 200, use time = Task 5 value
 
-- Status: TO BE DONE
+- Status: COMPLETED
 - Depends On: 5
 - Objective: `validate_db_filename` (registration) still refuses > 200 bytes; `journal_db_paths`
   (use time) accepts names up to the Task 5 cap and refuses everything else it refused before.
@@ -360,7 +360,7 @@ Asked 2026-10-10 with the question tool; all answered:
 
 ### Task 7: TODO-0148 docs, CHANGELOG, and TODO closure
 
-- Status: TO BE DONE
+- Status: COMPLETED
 - Depends On: 6
 - Objective: Every doc states the real rules, the upgrade case, and the recovery steps.
 - Steps:
@@ -489,6 +489,13 @@ Asked 2026-10-10 with the question tool; all answered:
 - Task: 2
 - Decision: src-tauri/.clippy.toml declares msrv 1.75; clear_poison is stable since 1.77. Each of the two clear_poison calls carries #[allow(clippy::incompatible_msrv)] with a why comment. The MSRV setting is not changed.
 - Rationale: cargo metadata shows tauri 2.12 crates need rust-version 1.90, so 1.75 is stale. Raising it to 1.90 fires a new manual_inspect lint in auth_core.rs:467, unrelated to this plan; that cleanup is out of scope.
+
+### DEC-008 — Recovery steps exclude local-only journals
+
+- Date: 2026-10-11
+- Task: 7
+- Decision: The docs and CHANGELOG say the rename-and-Open-existing recovery works only for password and key-file journals, tell the user to remove the old list entry, and send local-only users to Send feedback.
+- Rationale: A local-only journal's key is saved in its config.json list entry (JournalConfig.auto_key); a new entry made by Open existing has no key, so renaming the file would lock the user out.
 
 ## Final Verification
 
