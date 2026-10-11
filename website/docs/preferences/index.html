@@ -345,7 +345,7 @@
       "@id": "https://mini-diarium.com/docs/preferences/#article",
       "headline": "Preferences",
       "description": "Configure Mini Diarium from the Preferences panel: choose a theme, set auto-lock timeout, adjust editor font and size, manage authentication methods, and more.",
-      "dateModified": "2026-10-08T00:00:00Z",
+      "dateModified": "2026-10-11T00:00:00Z",
       "keywords": "preferences, settings, theme, auto-lock, configuration",
       "publisher": {
         "@type": "Organization",
@@ -655,6 +655,7 @@
         </tbody></table>
         <figure class="prose-figure"><img src="/assets/docs/preferences-01-security.webp" alt="Security preferences tab showing registered authentication methods and the key file registration form" loading="lazy" width="940" height="850" /><figcaption>The Security preferences tab</figcaption></figure>
         <p>At least one authentication method must remain registered. Removing the last one is blocked.</p>
+        <p>Mini Diarium also locks the journal by itself if an internal task fails unexpectedly, whatever these settings are. The unlock screen then says so. Unlock the journal to continue. Entries that were already saved are not affected.</p>
         <h2 id="data-settings">Data Settings</h2><p>You can change your journal&#39;s storage location from Preferences. The <code>diary.db</code> file is moved to the new location, and future backups go into <code>{new location}/backups/</code>.</p>
         <h2 id="advanced-settings">Advanced Settings</h2><table>
         <thead>

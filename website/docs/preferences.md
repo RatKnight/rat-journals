@@ -85,6 +85,8 @@ Name them after the locale you want checked, for example `nl_NL.aff` and `nl_NL.
 
 At least one authentication method must remain registered. Removing the last one is blocked.
 
+Mini Diarium also locks the journal by itself if an internal task fails unexpectedly, whatever these settings are. The unlock screen then says so. Unlock the journal to continue. Entries that were already saved are not affected.
+
 ## Data Settings
 
 You can change your journal's storage location from Preferences. The `diary.db` file is moved to the new location, and future backups go into `{new location}/backups/`.

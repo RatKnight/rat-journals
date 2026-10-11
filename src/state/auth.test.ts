@@ -54,6 +54,7 @@ import {
   goToJournalPicker,
   resetAuthTransientState,
   initializeAuth,
+  lockNotice,
 } from './auth';
 import { entryDates, registerCleanupCallback } from './entries';
 import { resetSessionState } from './session';
@@ -206,6 +207,46 @@ describe('state/auth', () => {
 
     cleanup();
     unregister();
+  });
+
+  describe('journal-locked lock notice', () => {
+    async function emitLocked(reason: string) {
+      const handlers = new Map<string, (event: unknown) => void | Promise<void>>();
+      mocks.listen.mockImplementation(
+        async (event: string, cb: (event: unknown) => void | Promise<void>) => {
+          handlers.set(event, cb);
+          return () => handlers.delete(event);
+        },
+      );
+      const cleanup = await setupAuthEventListeners();
+      mocks.unlockJournal.mockResolvedValue(undefined);
+      await unlockJournal('pw');
+      expect(authState()).toBe('unlocked');
+      await handlers.get('journal-locked')!({ payload: { reason } });
+      cleanup();
+    }
+
+    it('a background-task panic locks the journal and sets the notice', async () => {
+      await emitLocked('background-task-failed');
+
+      expect(authState()).toBe('locked');
+      expect(lockNotice()).toBe('background-task-failed');
+    });
+
+    it('an ordinary backend lock sets no notice', async () => {
+      await emitLocked('manual');
+
+      expect(authState()).toBe('locked');
+      expect(lockNotice()).toBeNull();
+    });
+
+    it('the next unlock clears the notice', async () => {
+      await emitLocked('background-task-failed');
+
+      await unlockJournal('pw');
+
+      expect(lockNotice()).toBeNull();
+    });
   });
 
   it('refreshAuthState → no-journal when the journal no longer exists', async () => {

@@ -237,7 +237,7 @@ Asked 2026-10-10 with the question tool; all answered:
 
 ### Task 3: A background-task panic locks the journal and tells the user
 
-- Status: TO BE DONE
+- Status: COMPLETED
 - Depends On: 2
 - Objective: When a `run_blocking` closure panics, the backend locks the journal through the
   normal auto-lock path (emits `journal-locking` then `journal-locked` with reason

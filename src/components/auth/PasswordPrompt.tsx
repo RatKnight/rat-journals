@@ -5,6 +5,7 @@ import {
   unlockAllMethods,
   goToJournalPicker,
   unlockJournalAutoProtected,
+  lockNotice,
 } from '../../state/auth';
 import { journals, activeJournalId } from '../../state/journals';
 import { open } from '../../lib/dialog';
@@ -204,6 +205,12 @@ export default function PasswordPrompt() {
               {t('auth.prompt.backToJournals')}
             </button>
           </div>
+
+          <Show when={lockNotice() === 'background-task-failed'}>
+            <div role="status" class="mb-4 rounded-md bg-warning p-3 text-sm text-warning">
+              {t('errors.backgroundTaskFailed')}
+            </div>
+          </Show>
 
           {/* Auto-protected journal: button-only unlock (no password input) */}
           <Show when={isAutoProtected()}>

@@ -131,7 +131,7 @@ fn lock_diary_inner_with(state: &DiaryState, completion: LockCompletion) -> Resu
 }
 
 /// Locks the journal without waiting for the lock-time snapshot to finish.
-fn lock_diary_inner(state: &DiaryState) -> Result<bool, String> {
+pub(crate) fn lock_diary_inner(state: &DiaryState) -> Result<bool, String> {
     lock_diary_inner_with(state, LockCompletion::Detached)
 }
 

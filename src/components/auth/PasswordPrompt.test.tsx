@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   journals: vi.fn(() => [{ id: 'j1', name: 'My Journal', path: '/tmp' }] as any[]),
   activeJournalId: vi.fn(() => 'j1'),
+  lockNotice: vi.fn((): string | null => null),
 }));
 
 vi.mock('../../state/auth', () => ({
@@ -20,6 +21,7 @@ vi.mock('../../state/auth', () => ({
   unlockWithKeypair: mocks.unlockWithKeypair,
   unlockAllMethods: mocks.unlockAllMethods,
   goToJournalPicker: mocks.goToJournalPicker,
+  lockNotice: () => mocks.lockNotice(),
 }));
 
 vi.mock('../../lib/tauri', () => ({
@@ -46,6 +48,7 @@ describe('PasswordPrompt component', () => {
     mocks.unlockWithKeypair.mockResolvedValue(undefined);
     mocks.unlockAllMethods.mockResolvedValue(undefined);
     mocks.peekAuthSlotTypes.mockResolvedValue({ slots: [], require_all_auth: false });
+    mocks.lockNotice.mockReturnValue(null);
   });
 
   function setMultiAuthJournal() {
@@ -90,6 +93,20 @@ describe('PasswordPrompt component', () => {
     await vi.waitFor(() => {
       expect(screen.getByText('Invalid password')).toBeInTheDocument();
     });
+  });
+
+  it('explains a lock caused by a failed background task', () => {
+    mocks.lockNotice.mockReturnValue('background-task-failed');
+    renderWithI18n(() => <PasswordPrompt />);
+
+    expect(screen.getByRole('status')).toHaveTextContent(/journal was locked to keep it safe/);
+  });
+
+  it('shows no lock notice after an ordinary lock', () => {
+    mocks.lockNotice.mockReturnValue(null);
+    renderWithI18n(() => <PasswordPrompt />);
+
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
   it('displays the active journal name in the subtitle', () => {

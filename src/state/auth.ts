@@ -18,6 +18,10 @@ const [authState, setAuthState] = createSignal<AuthState>('checking');
 const [error, setError] = createSignal<string | null>(null);
 const [authMethods, setAuthMethods] = createSignal<tauri.AuthMethodInfo[]>([]);
 
+/** Why the backend locked the journal, when the unlock screen must say so. */
+export type LockNotice = 'background-task-failed';
+const [lockNotice, setLockNotice] = createSignal<LockNotice | null>(null);
+
 interface JournalLockedEventPayload {
   reason?: string;
 }
@@ -36,6 +40,7 @@ function resetForLockedSession(): void {
 function prepareUnlockedSession(): void {
   resetSessionState();
   resetAuthTransientState();
+  setLockNotice(null);
   setAuthState('unlocked');
   // Populate the locked-entry indicators for the freshly unlocked journal.
   // Fire-and-forget: indicators are cosmetic and the DB is already unlocked here.
@@ -152,6 +157,7 @@ export async function loadAuthMethods(): Promise<void> {
 // Navigate back to the journal picker (e.g. from PasswordPrompt or PasswordCreation).
 export function goToJournalPicker(): void {
   resetAuthTransientState();
+  setLockNotice(null);
   setAuthState('journal-select');
 }
 
@@ -282,6 +288,10 @@ export async function setupAuthEventListeners(): Promise<() => void> {
       if (untrack(authState) !== 'locking') {
         resetForLockedSession();
       }
+      // Set after the reset: resetForLockedSession clears transient auth state.
+      if (reason === 'background-task-failed') {
+        setLockNotice('background-task-failed');
+      }
       log.info(`Journal locked by backend (${reason})`);
     },
   );
@@ -292,4 +302,4 @@ export async function setupAuthEventListeners(): Promise<() => void> {
   };
 }
 
-export { authState, error, authMethods, setAuthMethods };
+export { authState, error, authMethods, setAuthMethods, lockNotice };
