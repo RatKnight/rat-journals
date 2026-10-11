@@ -190,7 +190,7 @@ Asked 2026-10-10 with the question tool; all answered:
 
 ### Task 2: The lock primitive always takes the connection, even from a poisoned mutex
 
-- Status: TO BE DONE
+- Status: COMPLETED
 - Depends On: 1
 - Objective: With any of `backup_ops`, `db_path`, `backups_dir`, `db` poisoned, a lock request
   ends with `state.db == None`, the `db` mutex no longer poisoned, and `Ok(Some(rx))` whose `rx`
@@ -475,6 +475,20 @@ Asked 2026-10-10 with the question tool; all answered:
 - Task: 5
 - Decision: Sibling suffixes: -journal 8, -wal 4, -shm 4 (SQLite, journal opened read-write), .staging 8 (auth_directory.rs:59, only copied and renamed, never opened by SQLite), .restoring.tmp 14 (backup/store.rs:289) which precheck_restorable opens read-only with SQLite (backup/restore.rs:236), so SQLite probes .restoring.tmp-journal = 22. Cap = 255 - 22 = 233. Found with grep 'restoring\.tmp|\.staging|with_file_name|format!' over crates/ and src-tauri/src, and grep stage_restore_copy/open_connection in backup/restore.rs.
 - Rationale: Task 5 step 2: the staged restore copy is opened by SQLite, so its -journal probe name must also fit in 255 bytes. UTF-8 bytes >= UTF-16 units, so the cap is safe on NTFS.
+
+### DEC-006 — take_connection_and_snapshot returns Option, not Result
+
+- Date: 2026-10-11
+- Task: 2
+- Decision: The function no longer returns Err for poison, and nothing else can fail, so its return type is Option<mpsc::Receiver<()>>. lock_diary_inner_with drops its ?; the exit hook in lib.rs uses if let Some.
+- Rationale: Task 2 step 6: keep Result only if a caller still needs it. No caller does; an always-Ok Result would hide the new contract.
+
+### DEC-007 — allow(clippy::incompatible_msrv) on clear_poison, MSRV unchanged
+
+- Date: 2026-10-11
+- Task: 2
+- Decision: src-tauri/.clippy.toml declares msrv 1.75; clear_poison is stable since 1.77. Each of the two clear_poison calls carries #[allow(clippy::incompatible_msrv)] with a why comment. The MSRV setting is not changed.
+- Rationale: cargo metadata shows tauri 2.12 crates need rust-version 1.90, so 1.75 is stale. Raising it to 1.90 fires a new manual_inspect lint in auth_core.rs:467, unrelated to this plan; that cleanup is out of scope.
 
 ## Final Verification
 

@@ -36,6 +36,9 @@ Template:
 
 ## [0.7.5] - Unreleased
 
+### Security
+- **The journal locks even after an internal crash (TODO-0147)**: This release moves some work to background threads (TODO-0134). A crash (panic) in one of them could leave the journal state "poisoned". After that, no lock worked: not the Lock button, not auto-lock, not the screen lock, and not a journal switch. The encryption key stayed in memory until you closed the app. Every lock path now works on poisoned state: it closes the journal without a lock-time backup and removes the key from memory. You can unlock the journal again after that.
+
 ### Fixed
 - **"Open backups folder" stays inside the journal's own folder (TODO-0113)**: When a journal had no snapshots yet, the button opened the shared `backups/` folder, which also shows the backups folders of other journals in the same directory. It now always opens the journal's own `backups/{name}/` folder, When there is nothing to open yet, it shows a translated "There are no backups to show yet" message, not the untranslated backend text. `SECURITY.md`, `docs/KNOWN_ISSUES.md` (KI-13), and the Backups docs now say that journals sharing one folder can see each other's filenames.
 - **Restoring entries from a backup no longer leaves a half-restored entry when an attachment or tag fails to copy (TODO-0133)**: Each entry's text, attached files, and tags are now restored as one unit. If one part fails, the entry is not added at all, and no unlinked file is left in the journal. Entries restored before the failing one stay.

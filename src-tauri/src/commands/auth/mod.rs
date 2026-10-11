@@ -113,8 +113,7 @@ fn lock_diary_inner_with(state: &DiaryState, completion: LockCompletion) -> Resu
     let Some(done) = crate::commands::backup_triggers::take_connection_and_snapshot(
         state,
         crate::backup::SnapshotTrigger::Lock,
-    )?
-    else {
+    ) else {
         return Ok(false);
     };
 
@@ -244,7 +243,7 @@ mod tests {
     }
 
     #[test]
-    fn test_lock_diary_surfaces_a_poisoned_path_mutex_as_an_error_not_a_silent_lock() {
+    fn test_lock_diary_locks_even_when_a_path_mutex_is_poisoned() {
         let (_fixture, state, db_path, _backups) = test_helpers::make_state("lock_poisoned_path");
         let db = create_database(&db_path, "test".to_string()).unwrap();
         *state.db.lock().unwrap() = Some(db);
@@ -259,10 +258,10 @@ mod tests {
         });
         assert!(result.is_err());
 
-        assert!(lock_diary_inner(&state).is_err());
+        assert!(lock_diary_inner(&state).unwrap());
         assert!(
-            state.db.lock().unwrap().is_some(),
-            "the connection must not be dropped when a path mutex is poisoned"
+            state.db.lock().unwrap().is_none(),
+            "a poisoned path mutex must not leave the journal unlocked"
         );
     }
 }
