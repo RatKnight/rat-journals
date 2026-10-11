@@ -31,7 +31,7 @@
 - The primary branch contains advisory reporting/normalization, workspace Clippy and frontend ESLint settings, Vitest failure reporting, the equivalent auth cleanup helper/tests, and the separately approved inherited Git-selection fix.
 - Merged PR #327 contains only the advisory reporting/normalization work and inherited runner infrastructure with its approved Git-selection fix. It deliberately excludes the independent Clippy, ESLint, Vitest, and auth commits. Local full-gate results validate the primary branch; PR CI results validate that narrower PR, not the independent changes.
 - Tasks 1.8 and 1.4 are COMPLETED. The normalizer boundary fix is primary `d7b8dfc` and advisory `926d30f`; replacement CI run 38097918038 and every PR check passed on exact head `926d30f9a7ae5234a0e8ebf6bbdf736d3a2eeb99`. PR #327 merged under DEC-017 as `8a345d70abe8fb5c3aba842150f5b0c2af5a66d9`. Master CI run 38099433982 passed all seven jobs, and its probe-free Linux report and production provenance are verified.
-- The user requested a latest-master update and plan continuation. Merge `4a88bd7` includes master `f1bb84f73f44dd40028299682d0b6ef2f2326ca7`, including panic-lock recovery and legacy filename fixes. Task 1.5 is IN PROGRESS, awaiting the latest master report from run 38103562280 and fresh integrated local checks (DEC-018). Task 1.6 and all M2 work remain pending. No canonical baseline, reusable comparison mode, or blocking CRAP gate exists yet. This primary-worktree plan and companion decisions file remain the current execution ledger.
+- The user requested a latest-master update and plan continuation. Merge `4a88bd7` includes master `f1bb84f73f44dd40028299682d0b6ef2f2326ca7`, including panic-lock recovery and legacy filename fixes (DEC-018). Master CI run 38103562280 passed all seven jobs; the fresh integrated local gate passed all 14 checks. Task 1.5 is COMPLETED: dedicated commit `189bb55` contains only the canonical 624-entry Linux baseline and exact producer-record sidecar. Task 1.6 is IN PROGRESS, awaiting explicit blocking-gate approval. All M2 work remains unstarted; no reusable comparison mode or blocking CRAP gate exists. This primary-worktree plan and companion decisions file remain the current execution ledger.
 
 ### Initial repository facts (before implementation)
 
@@ -104,7 +104,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 ## Open Questions
 
-- None. Task 1.7's separate inherited PATH fix is complete. The user requested Task 1.8's full self-check, then approved merging PR #327 when that check finishes. Merge is conditional on all checks passing. Task 1.6 remains a separate, pending checkpoint; no finding dismissal or gate change is authorized.
+- None. Tasks 1.7, 1.8, the approved advisory merge, and canonical baseline review are complete. Task 1.6 awaits separate, explicit approval for blocking checks; no finding dismissal or gate change is authorized.
 
 ## Milestones
 
@@ -165,7 +165,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 #### Task 1.5: Canonical Linux baseline `ci/crap-baseline.json`
 
-- Status: IN PROGRESS
+- Status: COMPLETED
 - Depends On: 1.4
 - Objective: reviewed, normalized, Linux-produced baseline committed with durable provenance.
 - Steps:
@@ -178,7 +178,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 #### Task 1.6: M1→M2 approval gate
 
-- Status: TO BE DONE
+- Status: IN PROGRESS
 - Depends On: 1.5
 - Objective: explicit user go/no-go for enabling blocking checks, based on actual Linux results.
 - Steps:
@@ -410,7 +410,7 @@ $ python "C:\Users\Francisco\.config\opencode\skills\manual-planning\scripts\che
 0 error(s), 0 warning(s)
 ```
 
-Run: 2026-10-11 (execution check during the user-requested full self-check)
+Run: 2026-10-11 (continuation check after canonical baseline review)
 
 Checker exit code: 0.
 
@@ -418,8 +418,9 @@ The earlier W001 warning is resolved: the plan is now tracked in commit `4f480f0
 
 ## Execution Notes
 
-- Fresh integrated checks after master sync passed all 14 `bun run pre-commit` checks: 1277 frontend tests in 116 files, 950 backend tests, 67 script tests, 131 tracked test files owned by a gated runner, Clippy, formatting, and patch coverage 46/48 (95.8%) at the unchanged 80% threshold against merge-base `f1bb84f73f`. The latest Linux artifact is available: 624 entries (app 247, core 346, crypto 31), 17 above 30, zero scored probes/helpers, all non-path values/order preserved, and five expected production helper names added since `8a345d7`. The baseline and exact producer-record sidecar are prepared but uncommitted while master CI finishes. A fresh local diagnostic has 625 entries; 16 of the Linux top 17 exactly match, and the only difference is the independent `create_diary_auto_inner` extraction absent from master. Its report remains outside the repo. The source/coverage mismatch diagnostics are fully explained in the draft sidecar. Task 1.5 remains IN PROGRESS; Task 1.6 has not started.
-- Latest-master sync completed as merge `4a88bd7`: origin/master `f1bb84f73f44dd40028299682d0b6ef2f2326ca7` is an ancestor of HEAD. The only conflict was `CHANGELOG.md`; resolution retains master's 233-byte legacy filename description, one advisory-report entry, and this branch's independent lint/reporting/diagnosis entries. Staged formatting and diff checks passed. Task 1.5 now awaits latest master CI run 38103562280 and fresh local `bun run pre-commit`; both have background watchers. No M2 work or gate approval is implied (DEC-018).
+- Task 1.5 is COMPLETED in dedicated baseline commit `189bb55`, containing only `ci/crap-baseline.json` and `ci/crap-baseline.provenance.md`. Continuation verified master CI run 38103562280 completed successfully on exact source `f1bb84f73f44dd40028299682d0b6ef2f2326ca7`: all seven jobs passed, with final E2E completion at `2026-10-11T02:27:26Z`. The sidecar now records that result. Revalidation passed: JSON parsing, baseline-mode path-only equality with the downloaded report, unchanged parsed non-path values and entry order, exact producer text, all three recorded SHA-256 checksums, no absolute/backslash paths or probes, 624 unique source locations, 17 above 30, and crate counts 247/346/31. All four probe ancestry controls again returned exactly 1 against the producer source. Excluded test helpers remain only in coverage diagnostics, not scored entries; an initially overbroad validation searched diagnostics as well, then the corrected scored-entry check passed. Normalizer self-test and plan checker passed with zero errors/warnings; staged diff checks passed. No source, dependency, threshold, or workflow changed. Task 1.6 is IN PROGRESS; explicit approval is still required before M2. Baseline provenance is covered by the existing Internal advisory-report changelog entry; the final gate entry remains Task 3.5. No originating TODO or rendered-output change applies.
+- Fresh integrated checks after master sync passed all 14 `bun run pre-commit` checks: 1277 frontend tests in 116 files, 950 backend tests, 67 script tests, 131 tracked test files owned by a gated runner, Clippy, formatting, and patch coverage 46/48 (95.8%) at the unchanged 80% threshold against merge-base `f1bb84f73f`. The latest Linux artifact has 624 entries (app 247, core 346, crypto 31), 17 above 30, zero scored probes/helpers, all non-path values/order preserved, and five expected production helper names added since `8a345d7`. The baseline and sidecar were prepared while master CI finished; both are now committed as recorded above. A fresh local diagnostic has 625 entries; 16 of the Linux top 17 exactly match, and the only difference is the independent `create_diary_auto_inner` extraction absent from master. Its report remains outside the repo. The source/coverage mismatch diagnostics are fully explained in the sidecar.
+- Latest-master sync completed as merge `4a88bd7`: origin/master `f1bb84f73f44dd40028299682d0b6ef2f2326ca7` is an ancestor of HEAD. The only conflict was `CHANGELOG.md`; resolution retains master's 233-byte legacy filename description, one advisory-report entry, and this branch's independent lint/reporting/diagnosis entries. Staged formatting and diff checks passed. At that point Task 1.5 awaited master CI run 38103562280 and fresh local `bun run pre-commit`; both subsequently passed. No M2 work or gate approval is implied (DEC-018).
 - Task 1.4 is COMPLETED: post-merge master CI run 38099433982 passed Test, Lint, Windows/Linux/macOS builds, Flatpak, and E2E on exact merge SHA `8a345d70abe8fb5c3aba842150f5b0c2af5a66d9`. The downloaded `crap-report` artifact has production timestamp `2026-10-11T00:52:22Z`, event push, ref refs/heads/master, correct source SHA and run ID, Linux/X64, rustc 1.95.0, cargo-crap 0.6.1, cargo-llvm-cov 0.8.7, nextest 0.9.130, successful workspace coverage, and the confirmed exclusions. Its report covers all three crates: 619 functions, 17 above CRAP 30, zero probes/helper entries. In-memory baseline-mode normalization accepts every path and preserves all non-path values and order. This verifies the required master artifact only; no canonical baseline was written or committed. Task 1.5 and separate Task 1.6 approval remain pending; no M2 work started.
 - PR #327 merged at `2026-10-11T00:44:08Z` with merge commit `8a345d70abe8fb5c3aba842150f5b0c2af5a66d9`. It was marked ready only after Task 1.8 completed and every check passed. The merge used `--match-head-commit 926d30f9a7ae5234a0e8ebf6bbdf736d3a2eeb99`, without admin/auto-merge or any check bypass, preserving the scoped commits. Freshly fetched origin/master contains the merge, and all four disposable probe commits still return exactly 1 from ancestor checks. Post-merge master CI [38099433982](https://github.com/fjrevoredo/mini-diarium/actions/runs/38099433982) is active on the exact merge SHA. Task 1.4 remains IN PROGRESS until its report artifact is verified; no canonical baseline or M2 work started.
 - Task 1.8 is COMPLETED: CI run 38097918038 passed all seven jobs, including Windows/Linux/macOS builds, Flatpak, and E2E. Every PR check also passed, including SonarCloud, CodeQL, and Codecov patch coverage. The checked PR head is exactly `926d30f9a7ae5234a0e8ebf6bbdf736d3a2eeb99`, still draft/open and mergeable at the final check. Together with the recorded code audit, fresh local checks, maintained regression tests, and production artifact validation, this satisfies the full self-check. Task 1.4 may now merge under DEC-017 without any check bypass; master CI validation remains required afterward.
