@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "id": "v0.7.5-release",
+      "type": "release",
+      "version": "0.7.5",
+      "title": "What's new in 0.7.5",
+      "summary": "The Esc key has a new action: you can now set it to lock your journal. Locking is also more dependable in every situation. Attachments, backup restores, and tag filters are more reliable too, and journals keep the exact filename you picked.",
+      "body": "The Esc key has a new action: you can now set it to lock your journal. Locking is also more dependable in every situation. Attachments, backup restores, and tag filters are more reliable too, and journals keep the exact filename you picked.",
+      "date": "2026-10-12",
+      "linkUrl": "https://github.com/fjrevoredo/mini-diarium/releases/tag/v0.7.5",
+      "linkLabel": "Full release notes"
+    },
+    {
       "id": "v0.7.4-release",
       "type": "release",
       "version": "0.7.4",
