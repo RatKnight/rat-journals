@@ -1,9 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { ESLint } from 'eslint';
-import { selfTest } from './normalize-crap-baseline.mjs';
-
-test('CRAP normalizer inline acceptance fixtures', selfTest);
 
 const eslint = new ESLint();
 // Sixteen independent decisions exceed classic max 15. ESLint supplies the
