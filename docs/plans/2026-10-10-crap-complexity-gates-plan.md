@@ -31,7 +31,7 @@
 - The primary branch contains advisory reporting/normalization, workspace Clippy and frontend ESLint settings, Vitest failure reporting, the equivalent auth cleanup helper/tests, and the separately approved inherited Git-selection fix.
 - Merged PR #327 contains only the advisory reporting/normalization work and inherited runner infrastructure with its approved Git-selection fix. It deliberately excludes the independent Clippy, ESLint, Vitest, and auth commits. Local full-gate results validate the primary branch; PR CI results validate that narrower PR, not the independent changes.
 - Tasks 1.8 and 1.4 are COMPLETED. The normalizer boundary fix is primary `d7b8dfc` and advisory `926d30f`; replacement CI run 38097918038 and every PR check passed on exact head `926d30f9a7ae5234a0e8ebf6bbdf736d3a2eeb99`. PR #327 merged under DEC-017 as `8a345d70abe8fb5c3aba842150f5b0c2af5a66d9`. Master CI run 38099433982 passed all seven jobs, and its probe-free Linux report and production provenance are verified.
-- The user requested a latest-master update and plan continuation. Merge `4a88bd7` includes master `f1bb84f73f44dd40028299682d0b6ef2f2326ca7`, including panic-lock recovery and legacy filename fixes (DEC-018). Master CI run 38103562280 passed all seven jobs; the fresh integrated local gate passed all 14 checks. Task 1.5 is COMPLETED: dedicated commit `189bb55` contains only the canonical 624-entry Linux baseline and exact producer-record sidecar. The user's affirmative reply to the Task 1.6 approval question authorizes M2 under DEC-019. M2 implementation can now start. This primary-worktree plan and companion decisions file remain the current execution ledger.
+- Merge `4a88bd7` includes master `f1bb84f73f44dd40028299682d0b6ef2f2326ca7` (DEC-018), whose master CI run 38103562280 passed all seven jobs. Task 1.5's dedicated commit `189bb55` contains only the canonical 624-entry Linux baseline and producer-record sidecar. DEC-019 authorizes M2. Task 2.1 is complete after full Linux acceptance; Task 2.2 wiring is committed and awaits three live controls; Task 2.3's tested local advisory integration is complete. Current execution evidence and dependencies are below. This primary-worktree plan and companion decisions file remain the current execution ledger; older execution notes are dated evidence, not current status.
 
 ### Initial repository facts (before implementation)
 
@@ -234,7 +234,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 #### Task 2.2: CI gating step
 
-- Status: TO BE DONE
+- Status: IN PROGRESS
 - Depends On: 2.1
 - Objective: `ci.yml` runs cargo-crap against the committed baseline and gates via the policy script, without endangering Codecov uploads or artifacts.
 - Steps:
@@ -247,7 +247,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 #### Task 2.3: Pre-commit advisory step
 
-- Status: TO BE DONE
+- Status: COMPLETED
 - Depends On: 2.1
 - Objective: `bun run pre-commit` includes a CRAP check that requires fresh coverage, degrades loudly, and is advisory-only on Windows.
 - Steps:
@@ -405,7 +405,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 ## Decision Log
 
-Entries live in [2026-10-10-crap-complexity-gates-decisions.md](2026-10-10-crap-complexity-gates-decisions.md) (21 entries). The timing rule is unchanged: write an entry before moving to the next task.
+Entries live in [2026-10-10-crap-complexity-gates-decisions.md](2026-10-10-crap-complexity-gates-decisions.md) (22 entries). The timing rule is unchanged: write an entry before moving to the next task.
 
 ## Final Verification
 
@@ -430,6 +430,9 @@ The earlier W001 warning is resolved: the plan is now tracked in commit `4f480f0
 
 ## Execution Notes
 
+- Task 2.3 is COMPLETED in `3e296fd`: the maintained advisory caller uses only successful fresh same-run backend coverage, checks pinned tool version, creates an ignored root-aligned input, refuses stale deltas, and reports local policy exits without blocking. Seven new maintained controls cover stale lcov, missing/wrong-version tools, canonical preservation, analyzer and policy failures, invalid baseline, real empty-PATH skip, and caller freshness/warning wiring. Fresh comprehensive run `sh_12b1a40e0001MuUWSnZ7pTRdfX` passed all 15 checks, 1277 frontend tests in 116 files, 950 backend tests, and 82 script tests; ownership covers 133 tracked files. The explicit local `VITEST_MAX_WORKERS=4` control is supported by installed Vitest `index.DpLw24bj.js:14592`; no source/timeouts/thresholds/CI concurrency changed. Both lcov files and the advisory delta were freshly written at 13:16:26/13:18:39/13:18:40 UTC. The policy returned 1 on the same four Windows differences (625 functions), while the comprehensive run returned 0. Fresh patch coverage remains 46/48 (95.8%) at 80%. Log: `C:\Users\Francisco\AppData\Local\Temp\opencode\crap-gated-local-advisory-20261011.log`. This does not claim default-concurrency success or a Linux verdict.
+- Task 2.2 controls use isolated NEVER-MERGE draft PRs: unchanged [#332](https://github.com/fjrevoredo/mini-diarium/pull/332) at `3e296fd`, run 38142680713; new-offender [#331](https://github.com/fjrevoredo/mini-diarium/pull/331) at `761fa96`, run 38142680404; existing-regression [#333](https://github.com/fjrevoredo/mini-diarium/pull/333) at `d53c75e`, run 38142680872. The negative branches change only workflow seeding before fresh backend coverage; no production source or baseline is committed. The real production gate remains unchanged and is expected to fail with exit 1 in each negative run; Codecov uploads and both artifacts must still succeed. The existing control adds one branch inside untested `build_menu`, preserving its signature/location identity. Watchers `sh_12b1e17560013Pk1AgmIkeAwAC`, `sh_12b1e1775001YLLSmHj5gJEZKt`, and `sh_12b1e17a0001RuFig3UWZZ1T6X` are active; await completion notifications, do not poll or push over them.
+- Task 2.2 production wiring is committed as `7942411`: gate follows both Codecov uploads and the independent advisory artifact upload; missing same-run coverage, missing/wrong-version analyzer, and analyzer failure fail as input/tool errors; policy exit 1 remains blocking; a separate `if: always()` delta upload follows the gate. Lint and pre-commit run both self-tests. All 75 script tests, ownership for 132 tracked files, actionlint, targeted formatting, and diff checks passed. Live unchanged/new/regression gate controls are still required before Task 2.2 completes. Task 2.3 will use the maintained caller helper under DEC-022; the canonical baseline remains unchanged.
 - CI watcher `sh_12af6249d001RY8KWniuI67XZM` completed successfully: all seven jobs in run 38139778634 passed, including Windows build and clean/stateful Linux E2E. The error annotation for `crap_policy_new_offender` is the expected seeded negative control, not a job failure. Task 2.1 is COMPLETED with independently parsed artifact evidence and unchanged canonical metrics. Task 2.2 can now begin; PR #330 remains disposable and must never merge.
 - Task 2.1 Linux controls passed in CI run 38139778634 on scratch head `fce630cce0d4cf937847f00d950b8aa94f6b1d50`: the Test job, frontend/backend/script tests, unchanged-source policy control, seeded-new control, and acceptance artifact upload all succeeded. Downloaded deltas independently revalidated: 625 unchanged-source functions pass policy exit 0; the seeded report has 626 functions and exactly one violation, `crap_policy_new_offender` (CC 6, coverage 0%, CRAP 42, status New, null baseline/delta), with policy exit 1. The probe is absent from the unchanged report. Evidence is retained in `C:\Users\Francisco\AppData\Local\Temp\opencode\crap-policy-acceptance-evidence-38139778634`. Lint, Linux/macOS builds, and Flatpak also passed; Windows build and E2E were still running at the user-requested status check, so the whole workflow is not yet claimed green. These completed Test-job controls satisfy Task 2.1; later full-pipeline and regression checks remain Task 2.2/4.2. Do not push over the active scratch run or merge PR #330.
 - Task 4.3 is COMPLETED: the unchanged four-worker full-coverage control passed all 1277 frontend tests in all 116 files, exit 0, duration 92.60 seconds. Run start was `2026-10-11T12:47:46Z`; fresh `coverage/lcov.info` was written at `2026-10-11T12:49:21.1283026Z`. Both previously timed-out suites also passed unchanged targeted controls. The fresh patch gate passed again at 46/48 (95.8%), with the unchanged 80% threshold. No source, test, timeout, threshold, or production CI concurrency setting changed. The result supports runner-load sensitivity but does not prove root cause, erase either failed default-concurrency run, or make the earlier comprehensive run green. Final whole-plan verification remains pending; if local default concurrency again causes timeouts, use an explicitly recorded bounded-worker diagnostic instead of weakening assertions or timeout limits. Task 2.1 still awaits Linux acceptance; the active CI watcher must not be polled.
