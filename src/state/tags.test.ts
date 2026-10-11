@@ -190,6 +190,18 @@ describe('tags state — loadAllTags across a session reset', () => {
 
     expect(allTags()).toEqual([]);
   });
+
+  it('keeps the newer tag list when two loads overlap', async () => {
+    const older = deferred<Tag[]>();
+    mocks.getAllTags.mockReturnValueOnce(older.promise).mockResolvedValueOnce([CAREER_TAG]);
+    const pending = loadAllTags();
+
+    await loadAllTags();
+    older.resolve([WORK_TAG]);
+    await pending;
+
+    expect(allTags()).toEqual([CAREER_TAG]);
+  });
 });
 
 describe('tags state — refreshTagFilter', () => {

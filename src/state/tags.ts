@@ -9,11 +9,13 @@ const [tagFilteredDates, setTagFilteredDates] = createSignal<string[] | null>(nu
 // lookup writes its reply only while the token it took is still the current one, so a
 // cleared filter stays cleared and an older request never overwrites a newer one.
 let filterToken = 0;
-// Bumped by a session reset only, so a tag-list reply from the previous session is dropped.
-let sessionToken = 0;
+// Bumped by every tag-list load and by a session reset. A load writes its reply only while
+// the token it took is still the current one, so a reply from the previous session, or an
+// older load that resolves after a newer one, never overwrites the newer list.
+let tagListToken = 0;
 
 export function resetTagsState(): void {
-  sessionToken++;
+  tagListToken++;
   filterToken++;
   setAllTags([]);
   setActiveTagFilterSignal(null);
@@ -25,9 +27,9 @@ export function resetTagsState(): void {
  * deleted filtered tag clears the filter, which also cancels its pending dates lookup.
  */
 export async function loadAllTags(): Promise<void> {
-  const session = sessionToken;
+  const token = ++tagListToken;
   const tags = await getAllTags();
-  if (session !== sessionToken) return;
+  if (token !== tagListToken) return;
   setAllTags(tags);
   const filter = activeTagFilter();
   if (filter) {

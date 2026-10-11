@@ -65,13 +65,14 @@ After every `await`, re-check the token captured before it (session, entry, revi
 - When a request is stale, return without a write. Do not try to merge a reply that is older than the current state.
 - Let every path that changes the same state bump the same counter. A load and a mutation of one list share one revision, and a "clear" bumps the token so that a pending request cannot write its reply.
 - An id alone is not a token. Entry ids and tag ids repeat across journals, so an id check does not detect a session reset.
+- A component that stays mounted across a prop change (for example an entry id) must check that prop too, and must clear its local busy and error state when the prop changes.
 - Test the race with deferred promises. Start the call, change the context, resolve the old promise, then assert that the newer state is unchanged.
 
 Current references:
 
 - `src/state/entryAttachments.ts` (shared load/mutation revision)
-- `src/state/tags.ts` (filter token that `clearTagFilter` and the session reset bump)
-- `src/components/editor/EntryAttachments.tsx` (session mark re-checked after each backend call)
+- `src/state/tags.ts` (filter token that `clearTagFilter` and the session reset bump; tag-list token that every load bumps)
+- `src/components/editor/EntryAttachments.tsx` (`isCurrent`: session mark and entry id re-checked after each backend call)
 - `src/components/layout/editor-panel/entryHydration.ts` (request guard before the atomic editor commit)
 
 ### Use Typed Tauri Wrappers

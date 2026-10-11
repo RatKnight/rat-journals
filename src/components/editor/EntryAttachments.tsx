@@ -71,13 +71,17 @@ export default function EntryAttachments(props: EntryAttachmentsProps) {
   // captured may name a different entry in a different journal, and entry ids repeat across
   // journals. So after every await it re-checks the mark it took before: on a change it
   // stops, without a backend call, a list update, or an error. resetEntryAttachmentsState()
-  // bumps attachmentsVersion on each reset.
+  // bumps attachmentsVersion on each reset. The strip also stays mounted when the open entry
+  // changes, so an entry switch makes the context stale too: isCurrent() checks both.
   const sessionMark = () => untrack(attachmentsVersion);
+  const isCurrent = (entryId: number, mark: number) =>
+    sessionMark() === mark && untrack(() => props.entryId) === entryId;
 
   createEffect(() => {
     const id = props.entryId;
     const mark = attachmentsVersion(); // reload after a session-level reset (e.g. journal restore)
     setError(null);
+    setIsAdding(false); // an add still running belongs to the previous entry or session
     loadEntryAttachments(id).catch((err) => {
       // Only the load for the entry and session still shown may report its failure.
       if (untrack(() => props.entryId) === id && sessionMark() === mark) {
@@ -100,14 +104,14 @@ export default function EntryAttachments(props: EntryAttachmentsProps) {
         filters: ext ? [{ name: ext.toUpperCase(), extensions: [ext] }] : undefined,
       });
     } catch (err) {
-      if (sessionMark() === mark) setError(mapTauriError(err, t));
+      if (isCurrent(entryId, mark)) setError(mapTauriError(err, t));
       return;
     }
     if (!dest || sessionMark() !== mark) return; // cancelled, or the session changed
     try {
       await saveAttachmentCopy(entryId, attachment.id, dest);
     } catch (err) {
-      if (sessionMark() === mark) setError(mapTauriError(err, t));
+      if (isCurrent(entryId, mark)) setError(mapTauriError(err, t));
     }
   };
 
@@ -126,32 +130,33 @@ export default function EntryAttachments(props: EntryAttachmentsProps) {
     try {
       selected = await openDialog({ multiple: true });
     } catch (err) {
-      if (sessionMark() === mark) setError(mapTauriError(err, t));
+      if (isCurrent(entryId, mark)) setError(mapTauriError(err, t));
       return;
     }
     if (!selected) return; // cancelled
     const paths = Array.isArray(selected) ? selected : [selected];
-    setIsAdding(true);
+    if (isCurrent(entryId, mark)) setIsAdding(true);
     const failures: string[] = [];
     try {
-      // One invoke per file, so one bad file does not block the others.
+      // One invoke per file, so one bad file does not block the others. After an entry
+      // switch the remaining files still go to the entry they were picked for, but this
+      // strip now shows another entry, so it takes no list update and no error from them.
       for (const path of paths) {
         if (sessionMark() !== mark) return; // no error: the strip was reset with the session
         try {
           const added = await addEntryAttachment(entryId, path);
-          if (sessionMark() !== mark) return;
-          upsertEntryAttachment(entryId, added);
+          if (isCurrent(entryId, mark)) upsertEntryAttachment(entryId, added);
         } catch (err) {
-          if (sessionMark() !== mark) return;
+          if (!isCurrent(entryId, mark)) continue;
           failures.push(
             t('attachments.addFailed', { name: baseName(path), error: mapTauriError(err, t) }),
           );
         }
       }
     } finally {
-      setIsAdding(false);
+      if (isCurrent(entryId, mark)) setIsAdding(false); // else the effect already cleared it
     }
-    if (failures.length > 0) setError(failures.join(' '));
+    if (failures.length > 0 && isCurrent(entryId, mark)) setError(failures.join(' '));
   };
 
   const hasInlineRefs = (attachmentId: number): boolean => {
@@ -177,7 +182,7 @@ export default function EntryAttachments(props: EntryAttachmentsProps) {
       if (sessionMark() !== mark) return;
       removeEntryAttachmentFromList(entryId, attachment.id);
     } catch (err) {
-      if (sessionMark() === mark) setError(mapTauriError(err, t));
+      if (isCurrent(entryId, mark)) setError(mapTauriError(err, t));
     }
   };
 

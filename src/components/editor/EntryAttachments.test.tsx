@@ -304,6 +304,130 @@ describe('EntryAttachments', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(screen.getByText('clip.mp4')).toBeInTheDocument();
   });
+
+  // The strip stays mounted across an entry switch. A blank entry can be deleted while
+  // its add is in flight, so the add fails, and that failure belongs to the old entry.
+  it('shows no error for an add that fails after the entry changed', async () => {
+    const add = deferred<AttachmentSummary>();
+    mocks.listEntryAttachments.mockResolvedValueOnce([]).mockResolvedValue([CLIP]);
+    mocks.open.mockResolvedValue(['C:\\docs\\a.pdf']);
+    mocks.addEntryAttachment.mockReturnValueOnce(add.promise);
+    const [entryId, setEntryId] = createSignal(1);
+
+    renderWithI18n(() => <EntryAttachments entryId={entryId()} />);
+    fireEvent.click(screen.getByTestId('entry-attachment-add-button'));
+    await waitFor(() =>
+      expect(mocks.addEntryAttachment).toHaveBeenCalledWith(1, 'C:\\docs\\a.pdf'),
+    );
+
+    setEntryId(2);
+    await waitFor(() => expect(screen.getByText('clip.mp4')).toBeInTheDocument());
+    add.reject('Entry not found');
+    await new Promise((r) => setTimeout(r, 0)); // let the rejection settle fully
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getAllByTestId('entry-attachment-chip')).toHaveLength(1);
+  });
+
+  it('drops an add reply that arrives after the entry changed', async () => {
+    const add = deferred<AttachmentSummary>();
+    mocks.listEntryAttachments.mockResolvedValueOnce([]).mockResolvedValue([CLIP]);
+    mocks.open.mockResolvedValue(['C:\\docs\\Report.pdf']);
+    mocks.addEntryAttachment.mockReturnValueOnce(add.promise);
+    const [entryId, setEntryId] = createSignal(1);
+
+    renderWithI18n(() => <EntryAttachments entryId={entryId()} />);
+    fireEvent.click(screen.getByTestId('entry-attachment-add-button'));
+    await waitFor(() => expect(mocks.addEntryAttachment).toHaveBeenCalledTimes(1));
+
+    setEntryId(2);
+    await waitFor(() => expect(screen.getByText('clip.mp4')).toBeInTheDocument());
+    add.resolve(PDF);
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(screen.queryByText('Report.pdf')).not.toBeInTheDocument();
+    expect(screen.getAllByTestId('entry-attachment-chip')).toHaveLength(1);
+  });
+
+  it('keeps adding the remaining files for the old entry after an entry switch', async () => {
+    const first = deferred<AttachmentSummary>();
+    mocks.listEntryAttachments.mockResolvedValueOnce([]).mockResolvedValue([CLIP]);
+    mocks.open.mockResolvedValue(['C:\\docs\\a.pdf', 'C:\\docs\\b.pdf']);
+    mocks.addEntryAttachment.mockReturnValueOnce(first.promise).mockRejectedValueOnce('boom');
+    const [entryId, setEntryId] = createSignal(1);
+
+    renderWithI18n(() => <EntryAttachments entryId={entryId()} />);
+    fireEvent.click(screen.getByTestId('entry-attachment-add-button'));
+    await waitFor(() => expect(mocks.addEntryAttachment).toHaveBeenCalledTimes(1));
+
+    setEntryId(2);
+    await waitFor(() => expect(screen.getByText('clip.mp4')).toBeInTheDocument());
+    first.resolve(PDF);
+
+    await waitFor(() =>
+      expect(mocks.addEntryAttachment).toHaveBeenNthCalledWith(2, 1, 'C:\\docs\\b.pdf'),
+    );
+    await new Promise((r) => setTimeout(r, 0));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('does not disable the Attach button of the new entry while an old add runs', async () => {
+    const add = deferred<AttachmentSummary>();
+    mocks.listEntryAttachments.mockResolvedValue([]);
+    mocks.open.mockResolvedValue(['C:\\docs\\a.pdf']);
+    mocks.addEntryAttachment.mockReturnValueOnce(add.promise);
+    const [entryId, setEntryId] = createSignal(1);
+
+    renderWithI18n(() => <EntryAttachments entryId={entryId()} />);
+    fireEvent.click(screen.getByTestId('entry-attachment-add-button'));
+    await waitFor(() => expect(screen.getByTestId('entry-attachment-add-button')).toBeDisabled());
+
+    setEntryId(2);
+    await waitFor(() =>
+      expect(screen.getByTestId('entry-attachment-add-button')).not.toBeDisabled(),
+    );
+    add.resolve(PDF);
+  });
+
+  it('shows no error for a remove that fails after the entry changed', async () => {
+    const remove = deferred<undefined>();
+    mocks.listEntryAttachments.mockResolvedValueOnce([PDF]).mockResolvedValue([CLIP]);
+    mocks.confirmInApp.mockResolvedValue(true);
+    mocks.removeEntryAttachment.mockReturnValueOnce(remove.promise);
+    const [entryId, setEntryId] = createSignal(1);
+
+    renderWithI18n(() => <EntryAttachments entryId={entryId()} />);
+    await waitFor(() => expect(screen.getByText('Report.pdf')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('entry-attachment-remove-button'));
+    await waitFor(() => expect(mocks.removeEntryAttachment).toHaveBeenCalledWith(1, PDF.id));
+
+    setEntryId(2);
+    await waitFor(() => expect(screen.getByText('clip.mp4')).toBeInTheDocument());
+    remove.reject('Entry not found');
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('shows no error for a save-copy that fails after the entry changed', async () => {
+    const copy = deferred<undefined>();
+    mocks.listEntryAttachments.mockResolvedValueOnce([PDF]).mockResolvedValue([CLIP]);
+    mocks.save.mockResolvedValue('C:\\out\\Report.pdf');
+    mocks.saveAttachmentCopy.mockReturnValueOnce(copy.promise);
+    const [entryId, setEntryId] = createSignal(1);
+
+    renderWithI18n(() => <EntryAttachments entryId={entryId()} />);
+    await waitFor(() => expect(screen.getByText('Report.pdf')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('entry-attachment-save-button'));
+    await waitFor(() => expect(mocks.saveAttachmentCopy).toHaveBeenCalled());
+
+    setEntryId(2);
+    await waitFor(() => expect(screen.getByText('clip.mp4')).toBeInTheDocument());
+    copy.reject('Entry not found');
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
 });
 
 describe('fileExtension', () => {
