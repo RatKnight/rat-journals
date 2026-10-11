@@ -2,7 +2,7 @@
 
 ## Metadata
 
-- Plan Status: IN PROGRESS
+- Plan Status: COMPLETED
 - Plan Format: manual-planning v2.1.0
 - Template: simple
 - Tracking: tracked (this project already commits plans)
@@ -387,7 +387,7 @@ Asked 2026-10-10 with the question tool; all answered:
 
 ### Task 8: Cleanup Intermediate Artifacts
 
-- Status: TO BE DONE
+- Status: COMPLETED
 - Depends On: 3, 4, 7
 - Objective: Remove artifacts created only to support implementation.
 - Steps:
@@ -400,7 +400,7 @@ Asked 2026-10-10 with the question tool; all answered:
 
 ### Task 9: Final Verification
 
-- Status: TO BE DONE
+- Status: COMPLETED
 - Depends On: 8
 - Objective: Validate the integrated change after cleanup.
 - Steps:
@@ -425,13 +425,13 @@ Asked 2026-10-10 with the question tool; all answered:
 
 ## Pre-flight Checks
 
-- [ ] `cargo fmt --all -- --check`
-- [ ] `cargo clippy --workspace --all-targets -- -D warnings`
-- [ ] `cargo test --workspace`
-- [ ] `bun run pre-commit` (type-check, lint, Vitest, Rust, coverage diff gate)
-- [ ] `bun run validate:locales`
-- [ ] `bun run diagrams:check`
-- [ ] `git grep -n "state.db.lock().unwrap" -- src-tauri/src ':!*tests*'` shows only `#[cfg(test)]` code
+- [x] `cargo fmt --all -- --check`
+- [x] `cargo clippy --workspace --all-targets -- -D warnings`
+- [x] `cargo test --workspace`
+- [x] `bun run pre-commit` (type-check, lint, Vitest, Rust, coverage diff gate)
+- [x] `bun run validate:locales`
+- [x] `bun run diagrams:check`
+- [x] `git grep -n "state.db.lock().unwrap" -- src-tauri/src ':!*tests*'` shows only `#[cfg(test)]` code
 
 ## Decision Log
 
@@ -497,6 +497,13 @@ Asked 2026-10-10 with the question tool; all answered:
 - Decision: The docs and CHANGELOG say the rename-and-Open-existing recovery works only for password and key-file journals, tell the user to remove the old list entry, and send local-only users to Send feedback.
 - Rationale: A local-only journal's key is saved in its config.json list entry (JournalConfig.auto_key); a new entry made by Open existing has no key, so renaming the file would lock the user out.
 
+### DEC-009 — Flaky PreferencesOverlay integration test
+
+- Date: 2026-10-11
+- Task: 9
+- Decision: Not fixed in this plan. PreferencesOverlay.integration.test.tsx (test at line 83) failed in two of five Vitest runs on 2026-10-11 (the first `bun run pre-commit` and the first `bun run test:coverage`) and passed in the other three.
+- Rationale: No file this plan changed is imported by that test; it is a timing flake outside the scope. Reported to the user for a follow-up TODO.
+
 ## Final Verification
 
 - Task 9 runs the pre-flight checks.
@@ -505,6 +512,11 @@ Asked 2026-10-10 with the question tool; all answered:
   path).
 - `git log --oneline -6` shows the planned commits: `docs(todo)`, `fix(lock)`, `fix(commands)`,
   `fix(plugin)`, `fix(journals)` (+ optional `docs(plans)`).
+
+Result (2026-10-11): all pre-flight checks green. `bun run pre-commit`: 14/14 passed, 1277 Vitest
+and 948 Rust tests, patch coverage 90.5%. The 109 `state.db.lock().unwrap` hits are all below their
+file's first `#[cfg(test)]`. Commits: 6a7744c, 7479daf, cd7dcf8, ee90d56, 7093b0e. The manual
+`tauri-agent-dev` check was not run (optional).
 
 ## Approval Gate
 
