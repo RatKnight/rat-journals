@@ -34,6 +34,7 @@ vi.mock('../../state/onboarding', () => ({
   onboardingMode: () => onboardingState.mode,
 }));
 
+import * as authModule from '../../state/auth';
 import Header from './Header';
 
 const { mockNavigatePreviousDay, mockNavigateNextDay } = vi.hoisted(() => ({
@@ -230,5 +231,38 @@ describe('Header notifications badge vs. onboarding tour', () => {
     const button = screen.getByTestId('notifications-button');
     expect(button).toHaveAttribute('aria-label', 'Notifications');
     expect(button.querySelector('span[aria-hidden="true"]')).not.toBeInTheDocument();
+  });
+});
+
+describe('Header lock button', () => {
+  beforeEach(() => {
+    resetUiState();
+    vi.restoreAllMocks();
+  });
+
+  it('locks the journal when clicked while unlocked', () => {
+    vi.spyOn(authModule, 'authState').mockReturnValue('unlocked');
+    const lock = vi.spyOn(authModule, 'lockJournal').mockResolvedValue(undefined);
+    renderWithI18n(() => <Header />);
+
+    const button = screen.getByTestId('lock-journal-button');
+    expect(button).not.toBeDisabled();
+    fireEvent.click(button);
+
+    expect(lock).toHaveBeenCalledTimes(1);
+  });
+
+  // A lock started elsewhere (Escape, idle timer, focus loss) must disable the button,
+  // because the click-blocking lock backdrop is hidden under prefers-reduced-motion.
+  it('is disabled and does not start a second lock while a lock is in progress', () => {
+    vi.spyOn(authModule, 'authState').mockReturnValue('locking');
+    const lock = vi.spyOn(authModule, 'lockJournal').mockResolvedValue(undefined);
+    renderWithI18n(() => <Header />);
+
+    const button = screen.getByTestId('lock-journal-button');
+    expect(button).toBeDisabled();
+    fireEvent.click(button);
+
+    expect(lock).not.toHaveBeenCalled();
   });
 });

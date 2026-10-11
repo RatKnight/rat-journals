@@ -1,4 +1,4 @@
-import { createSignal, Show } from 'solid-js';
+import { Show } from 'solid-js';
 import {
   Menu,
   Lock,
@@ -25,7 +25,7 @@ import {
 } from '../../state/ui';
 import { pendingRung } from '../../state/support-milestone';
 import { goToPreviousDay, goToNextDay } from '../../lib/day-navigation';
-import { lockJournal } from '../../state/auth';
+import { authState, lockJournal } from '../../state/auth';
 import { preferences } from '../../state/preferences';
 import { useI18n } from '../../i18n';
 import { hasUnread, unreadCount } from '../../state/notifications';
@@ -39,7 +39,10 @@ interface HeaderProps {
 
 export default function Header(props: HeaderProps) {
   const t = useI18n();
-  const [isLocking, setIsLocking] = createSignal(false);
+  // Read the shared auth state, not a local flag: Escape, the idle timer and focus-loss
+  // lock also start a lock, and the lock backdrop that blocks clicks is hidden under
+  // prefers-reduced-motion.
+  const isLocking = () => authState() === 'locking';
   const showUnreadBadge = () => hasUnread() && onboardingMode() !== 'tour';
 
   // Format date: "Tuesday, January 1, 2019"
@@ -55,12 +58,7 @@ export default function Header(props: HeaderProps) {
 
   const handleLock = async () => {
     if (isLocking()) return;
-    setIsLocking(true);
-    try {
-      await lockJournal();
-    } finally {
-      setIsLocking(false);
-    }
+    await lockJournal();
   };
 
   return (
