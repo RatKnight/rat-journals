@@ -76,3 +76,44 @@ Not applied: there is no functional or security need, and the alert is a false p
 
 - GitHub added repository-property-based config files for default setup (2026-08). Path exclusions would not help here: the test code lives inside `#[cfg(test)]` modules in production source files, so the noise is suppressed per alert, not per path.
 - If the next scan re-opens or re-emits alerts at these locations, dismiss again with the same reasons and append to this record.
+
+---
+
+# Dependabot Alerts Review — 2026-10-11 (same session)
+
+**Scope:** All Dependabot alerts on `fjrevoredo/mini-diarium`, read via `gh api` (79 total: 72 fixed, 4 open, 2 auto-dismissed, 1 dismissed), plus npm registry checks for every fix path and lockfile-level tracing of each affected package in `package-lock.json`.
+**Related TODOs:** TODO-0108 (extract-zip tracker, updated) and TODO-0152 (new, WebdriverIO 10 upgrade).
+
+## Summary
+
+All 4 open alerts are dev-only or build-time-only; nothing shipped is affected. Two alerts were cleared with manifest changes in this session (they close as `fixed` once the commit reaches the default branch). The two `extract-zip` alerts stay open as trackers: the package still has no patched version, but the real fix (WebdriverIO 10) now exists and is tracked in TODO-0152.
+
+## Open alerts and disposition
+
+| # | Package | Severity | Chain | Disposition |
+|---|---------|----------|-------|-------------|
+| 81 | `postcss-selector-parser` 6.0.10 | medium | `@tailwindcss/typography` 0.5.20 (pins `6.0.10` exactly) | Fixed: the unused plugin was removed from `package.json` |
+| 85 | `katex` 0.16.47 | low | `mermaid` 11.16.1 and `@mermaid-js/mermaid-cli` 12.0.0 (both require `katex ^0.16.x`) | Fixed: override `"katex": "^0.19.0"` |
+| 51 | `extract-zip` 2.0.1 | high | `@wdio/utils` 9.32.0 → `@puppeteer/browsers` 2.13.2 | Open: no upstream patch; fixed by the WebdriverIO 10 upgrade (TODO-0152) |
+| 58 | `extract-zip` 2.0.1 | high | same (second advisory, CVE-2026-19693) | Open: same fix |
+
+## Per-alert findings
+
+### Alert #81 — `postcss-selector-parser` via `@tailwindcss/typography`
+
+`@tailwindcss/typography` was the only dependent of the vulnerable `postcss-selector-parser` 6.0.10 copy, and it pins that version exactly. The plugin itself is not imported anywhere (`git grep` over source, config, scripts, and website finds no import; `.prose` styles come from UnoCSS `presetTypography()` in `uno.config.ts`); it has sat in `package.json` unused since the initial commit. The latest `@tailwindcss/typography` (0.5.20, already installed) still pins 6.0.10, so only removal (or a major-forcing override) fixes the alert. Removal is the safe fix: dependency deleted, both lockfiles regenerated, build and tests pass.
+
+### Alert #85 — `katex` in the diagram toolchain
+
+`mermaid` 11.16.1 and `@mermaid-js/mermaid-cli` 12.0.0 both declare `katex ^0.16.x`; no released version of either (checked up to mermaid 12.1.0) accepts 0.18.2+. Fix: npm override `"katex": "^0.19.0"`. The patched 0.18.x line is not usable blindly: 0.18.11 is deprecated ("Accidentally published with breaking changes. Use 0.19.0 instead") and bun had resolved it for an `^0.18.2` override, so the override targets 0.19.0, which both lockfiles now resolve. KaTeX runs only for math labels; the repository's diagrams contain none, and `bun run diagrams` re-rendered all eight diagrams with no SVG change.
+
+### Alerts #51 and #58 — `extract-zip`
+
+Sole chain: `@wdio/utils@9.32.0 → @puppeteer/browsers@^2.2.0 → extract-zip@2.0.1` (dev-only, E2E browser downloads). `extract-zip` is unmaintained with no patched version for either advisory. The real fix is now available: WebdriverIO 10 (`@wdio/cli` 10.0.2, `webdriverio` 10.0.2) requires `@puppeteer/browsers@^3.2.1`, whose dependencies are `yargs` and `modern-tar` only. TODO-0108 was updated to list both advisories and record that its trigger is met; TODO-0152 tracks the upgrade and its acceptance (full E2E pass, both lockfiles clean of `extract-zip` and `@puppeteer/browsers@2.x`).
+
+## Action taken
+
+- `package.json`: removed `@tailwindcss/typography`; added the `katex` override.
+- `bun.lock` and `package-lock.json`: regenerated and aligned; no `@tailwindcss/typography` or `postcss-selector-parser` entry remains; `katex` is 0.19.0 in both; `extract-zip` untouched pending TODO-0152.
+- Verification: `bun run build`, `bun run type-check`, `bun run lint`, `bun run test:run` (117 files, 1290 tests), `bun run diagrams`, and `bun run diagrams:check` all pass.
+- Follow-up after push: refresh `npmDepsHash` in `nix/package.nix` from the Nix CI hash output (Nix is not available on this machine; the workflow fails and prints the hash).
