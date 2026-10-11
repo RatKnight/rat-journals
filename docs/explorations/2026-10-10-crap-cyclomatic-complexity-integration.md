@@ -32,7 +32,7 @@ CRAP therefore needs **two inputs joined per function**: complexity + coverage. 
 
 ## Findings (verified)
 
-### Current state of the repo
+### Initial state of the repo (before implementation)
 
 1. **Coverage infrastructure is already CRAP-ready on the input side.**
    - CI `test` job (`.github/workflows/ci.yml`): frontend `bun run test:coverage` (L187, Vitest v8 provider, reporters text/json/html/lcov → `coverage/lcov.info`); backend `cargo llvm-cov nextest --workspace --no-fail-fast --lcov --output-path lcov.info` (L199, run from `src-tauri/` → `src-tauri/lcov.info`); both uploaded to Codecov (L204–215).
@@ -47,7 +47,7 @@ CRAP therefore needs **two inputs joined per function**: complexity + coverage. 
    - Project measures: `complexity` = 7397, `cognitive_complexity` = 2679, `functions` = 5099, `ncloc` = 61040, `duplicated_lines_density` = 2.6; **`coverage` metric is absent entirely** (no coverage report imported into Sonar).
    - Component-tree queries for `.rs`, `crates`, `src-tauri` all return `total: 0` → **SonarCloud does not analyze the Rust code at all** (TS/JS only, 368 files indexed).
    - Top-complexity files (useful initial refactor targets): `scripts/check-diff-coverage.mjs` (CC 138 / cognitive 170), `src/components/editor/DiaryEditor.tsx` (121/71), `scripts/generate-website-docs.mjs` (121/72), `src/components/editor/EditorToolbar.tsx` (108/65), `src/components/backups/BackupsPanel.tsx` (89/58), `src/components/layout/JournalPicker.tsx` (74), `src/components/editor/useEntryLifecycle.ts` (72), `Calendar.tsx` (83). (File-level, not per-function; test files excluded from this list.)
-4. **Toolchain facts**: `rust-toolchain.toml` pins channel **1.95** (≥ cargo-crap's `rust_version` 1.88 ✓). `cargo-llvm-cov` 0.9.0 and `cargo-nextest` 0.9.138 installed locally and in CI (cached at ci.yml L173/L184).
+4. **Toolchain facts**: `rust-toolchain.toml` pins channel **1.95** (≥ cargo-crap's `rust_version` 1.88 ✓). Local tools are `cargo-llvm-cov` 0.9.0 and `cargo-nextest` 0.9.138. CI selects stable Rust and restores separately cached tools; captured Linux provenance reports rustc 1.95.0, cargo-llvm-cov 0.8.7, and nextest 0.9.130. Do not assume local versions are the CI versions.
 5. **`scripts/check-diff-coverage.mjs` parses only `SF:`/`DA:`/`end_of_record`** LCOV records (L68–78) — it ignores `FN`/`FNDA`. This does not block CRAP (see tool mechanics below) but bounds what the existing diff gate can do.
 
 ### Tooling landscape (verified maturity as of 2026-10-10)
@@ -182,9 +182,12 @@ Adopt **cargo-crap for Rust CRAP** (Phase 0 advisory with acceptance checks → 
 ## Next Steps
 
 - [x] Second opinion from coding agent (tab wK:t4) — received, verdict agree-with-changes, all changes adopted (see below)
-- [ ] Review this proposal; decide Phase 2 threshold values (`complexity` max, warn-vs-error) and the clippy `msrv` contract
-- [ ] Exit exploration mode to implement Phase 0 (CI advisory step, Linux baseline production + normalization, acceptance checks)
-- [ ] Capture implementation plan via `manual-planning` skill when Phase 0 is greenlit
+- [x] Review this proposal; decide Phase 2 thresholds and the Clippy MSRV contract (recorded in the implementation plan and decisions)
+- [x] Capture and approve the implementation plan via `manual-planning`
+- [x] Implement advisory reporting, normalization, Linux acceptance, and independent complexity lints
+- [ ] Finish the requested pre-merge self-check and obtain advisory merge review
+- [ ] Produce and review the canonical baseline from post-merge master Linux CI
+- [ ] Obtain separate Task 1.6 approval before any blocking-gate implementation
 
 ## Second opinion (coding agent, Herdr tab wK:t4)
 
@@ -234,4 +237,4 @@ Reviewer additions (all adopted): automated gate-script tests against the real p
 
 Reviewer removals/adjustments (all adopted): dedup-timeout fix out; local Windows step not described as a blocking mirror; annotations preferably emitted by the policy script from the same delta JSON (a second `--format github` pass acceptable but must not be confused with the gate verdict).
 
-**Resulting plan**: `docs/plans/2026-10-10-crap-complexity-gates-plan.md` (manual-planning v2.0.0, milestoned, 16 tasks across 4 milestones, checker-clean modulo the documented W001). Second-pass review of the finished plan requested from the same reviewer — outcome recorded in the plan's execution history / below.
+**Resulting plan**: `docs/plans/2026-10-10-crap-complexity-gates-plan.md` (manual-planning v2.0.0, four milestones). The current primary-worktree plan and companion decisions file are the execution ledger; its initial tracking warning was resolved when the plan was committed. Tasks 1.7 and 1.8 were added for the inherited security prerequisite and the user-requested full self-check. Merge review, a canonical master baseline, and separate blocking-gate approval remain pending.

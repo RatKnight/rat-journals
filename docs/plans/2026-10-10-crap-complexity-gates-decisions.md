@@ -99,3 +99,17 @@ Companion to [the implementation plan](2026-10-10-crap-complexity-gates-plan.md)
 - Task: 1.7
 - Decision: Under the skill-improver workflow, add a narrow security-rating API recipe and an inherited-commit check to the canonical CI diagnosis skill in a separate documentation change. Sync generated mirrors after that edit. Do not add M2 gate documentation or alter SonarCloud configuration.
 - Rationale: The existing skill explains duplication and coverage failures, but not a security-rating failure. Querying the issue API located the sole finding in earlier unmerged work and prevented an unauthorized change. The missing recipe is an obvious documentation gap; the current fix and its tests already address the repo artifact gap. No structural skill redesign is needed.
+
+### DEC-015 — Full self-check before advisory merge review
+
+- Date: 2026-10-11
+- Task: 1.8
+- Decision: The user requested a full correctness, completeness, and accuracy check instead of approving the advisory merge. Add Task 1.8 as a merge prerequisite. Review all implemented work and run fresh integrated checks. Fix small in-scope defects with regression tests; do not merge PR #327, create a canonical baseline from a PR artifact, or begin M2.
+- Rationale: Passing PR checks do not replace a code and plan audit. The primary branch also contains independent lint, reporting, and auth validation changes that are deliberately absent from the advisory-only PR; both scopes must be checked and described accurately.
+
+### DEC-016 — Reject ambiguous report paths and strengthen CLI controls
+
+- Date: 2026-10-11
+- Task: 1.8
+- Decision: Reject Windows drive-relative report paths such as `C:outside.rs` on every consumer OS, and reject malformed producer roots. Put normalizer-only controls in their own script suite so the advisory PR can execute them without the independent ESLint configuration change. Add maintained CLI success and failure controls, including no output overwrite on failure. Correct stale current-state documentation separately from the source fix.
+- Rationale: A direct negative control accepted `C:outside.rs` with both `/repo` and `C:/Repo` roots in baseline mode. This violates the portable baseline contract and can resolve through a drive's current directory later. Existing inline tests did not cover this ambiguity or CLI behavior. The fix stays within Task 1.3's path-only contract; it adds no comparison mode, metrics calculation, baseline, or gate.
