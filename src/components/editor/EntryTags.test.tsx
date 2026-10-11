@@ -39,6 +39,7 @@ vi.mock('../../state/ui', () => ({
 }));
 
 import EntryTags from './EntryTags';
+import { isEscapeClaimed } from '../../lib/escape-claim';
 
 const WORK_TAG: Tag = { id: 1, name: 'Work', created_at: '2026-01-01T00:00:00Z' };
 const CAREER_TAG: Tag = { id: 1, name: 'Career', created_at: '2026-01-01T00:00:00Z' };
@@ -198,7 +199,7 @@ describe('EntryTags', () => {
     // listener on document is already registered, so it must run first.
     const seen: boolean[] = [];
     const globalListener = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') seen.push(e.defaultPrevented);
+      if (e.key === 'Escape') seen.push(isEscapeClaimed(e));
     };
     document.addEventListener('keydown', globalListener);
     try {

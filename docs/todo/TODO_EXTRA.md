@@ -456,7 +456,7 @@ After TODO-0125, the same gap would **lock the journal** in place of quitting th
 
 Parent: [`TODO-0125: Add a "Lock journal" option to the ESC key action (#313)`](TODO.md)
 
-**Context**: Explored 2026-10-08. **Prerequisite: TODO-0127 must ship first.** Without it, Escape pressed to close the Insert Link or Insert Timestamp dialog, or the tag dropdown, would also lock the journal. See [TODO-0127-01](#todo-0127-01-editor-local-dialogs-and-the-global-escape-guard). This section assumes that TODO-0127's guards are in place: the dialog signals are in `isAnyOverlayOpen()`, there is an `e.defaultPrevented` early return, and there is an `e.isComposing` early return.
+**Context**: Explored 2026-10-08. **Prerequisite: TODO-0127 must ship first.** Without it, Escape pressed to close the Insert Link or Insert Timestamp dialog, or the tag dropdown, would also lock the journal. See [TODO-0127-01](#todo-0127-01-editor-local-dialogs-and-the-global-escape-guard). This section assumes that TODO-0127's guards are in place: the dialog signals are in `isAnyOverlayOpen()`, there is an `isEscapeClaimed(e)` early return (`src/lib/escape-claim.ts`, TODO-0150; it replaced the `e.defaultPrevented` check), and there is an `e.isComposing` early return.
 
 ### Current flow and where the change goes
 
@@ -464,7 +464,7 @@ Parent: [`TODO-0125: Add a "Lock journal" option to the ESC key action (#313)`](
 keydown "Escape" ──▶ MainLayout.handleGlobalEsc   (src/components/layout/MainLayout.tsx:47)
                        ├─ onboarding tour?        → minimizeOnboarding(), stop
                        ├─ onboarding minimized?   → stop
-                       ├─ (TODO-0127 guards: composing / defaultPrevented)
+                       ├─ (TODO-0127 guards: composing / claimed, TODO-0150)
                        ├─ isAnyOverlayOpen()?     → stop
                        └─ escAction
                             'quit' → getCurrentWindow().close()
@@ -517,5 +517,79 @@ keydown "Escape" ──▶ MainLayout.handleGlobalEsc   (src/components/layout/M
 ### Manual check (real app)
 
 ESC action = Lock → type in an entry → Escape → the lock animation plays, then the unlock screen shows → unlock → the text is saved. Then: open Ctrl+K → Escape closes only the dialog, and the journal stays unlocked (this is the TODO-0127 regression). Hold Escape down → only one lock happens, with no errors in the log.
+
+---
+
+## TODO-0150-01: Escape in the editor body
+
+Parent: [`TODO-0150: Escape must run the ESC key action while the cursor is in the entry body (#329)`](TODO.md)
+
+**Context**: Explored 2026-10-11 from [issue #329](https://github.com/fjrevoredo/mini-diarium/issues/329) (macOS 26.6.2, v0.7.4, DMG). Reporter: Escape quits from the title field or with no focus, but not from the entry body. Root cause found by reading the code and the installed library source. It is not reproduced in the real app yet.
+
+### Root cause
+
+```
+keydown "Escape", target = editor body (.ProseMirror)
+  1. window capture   recordOverlayOnEsc         → no overlay, nothing recorded
+  2. target phase     prosemirror-view keydown   → captureKeyDown(): code 27 → true
+                                                 → event.preventDefault()      ◀── here
+  3. document bubble  MainLayout.handleGlobalEsc → e.defaultPrevented → return  ◀── skipped
+```
+
+- `node_modules/prosemirror-view/dist/index.js` (v1.42.3), `captureKeyDown`: `else if (code == 13 || code == 27) { // Enter, Esc  return true; }`. `editHandlers.keydown` then calls `event.preventDefault()`. This is unconditional ProseMirror behavior. No TipTap extension or app code binds Escape.
+- `src/components/layout/MainLayout.tsx` `handleGlobalEsc`: `if (e.isComposing || e.defaultPrevented) return;`. Commit `d85996b` (TODO-0127, first in `v0.7.4`) added the `defaultPrevented` check so the `EntryTags` dropdown can claim its Escape. Before v0.7.4 the handler did not check it, so Escape in the body quit the app. This matches the report ("I think it used to before this latest release").
+- The bug is on all platforms, not only macOS.
+- The title field works because `TitleEditor` does not call `preventDefault()` on Escape.
+- A **locked** entry (read-only editor) is not affected: ProseMirror runs its edit handlers (`keydown` among them) only when `view.editable` is true (`index.js:3136`/`3186`).
+- The existing test `does not quit on Escape that a component already handled (defaultPrevented)` (`MainLayout.test.tsx:160`) passes a synthetic event. No test sends Escape through a real editor, so CI did not catch this.
+
+### Who relies on `defaultPrevented` today
+
+| Source of `preventDefault()` on Escape | Needs the global action skipped? | Notes |
+|---|---|---|
+| `EntryTags` dropdown (`EntryTags.tsx:119`) | **Yes** | The only intended user of the rule. |
+| ProseMirror, editor body | **No** | The cause of this bug. |
+| `LinkOverlay`, `ImagePickerOverlay` | Yes | Already covered by the overlay snapshot (`escWhileOverlayOpen`). |
+| Kobalte `DismissableLayer` (`@kobalte/core` 0.13.14) | n/a | Adds its own `document` listener when a layer opens, so it runs **after** `handleGlobalEsc`. Its `preventDefault()` is too late to matter. The more menu is guarded by `isMoreMenuOpen` in `isAnyOverlayOpen()`. |
+
+So `defaultPrevented` is a signal that a library can set for its own reasons. The global handler cannot tell "a popup used this Escape" from "ProseMirror always does this".
+
+### Fix options
+
+| Option | Change | For | Against |
+|---|---|---|---|
+| **A. Explicit claim (recommended)** | A small helper, for example `claimEscape(e)` / `isEscapeClaimed(e)` backed by a module-level `WeakSet<KeyboardEvent>` (same pattern as `escWhileOverlayOpen`). `EntryTags` calls `claimEscape(e)`. `handleGlobalEsc` checks `isEscapeClaimed(e)` and no longer reads `e.defaultPrevented`. | Only app code can claim Escape, so no library can turn the global action off by accident. One call site to migrate. | One more small mechanism. A future third-party popup that handles Escape must call the helper itself. |
+| B. Exempt the editor | Keep the `defaultPrevented` check, but ignore it when `e.target` is inside `.ProseMirror`. | Smallest change. | Depends on ProseMirror DOM details. A future TipTap popup in the editor (for example a suggestion menu) that handles Escape would be indistinguishable, so Escape would then also quit or lock. |
+| C. Undo in TipTap | A TipTap extension that handles Escape first. | — | Does not work: ProseMirror calls `preventDefault()` whenever any handler returns `true`, and `captureKeyDown` returns `true` anyway. |
+
+Recommendation: **A**. Put the helper next to the overlay guard (in `src/state/ui.ts` or a small `src/lib/escape-claim.ts`). The `EntryTags` handler can keep its `preventDefault()` (harmless), but the comment must name the claim helper as the reason the global action skips it.
+
+### Tests
+
+- `MainLayout.test.tsx`: mount a real TipTap `Editor` (StarterKit is enough) on an element in `document`, render `MainLayout` with `escAction: 'quit'`, and dispatch `new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27, bubbles: true, cancelable: true })` on `editor.view.dom`. Assert that `close()` is called. ProseMirror reads `keyCode`, so the test must set it. First assert that the event is `defaultPrevented`, so the test proves the ProseMirror path. This test must fail before the fix.
+- Change the existing `defaultPrevented` test: a plain `preventDefault()` no longer blocks the action, and a claimed event does.
+- `EntryTags` test: Escape with the dropdown open claims the event (the `MainLayout` integration case with the real `EntryTags`, if one exists, must stay green).
+- Keep all TODO-0127 cases green: link and timestamp dialogs, `isComposing`, the overlay snapshot.
+- E2E is optional: seed `escAction: 'quit'` in `localStorage['preferences']`, type in the editor, press Escape, and check that the app closes. This is hard to assert in WDIO, so a unit test is the main guard.
+
+### Docs
+
+- `src/CLAUDE.md` → *Keyboard Shortcuts*: replace "must call `e.preventDefault()`; the global Escape handler skips `defaultPrevented` events" with the claim-helper rule, and add why: ProseMirror calls `preventDefault()` on every Escape in the editor.
+- `docs/best-practices/FRONTEND_BEST_PRACTICES.md`: add the rule only if it has a keyboard section.
+- `CHANGELOG.md` → Fixed: "Pressing Escape while writing in the entry body runs the ESC key action again (for example Quit). This stopped working in v0.7.4. (#329)"
+- No `website/docs-src` change. The documented behavior does not change.
+
+### Relation to TODO-0125
+
+TODO-0125 adds a "Lock the journal" ESC action through the same `handleGlobalEsc`. Without this fix, Escape in the body would not lock either. Its notes (TODO-0125-01) said "there is an `e.defaultPrevented` early return". That line now names the `isEscapeClaimed(e)` check (updated with this fix).
+
+### Manual check (real app)
+
+ESC action = Quit → type in the body → Escape → the app quits. Then: tag input with suggestions open → Escape closes only the dropdown. Ctrl+K → Escape closes only the dialog. Title field → Escape quits. Locked entry, click in the body → Escape quits.
+
+### Open questions
+
+- Was the user's DMG build v0.7.4 the first version with the bug? `git tag --contains d85996b` shows only `v0.7.4`, so yes.
+- Should Escape in the body ever do something editor-local first (for example clear a selection) before the global action? Nothing does this today. This fix keeps "the global action runs".
 
 ---

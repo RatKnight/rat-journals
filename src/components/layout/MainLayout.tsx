@@ -35,6 +35,7 @@ import {
 } from '../../state/ui';
 import { preferences } from '../../state/preferences';
 import { registerKeyboardShortcuts } from '../../lib/keyboard-shortcuts';
+import { isEscapeClaimed } from '../../lib/escape-claim';
 import { onboardingMode, minimizeOnboarding } from '../../state/onboarding';
 
 const log = createLogger('MainLayout');
@@ -56,8 +57,9 @@ export default function MainLayout() {
   const handleGlobalEsc = (e: KeyboardEvent) => {
     if (e.key !== 'Escape') return;
     // An IME uses Escape to cancel composition, and a non-modal popup (e.g. the tag
-    // dropdown) calls preventDefault() on the Escape it already handled.
-    if (e.isComposing || e.defaultPrevented) return;
+    // dropdown) claims the Escape it already handled. defaultPrevented is not usable:
+    // ProseMirror sets it on every Escape in the editor body.
+    if (e.isComposing || isEscapeClaimed(e)) return;
     if (onboardingMode() === 'tour') {
       minimizeOnboarding();
       return;

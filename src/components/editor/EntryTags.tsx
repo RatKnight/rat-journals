@@ -17,6 +17,7 @@ import {
 } from '../../state/tags';
 import { setIsTagManagerOpen, setIsSidebarCollapsed } from '../../state/ui';
 import { mapTauriError } from '../../lib/errors';
+import { claimEscape } from '../../lib/escape-claim';
 
 interface EntryTagsProps {
   entryId: number;
@@ -116,6 +117,7 @@ export default function EntryTags(props: EntryTagsProps) {
       void handleCreateTag();
     } else if (e.key === 'Escape') {
       // Claim the key so MainLayout's global Escape action (e.g. Quit) skips it.
+      claimEscape(e);
       e.preventDefault();
       setIsDropdownOpen(false);
       setNewTagName('');

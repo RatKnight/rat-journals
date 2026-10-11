@@ -119,7 +119,7 @@ Every app-level shortcut lives in `src/lib/keyboard-shortcuts.ts` — one `keydo
 The same guard protects `MainLayout`'s global Escape action (e.g. Quit), so it only works if it sees every dialog:
 - Every modal's open signal lives in `src/state/ui.ts` and is part of `isAnyOverlayOpen()` — including component-owned dialogs such as the toolbar's Insert Link / Insert Timestamp (`isLinkDialogOpen` / `isTimestampDialogOpen`). Never keep a modal's open state in a local signal. Reset the signal in `resetUiState()`, and in the owner's `onCleanup` if the owner can unmount while the dialog is open.
 - A dialog's own Escape handler closes it **before** `handleGlobalEsc` runs (Solid delegates `onKeyDown` to `document` at import time, before `MainLayout` mounts). So `MainLayout` records "an overlay was open" in a `window` capture-phase listener, before any handler runs, and `handleGlobalEsc` reads that record. Do not move the overlay check back to read only the live signal.
-- A non-modal popup that handles Escape itself (e.g. the `EntryTags` dropdown) must call `e.preventDefault()`; the global Escape handler skips `defaultPrevented` events.
+- A non-modal popup that handles Escape itself (e.g. the `EntryTags` dropdown) must call `claimEscape(e)` from `src/lib/escape-claim.ts`; the global Escape handler skips claimed events. It does not read `defaultPrevented`, because ProseMirror sets it on every Escape in the editor body (TODO-0150).
 - Global handlers ignore `e.isComposing` — an IME uses Escape to cancel composition.
 
 These were OS-level native-menu accelerators until TODO-0065 reduced the native menu to Preferences + Quit. `CmdOrCtrl+,` (Preferences) is the one accelerator still handled by the OS.

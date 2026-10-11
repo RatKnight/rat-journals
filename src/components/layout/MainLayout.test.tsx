@@ -59,8 +59,10 @@ vi.mock('../overlays/OnboardingOverlay', () => ({ default: () => null }));
 vi.mock('../search/SearchOverlay', () => ({ default: () => null }));
 
 import { delegateEvents } from 'solid-js/web';
-import type { Editor } from '@tiptap/core';
+import { Editor as TiptapEditor, type Editor } from '@tiptap/core';
+import StarterKit from '@tiptap/starter-kit';
 import MainLayout from './MainLayout';
+import { claimEscape } from '../../lib/escape-claim';
 import LinkOverlay from '../editor/LinkOverlay';
 import TimestampOverlay from '../editor/TimestampOverlay';
 
@@ -157,7 +159,7 @@ describe('MainLayout global keydown guards', () => {
     expect(mockClose).not.toHaveBeenCalled();
   });
 
-  it('does not quit on Escape that a component already handled (defaultPrevented)', () => {
+  it('still quits on Escape that only had preventDefault() called on it', () => {
     setPreferences({ escAction: 'quit' });
     renderWithI18n(() => <MainLayout />);
 
@@ -165,7 +167,67 @@ describe('MainLayout global keydown guards', () => {
     event.preventDefault();
     document.dispatchEvent(event);
 
+    expect(mockClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not quit on Escape that a component claimed', () => {
+    setPreferences({ escAction: 'quit' });
+    renderWithI18n(() => <MainLayout />);
+
+    const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    claimEscape(event);
+    document.dispatchEvent(event);
+
     expect(mockClose).not.toHaveBeenCalled();
+  });
+
+  describe('with a real editor body focused', () => {
+    let editor: TiptapEditor | undefined;
+    let host: HTMLDivElement | undefined;
+
+    afterEach(() => {
+      editor?.destroy();
+      host?.remove();
+      editor = undefined;
+      host = undefined;
+    });
+
+    const pressEscapeInBody = (editable: boolean) => {
+      setPreferences({ escAction: 'quit' });
+      renderWithI18n(() => <MainLayout />);
+      host = document.createElement('div');
+      document.body.appendChild(host);
+      editor = new TiptapEditor({
+        element: host,
+        extensions: [StarterKit],
+        content: '<p>x</p>',
+        editable,
+      });
+
+      const event = new KeyboardEvent('keydown', {
+        key: 'Escape',
+        keyCode: 27,
+        bubbles: true,
+        cancelable: true,
+      });
+      editor.view.dom.dispatchEvent(event);
+      return event;
+    };
+
+    // ProseMirror calls preventDefault() on every Escape in an editable view, so the
+    // global action must not treat defaultPrevented as "a popup used this key".
+    it('quits on Escape pressed in the entry body', () => {
+      const event = pressEscapeInBody(true);
+
+      expect(event.defaultPrevented).toBe(true);
+      expect(mockClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('quits on Escape pressed in the body of a locked (read-only) entry', () => {
+      pressEscapeInBody(false);
+
+      expect(mockClose).toHaveBeenCalledTimes(1);
+    });
   });
 
   it('does not open search on Ctrl+F while the header overflow menu is open', () => {
