@@ -334,7 +334,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 ### Milestone 4: Cleanup And Final Verification
 
-- Status: TO BE DONE
+- Status: IN PROGRESS
 - Purpose: ensure the repository contains only intentional final artifacts and the complete change is verified.
 - Exit Criteria: intermediate artifacts removed, every `## Pre-flight Checks` item passes, and Task 4.2 final verification passes (including Linux CI policy exit 0 and the successful local advisory analysis). After these criteria pass and task/milestone statuses are reconciled, set Plan Status to COMPLETED; that status change is the consequence of verification, not a prerequisite.
 
@@ -352,7 +352,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 #### Task 4.2: Final Verification
 
 - Status: TO BE DONE
-- Depends On: 4.1
+- Depends On: 4.1, 4.3
 - Objective: validate the integrated change after cleanup.
 - Steps:
    1. Regenerate both lcov files using the frontend/backend coverage commands in `## Context For A Clean Session`, requiring successful test runs, then run every item in `## Pre-flight Checks` against those fresh inputs.
@@ -360,6 +360,18 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
    3. Confirm one green Linux CI run for a PR targeting master with the blocking gate active, on code without seeded offenders. Require the policy script to exit 0 in that canonical CI environment, both script self-tests to pass, and report artifacts plus Codecov uploads to be present. This is the REQUIRED blocking unchanged-code check; the local Windows advisory dry run cannot replace it.
 - Validation: successful fresh coverage generation and all pre-flight commands exit 0; local analysis exits 0 and prints a clearly labeled advisory policy verdict (policy exit 0 or 1, never an unhandled input/tool failure); all three local self-tests exit 0; the Linux CI run is green with the blocking policy script exiting 0 and the new steps verified.
 - Notes: known limitation — the gate does not see closure bodies or macro expansions (documented per Task 2.4). Do not promote the local advisory comparison to a blocking check as part of final verification.
+
+#### Task 4.3: Resolve local frontend timeout validation
+
+- Status: IN PROGRESS
+- Depends On: none
+- Objective: obtain a successful fresh full frontend coverage run without weakening tests, and record the changing timeout failures accurately.
+- Steps:
+  1. Retain both failed-run logs and the unchanged targeted controls. Do not report either failed full run as green.
+  2. Verify the installed Vitest worker-limit option, then run `cmd.exe /c bun run test:coverage --maxWorkers 4` as a local runner-load diagnostic with every test and unchanged timeouts/thresholds.
+  3. If the full diagnostic fails again, ask for separate authorization before any unrelated test/source fix. If it passes, record the validation result and its explicit concurrency setting, without claiming that the default-concurrency run passed or that the root cause is proven.
+- Validation: full diagnostic exits 0 with all 1277 frontend tests passing and fresh coverage; both timeout suites pass unchanged targeted controls; no source test, timeout, coverage threshold, or CI setting changed.
+- Notes: temporary validation blocker discovered while running Task 2.1's comprehensive local checks (DEC-020/DEC-021). The existing dedup source fix remains a Non-Goal. This task records and verifies local validation, not a new feature or permission for unrelated fixes.
 
 ## Project Gates
 
@@ -393,7 +405,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 ## Decision Log
 
-Entries live in [2026-10-10-crap-complexity-gates-decisions.md](2026-10-10-crap-complexity-gates-decisions.md) (20 entries). The timing rule is unchanged: write an entry before moving to the next task.
+Entries live in [2026-10-10-crap-complexity-gates-decisions.md](2026-10-10-crap-complexity-gates-decisions.md) (21 entries). The timing rule is unchanged: write an entry before moving to the next task.
 
 ## Final Verification
 
@@ -418,6 +430,7 @@ The earlier W001 warning is resolved: the plan is now tracked in commit `4f480f0
 
 ## Execution Notes
 
+- The full frontend rerun `sh_12afd8bc6001gaIeGRD1nh8zNv` also exited 1: the dedup test passed, but `PreferencesOverlay.integration.test.tsx`'s Security persistence test timed out at 5672 ms against 5000 ms; 1276 other tests passed. Its unchanged targeted suite passed 2/2, with total duration 39.44 seconds dominated by transforms/imports and test time below one second. Task 4.3 records this validation blocker under DEC-021 and is IN PROGRESS during its reduced-worker control. No app/test/timeout configuration was changed. `bun run test:coverage --maxWorkers 4` is running as `sh_12b01429e0018miMbXy3KeKl6k`, log `C:\Users\Francisco\AppData\Local\Temp\opencode\crap-policy-frontend-workers4-20261011.log`; await its notification. This control is not evidence of a passing default-concurrency run.
 - Fresh local gate `sh_12af5fee60018GD0MJRbUGaJOW` completed with exit 1, not a pass: only `src/test/prosemirror-dedup.test.ts` timed out (7382 ms against the unchanged 5000 ms limit). Other frontend tests passed (1276); backend passed 950/950; scripts passed 74/74; the other 13 gate checks passed; patch coverage remains 46/48 (95.8%) at 80%. The known dedup timeout fix is a Non-Goal. DEC-020 records unchanged targeted/full frontend controls without weakening the guard. The targeted `bun run test:run src/test/prosemirror-dedup.test.ts` control passed 1/1 with total duration 2.34 seconds. Fresh full frontend coverage is running as `sh_12afd8bc6001gaIeGRD1nh8zNv`, log `C:\Users\Francisco\AppData\Local\Temp\opencode\crap-policy-frontend-recheck-20261011.log`; await its notification, not a poll. The Linux watcher remains active; this local failure does not establish a CI failure.
 - Task 2.1 Linux acceptance is running in NEVER-MERGE draft PR [#330](https://github.com/fjrevoredo/mini-diarium/pull/330), branch `ci/crap-policy-acceptance`, external worktree `C:\Users\Francisco\AppData\Local\Temp\opencode\crap-policy-acceptance-20261011`. Primary implementation commit is `00fa12a`; disposable workflow-only commit is `fce630cce0d4cf937847f00d950b8aa94f6b1d50`. CI run [38139778634](https://github.com/fjrevoredo/mini-diarium/actions/runs/38139778634) first compares unchanged source after fresh workspace coverage, then injects a runner-only new offender, regenerates coverage, and requires the real analyzer/policy to report it as New above 30 with exit 1. Runner source is restored on exit; both deltas upload as disposable evidence. Actionlint and diff checks passed. No probe enters primary source or the canonical baseline. All 132 tracked test files belong to gated runners. A real-baseline round-trip also passed for Linux and Windows roots, preserving every parsed value/order and the canonical SHA-256. Task 2.1 stays IN PROGRESS pending Linux results; production CI remains advisory. Background CI watcher: `sh_12af6249d001RY8KWniuI67XZM`, log `C:\Users\Francisco\AppData\Local\Temp\opencode\crap-policy-ci-watch-38139778634.log`. Fresh comprehensive local check: `sh_12af5fee60018GD0MJRbUGaJOW`, log `C:\Users\Francisco\AppData\Local\Temp\opencode\crap-policy-local-gate-20261011.log`. Await notifications in this session; do not poll either watcher.
 - Task 2.1 local implementation controls passed: comparison-mode normalization restores the explicit current root without changing baseline metrics, diagnostics, duplicate locations, or input data; both normalizer modes are mutually exclusive and refuse input/canonical baseline overwrite. The policy interpreter accepts only pinned 0.6.1 delta-v2 reports with matched LCOV data, validates locations and delta status, returns 0/1/2, and emits annotations from its offender list. The real Windows workspace delta supplied maintained fixture shapes, not canonical metrics. Local analysis exited 0; the advisory policy verdict exited 1 on four entries: Windows screen-lock `init`, `screen_lock_subclass_proc`, `trigger_auto_lock`, and backup-store `dir_state` (increase 0.20391442876650068). This is not a Linux gate verdict and does not change the baseline. Both inline self-tests and all 74 script tests passed. Dependency lockfiles and Nix metadata are unchanged. Linux unchanged-code and seeded-offender checks remain required before Task 2.1 completes; no Task 2.2/2.3 implementation started.

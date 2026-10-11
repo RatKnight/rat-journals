@@ -141,3 +141,10 @@ Companion to [the implementation plan](2026-10-10-crap-complexity-gates-plan.md)
 - Task: 2.1
 - Decision: The fresh comprehensive local gate failed only `prosemirror-dedup.test.ts` at its unchanged five-second timeout. Record the failure and run an unchanged targeted control plus a fresh full frontend coverage run. Do not alter or disable the test, increase any timeout, or count this comprehensive run as green. If the failure repeats, request separate authorization for its diagnosis/fix; the source fix remains outside this plan's Non-Goals.
 - Rationale: The other 1276 frontend tests, all 950 backend tests, all 74 script tests, and the other 13 gate checks passed. Patch coverage is still 46/48 (95.8%) at the unchanged 80% threshold. The plan already excludes the dedup timeout fix; changing it silently would mix unrelated work into the policy implementation.
+
+### DEC-021 — Diagnose changing timeout failures with bounded local concurrency
+
+- Date: 2026-10-11
+- Task: 4.3
+- Decision: Add an explicit validation-blocker task after the second full frontend run timed out in a different test, `PreferencesOverlay.integration.test.tsx`. Both affected suites pass in unchanged targeted runs. Use the installed Vitest CLI's `--maxWorkers 4` for one full-coverage diagnostic run. Do not change source, timeouts, coverage thresholds, test selection, or production CI concurrency. Ask for separate scope approval if a test/source fix is needed.
+- Rationale: The dedup test passed in the second full run, while the Preferences persistence test exceeded 5000 ms at 5672 ms; 1276 other tests passed. The targeted Preferences suite passes 2/2, with test time below one second. Installed Vitest `cac.DfDGTQ9W.js:938` supports `--maxWorkers`; `index.DpLw24bj.js:11849–11854` defaults non-watch runs to availableParallelism minus one. The revalidated Main Desktop reports 16 available CPUs. These facts support a runner-load hypothesis, not a proven application defect. A four-worker control keeps the same assertions and five-second limits.
