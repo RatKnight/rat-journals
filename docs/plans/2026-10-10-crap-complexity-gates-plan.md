@@ -30,7 +30,7 @@
 
 - The primary branch contains advisory reporting/normalization, workspace Clippy and frontend ESLint settings, Vitest failure reporting, the equivalent auth cleanup helper/tests, and the separately approved inherited Git-selection fix.
 - Draft PR #327 contains only the advisory reporting/normalization work and inherited runner infrastructure with its approved Git-selection fix. It deliberately excludes the independent Clippy, ESLint, Vitest, and auth commits. Local full-gate results validate the primary branch; PR CI results validate that narrower PR, not the independent changes.
-- Task 1.8 is the user-requested full self-check before merge. The new normalizer boundary fix is primary `d7b8dfc` and advisory `926d30f`; replacement CI run 38097918038 is pending. The user now approves merging PR #327 after the self-check and all current checks pass (DEC-017).
+- Task 1.8's full self-check is COMPLETED. The normalizer boundary fix is primary `d7b8dfc` and advisory `926d30f`; replacement CI run 38097918038 and every PR check passed on exact head `926d30f9a7ae5234a0e8ebf6bbdf736d3a2eeb99`. The user's conditional approval now permits merging PR #327 (DEC-017).
 - Tasks 1.5, 1.6, all M2 tasks, final gate documentation/changelog, and whole-plan final verification remain pending. There is no canonical baseline, reusable comparison mode, or blocking CRAP gate. The PR's plan copy is an initial planning snapshot; this primary-worktree plan and companion decisions file are the current execution ledger.
 
 ### Initial repository facts (before implementation)
@@ -161,7 +161,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
    1. Open the M1 PR containing: advisory CI step + binary cache and production-time provenance capture (Task 1.1), normalizer script + self-test + `package.json` entry (Task 1.3), `.gitignore` additions, and a lint-job CI step running `node scripts/normalize-crap-baseline.mjs --self-test` (script self-tests are outside ESLint's `src` scope and Vitest excludes `scripts/**` — without explicit wiring the normalizer could rot silently). Apply any test-helper analyzer exclusions decided in Task 1.2 to the report command before merging; record the exact exclusion list with the report provenance so Task 1.5 receives an already correctly scoped report.
   2. User review; merge to master. This merge IS the checkpoint — no canonical master artifact can exist before it.
 - Validation: the M1 PR is green (advisory step + normalizer self-test visible in the run) and merged; the subsequent master CI run produces the report artifact.
-- Notes: the CRAP changes are advisory-only. The PR also inherits the pre-existing runner-infrastructure commit `5a82c70`, which is absent from origin/master. Its SonarCloud PATH finding is fixed in a separate user-approved commit; Task 1.7 and all checks at `92488d0` passed. The self-check then added the normalizer boundary fix at `926d30f`; replacement CI and Task 1.8 must finish before the conditionally approved merge (DEC-017). This is separate from Task 1.6 approval; no finding was dismissed.
+- Notes: the CRAP changes are advisory-only. The PR inherits the earlier runner-infrastructure commit `5a82c70` and its separately approved Git-selection fix. Task 1.8 and all replacement checks now pass at `926d30f`, so the conditionally approved merge can proceed (DEC-017). Task 1.4 stays open until post-merge master CI produces its report. This is separate from Task 1.6 approval; no finding was dismissed.
 
 #### Task 1.5: Canonical Linux baseline `ci/crap-baseline.json`
 
@@ -201,7 +201,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 #### Task 1.8: User-requested full implementation self-check
 
-- Status: IN PROGRESS
+- Status: COMPLETED
 - Depends On: 1.1, 1.2, 1.3, 1.7, 3.2, 3.3, 3.4
 - Objective: verify correctness, completeness, and accuracy of all currently implemented changes before advisory merge review.
 - Steps:
@@ -418,6 +418,7 @@ The earlier W001 warning is resolved: the plan is now tracked in commit `4f480f0
 
 ## Execution Notes
 
+- Task 1.8 is COMPLETED: CI run 38097918038 passed all seven jobs, including Windows/Linux/macOS builds, Flatpak, and E2E. Every PR check also passed, including SonarCloud, CodeQL, and Codecov patch coverage. The checked PR head is exactly `926d30f9a7ae5234a0e8ebf6bbdf736d3a2eeb99`, still draft/open and mergeable at the final check. Together with the recorded code audit, fresh local checks, maintained regression tests, and production artifact validation, this satisfies the full self-check. Task 1.4 may now merge under DEC-017 without any check bypass; master CI validation remains required afterward.
 - The user approved merging PR #327 once Task 1.8 finishes (DEC-017). Updated Test, Lint, Linux/macOS builds, SonarCloud, CodeQL, and Codecov checks pass; Windows build, Flatpak, and E2E remain active. The downloaded run-38097918038 Linux artifact again has 619 functions, 17 above 30, no probes/helpers, complete production provenance, and unchanged non-path values through normalization. No master baseline was created from this PR artifact. Merge will target the explicitly checked head and will not bypass any check; Task 1.4 will remain open until post-merge master CI produces its report.
 - Task 1.8 review found one source defect: baseline mode accepted the drive-relative path `C:outside.rs` with Linux and Windows producer roots. Primary commit `d7b8dfc`, copied as advisory `926d30f`, refuses those ambiguous paths in both modes and malformed producer roots. A separate normalizer-only script suite covers CLI score/order preservation, outside-root and diagnostic rejection, malformed/version/delta/non-finite reports, unchanged existing output on failure, and warning-only plain report mode. The primary ESLint suite no longer duplicates the normalizer fixture entry point. No scorer, threshold, gate configuration, auth behavior, or dependency changed.
 - Task 1.8 full local check passed all 14 checks in `bun run pre-commit`: frontend coverage 1272/1272 in 116 files; script tests 67/67; fresh backend coverage 937/937, including both named auto-key tests; TypeScript, ESLint (seven advisory warnings), source Prettier, locale and repo guards, Clippy, rustfmt, and fresh patch coverage 46/48 (95.8%) at the unchanged 80% threshold. A final script run again passed 67/67, and ownership now covers 131 tracked test files. Targeted script Prettier, normalizer self-test, coverage-parser self-test, actionlint, frontend production build, and skill sync passed. The build retains its existing large-chunk warning; no bundling configuration changed.
