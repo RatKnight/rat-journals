@@ -31,7 +31,7 @@
 - The primary branch contains advisory reporting/normalization, workspace Clippy and frontend ESLint settings, Vitest failure reporting, the equivalent auth cleanup helper/tests, and the separately approved inherited Git-selection fix.
 - Merged PR #327 contains only the advisory reporting/normalization work and inherited runner infrastructure with its approved Git-selection fix. It deliberately excludes the independent Clippy, ESLint, Vitest, and auth commits. Local full-gate results validate the primary branch; PR CI results validate that narrower PR, not the independent changes.
 - Tasks 1.8 and 1.4 are COMPLETED. The normalizer boundary fix is primary `d7b8dfc` and advisory `926d30f`; replacement CI run 38097918038 and every PR check passed on exact head `926d30f9a7ae5234a0e8ebf6bbdf736d3a2eeb99`. PR #327 merged under DEC-017 as `8a345d70abe8fb5c3aba842150f5b0c2af5a66d9`. Master CI run 38099433982 passed all seven jobs, and its probe-free Linux report and production provenance are verified.
-- Merge `4a88bd7` includes master `f1bb84f73f44dd40028299682d0b6ef2f2326ca7` (DEC-018), whose master CI run 38103562280 passed all seven jobs. Task 1.5's dedicated commit `189bb55` contains only the canonical 624-entry Linux baseline and producer-record sidecar. DEC-019 authorizes M2. Task 2.1 is complete after full Linux acceptance; Task 2.2 wiring is committed and awaits three live controls; Task 2.3's tested local advisory integration is complete. Current execution evidence and dependencies are below. This primary-worktree plan and companion decisions file remain the current execution ledger; older execution notes are dated evidence, not current status.
+- Merge `4a88bd7` includes master `f1bb84f73f44dd40028299682d0b6ef2f2326ca7` (DEC-018), whose master CI run 38103562280 passed all seven jobs. Task 1.5's dedicated commit `189bb55` contains only the canonical 624-entry Linux baseline and producer-record sidecar. DEC-019 authorizes M2. Milestones 1–3 are complete: the Linux gate passes unchanged code and rejects both negative controls; local checks are advisory; policy docs and changelog are finished. Disposable PRs are closed without merge, scratch branches/worktrees are removed, and evidence remains outside the repository. Task 4.2 final fresh verification is next. This plan and companion decisions file remain the execution ledger; older execution notes are dated evidence, not current status.
 
 ### Initial repository facts (before implementation)
 
@@ -340,7 +340,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 #### Task 4.1: Cleanup Intermediate Artifacts
 
-- Status: IN PROGRESS
+- Status: COMPLETED
 - Depends On: 2.2, 2.3, 3.5
 - Objective: remove artifacts created only to support implementation.
 - Steps:
@@ -351,7 +351,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 #### Task 4.2: Final Verification
 
-- Status: TO BE DONE
+- Status: IN PROGRESS
 - Depends On: 4.1, 4.3
 - Objective: validate the integrated change after cleanup.
 - Steps:
@@ -430,6 +430,7 @@ The earlier W001 warning is resolved: the plan is now tracked in commit `4f480f0
 
 ## Execution Notes
 
+- Task 4.1 is COMPLETED: PRs #330–333 are CLOSED with `mergedAt: null`; all five clean disposable worktrees and their local control/advisory branches are removed. The four remote control branches are removed; the advisory remote had already been deleted, so the first combined remote-delete attempt refused and the verified four-ref retry succeeded. No local/remote `ci/crap-*` branch remains. Each three M2 probe commit returned exactly 1 against freshly fetched master and primary HEAD before cleanup. All evidence and run metadata remain in the approved temp directory; the local advisory delta was saved before removing only the four named generated outputs. Canonical JSON and provenance are byte-identical to `189bb55`; the repository has no unintended untracked files. Maintained helper/tests, proposal, plan, and decision record are kept. Task 4.2 can now run; final diagnostics will again be saved externally and their ignored outputs removed afterward.
 - Task 3.5 is COMPLETED: all four CRAP, workspace Clippy, frontend ESLint, and failure-reporting entries are verified under `0.7.5 / Unreleased / Internal`; the CRAP entry links to the finished policy and blind-spot documentation. No developer-only entry moved into a user-facing section. Milestones 2 and 3 now meet all exit criteria. Cleanup and final fresh verification remain Milestone 4.
 - Task 2.4 is COMPLETED: CI best practices now state the whole-function/repository-wide Linux policy, 0/1/2 failure contract, coverage/artifact ordering, all-local-platform advisory behavior, path alignment, reviewed baseline update/provenance rules, and closure/macro/cfg-dead limits. Canonical `ci-gate-diagnosis` includes artifact-first recipes, all-0% path checks, and the same policy/limits. Root `CLAUDE.md` adds only a self-test command and a short gotcha with pointers. All new relative links resolve, required anchors are present, `sync-skills` exits 0 without DRIFT, and no generated mirror is edited or staged. No website docs change applies to this developer-only check.
 - Task 2.2 is COMPLETED: unchanged-source run 38142680713 passed all seven jobs on `3e296fdd5e1ede64f2be77a4964734ecffcefd8e`, including the production gate, both lint self-tests, Windows/macOS/Linux builds, Flatpak, and clean/stateful Linux E2E. Both Codecov uploads and both CRAP artifacts succeeded. Independently parsed delta reports policy exit 0, 625 functions, zero violations, no probes, and unchanged `build_menu` at CRAP 600. Report/provenance/delta evidence is retained in `C:\Users\Francisco\AppData\Local\Temp\opencode\crap-gate-unchanged-evidence-38142680713`. Together with the two expected exit-1 negative controls below, this proves blocking behavior and upload preservation. All watchers have finished. Task 2.4 can now start; final post-cleanup verification remains Task 4.2.
