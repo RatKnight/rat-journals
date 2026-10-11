@@ -155,3 +155,10 @@ Companion to [the implementation plan](2026-10-10-crap-complexity-gates-plan.md)
 - Task: 2.3
 - Decision: Put the optional local flow in `scripts/crap-advisory.mjs`, called by `pre-commit.js` through its existing command runner. Add a maintained script suite for missing/wrong-version tools, absent same-run coverage, comparison errors, analyzer failure, and policy exits 0/1/2. Track successful same-run coverage plus its non-empty output timestamp in pre-commit. Use the normalizer API to prepare the root-aligned copy without constructing a shell command from the current root. Keep the actual policy CLI verdict advisory on every local OS, but keep policy/path self-tests blocking.
 - Rationale: `pre-commit.js` runs and exits on import, so isolated failure-path tests cannot import it safely. A small caller helper makes those controls deterministic without repeatedly running every frontend/backend test or hiding optional-tool behavior. It introduces no metric computation, dependencies, tool auto-install, new blocking local comparison, or baseline changes.
+
+### DEC-023 — User authorizes the final merge to master
+
+- Date: 2026-10-11
+- Task: 4.4
+- Decision: After reviewing the completed feature and workflows, the user said: “Ok then we need to merge it to master”. Add the final merge checkpoint to this ledger. Integrate current master `a3d5a82eea83f0e4519ffedf437de58ea31733bf` without rewriting history, preserve its documentation/TODO corrections, open the production PR, and merge only the exact checked head after all checks pass. Use a merge commit to preserve scoped implementation commits and the dedicated canonical baseline commit. Verify the post-merge master workflow and its policy artifacts. Do not change the reviewed baseline or bypass checks.
+- Rationale: The earlier completion explicitly stopped before merge authorization. The user now authorizes merging the whole completed feature, including its documented lint/reporting and tested auth cleanup. Master has two newer documentation commits, including a Rust comment only; these must be retained. Prior disposable controls remain closed and must not be merged.

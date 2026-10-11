@@ -2,7 +2,7 @@
 
 ## Metadata
 
-- Plan Status: COMPLETED
+- Plan Status: IN PROGRESS
 - Plan Format: manual-planning v2.0.0
 - Template: milestoned
 - Tracking: tracked (by user request)
@@ -31,7 +31,7 @@
 - The primary branch contains advisory reporting/normalization, workspace Clippy and frontend ESLint settings, Vitest failure reporting, the equivalent auth cleanup helper/tests, and the separately approved inherited Git-selection fix.
 - Merged PR #327 contains only the advisory reporting/normalization work and inherited runner infrastructure with its approved Git-selection fix. It deliberately excludes the independent Clippy, ESLint, Vitest, and auth commits. Local full-gate results validate the primary branch; PR CI results validate that narrower PR, not the independent changes.
 - Tasks 1.8 and 1.4 are COMPLETED. The normalizer boundary fix is primary `d7b8dfc` and advisory `926d30f`; replacement CI run 38097918038 and every PR check passed on exact head `926d30f9a7ae5234a0e8ebf6bbdf736d3a2eeb99`. PR #327 merged under DEC-017 as `8a345d70abe8fb5c3aba842150f5b0c2af5a66d9`. Master CI run 38099433982 passed all seven jobs, and its probe-free Linux report and production provenance are verified.
-- All four milestones are COMPLETED on the primary branch. The approved Linux policy passes unchanged code and rejects both negative controls; local comparisons remain advisory. Final fresh local checks passed with explicit four-worker frontend concurrency and unchanged tests/timeouts/thresholds. The reviewed 624-entry Linux baseline and provenance are byte-identical to dedicated commit `189bb55`. Documentation/changelog are finished; disposable PRs are closed without merge and scratch branches/worktrees are removed. Evidence remains outside the repository. Production source and workflow are identical to fully green Linux CI head `3e296fd`; later changes are documentation only. Completion does not authorize merging the primary branch or fixing the unrelated frontend timeouts. This plan and companion decisions file are the final execution ledger; older execution notes are dated evidence, not current status.
+- Implementation, documentation, cleanup, and final local verification are complete. The user then explicitly authorized merging the feature to master under DEC-023; Task 4.4 is IN PROGRESS. The Linux policy passes unchanged code and rejects both negative controls; local comparisons remain advisory. Fresh local checks passed with explicit four-worker frontend concurrency and unchanged tests/timeouts/thresholds. The reviewed 624-entry Linux baseline/provenance remain unchanged from `189bb55`. Disposable PRs are closed without merge and scratch branches/worktrees are removed; evidence remains outside the repository. Current merge state is recorded in Execution Notes. Unrelated frontend timeout fixes remain out of scope. This plan and companion decisions file are the execution ledger; older notes are dated evidence, not current status.
 
 ### Initial repository facts (before implementation)
 
@@ -334,9 +334,9 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 ### Milestone 4: Cleanup And Final Verification
 
-- Status: COMPLETED
+- Status: IN PROGRESS
 - Purpose: ensure the repository contains only intentional final artifacts and the complete change is verified.
-- Exit Criteria: intermediate artifacts removed, every `## Pre-flight Checks` item passes, and Task 4.2 final verification passes (including Linux CI policy exit 0 and the successful local advisory analysis). After these criteria pass and task/milestone statuses are reconciled, set Plan Status to COMPLETED; that status change is the consequence of verification, not a prerequisite.
+- Exit Criteria: intermediate artifacts removed, every `## Pre-flight Checks` item passes, Task 4.2 final verification passes (including Linux CI policy exit 0 and the successful local advisory analysis), and the separately authorized Task 4.4 merge/post-merge checks pass. After these criteria pass and task/milestone statuses are reconciled, set Plan Status to COMPLETED; that status change is the consequence of verification, not a prerequisite.
 
 #### Task 4.1: Cleanup Intermediate Artifacts
 
@@ -373,6 +373,19 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 - Validation: full diagnostic exits 0 with all 1277 frontend tests passing and fresh coverage; both timeout suites pass unchanged targeted controls; no source test, timeout, coverage threshold, or CI setting changed.
 - Notes: temporary validation blocker discovered while running Task 2.1's comprehensive local checks (DEC-020/DEC-021). The existing dedup source fix remains a Non-Goal. This task records and verifies local validation, not a new feature or permission for unrelated fixes.
 
+#### Task 4.4: Authorized final merge and master verification
+
+- Status: IN PROGRESS
+- Depends On: 4.2
+- Objective: the full reviewed feature is merged into current master without check bypasses, with a successful post-merge Linux policy check.
+- Steps:
+  1. Preserve current master corrections through a normal merge into the clean primary branch. Record user approval under DEC-023 and keep the dedicated baseline unchanged.
+  2. Open the production PR targeting master; verify the final source scope and all PR checks, including SonarCloud, CodeQL, Codecov, and all CI jobs. Do not merge disposable probe PRs.
+  3. Merge the exact checked head with a merge commit, without admin or auto-merge bypass. Confirm the merge on fetched master and the dedicated baseline commit in its ancestry.
+  4. Verify successful post-merge master CI, policy exit 0, both self-tests, Codecov uploads, and retained report/delta artifacts. Record provenance and the merge/run URLs without regenerating the canonical baseline.
+- Validation: PR is merged at the checked head; master contains the implementation/baseline commits and no probe commit; all pre-merge checks and post-merge CI pass; artifacts independently evaluate to policy exit 0; plan checker passes.
+- Notes: user explicitly authorized this checkpoint on 2026-10-11. Existing local validation limits and unrelated timeout Non-Goals remain unchanged.
+
 ## Project Gates
 
 - `cmd.exe /c bun run type-check`
@@ -405,7 +418,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 ## Decision Log
 
-Entries live in [2026-10-10-crap-complexity-gates-decisions.md](2026-10-10-crap-complexity-gates-decisions.md) (22 entries). The timing rule is unchanged: write an entry before moving to the next task.
+Entries live in [2026-10-10-crap-complexity-gates-decisions.md](2026-10-10-crap-complexity-gates-decisions.md) (23 entries). The timing rule is unchanged: write an entry before moving to the next task.
 
 ## Final Verification
 
@@ -414,6 +427,8 @@ Task 4.2 passed: fresh frontend/backend coverage, all pre-flight checks, all thr
 ## Approval Gate
 
 Approved by the user on 2026-10-10: “Do an exploration on the plan … Then implement it.” The additional M1→M2 gate was approved on 2026-10-11: after the acceptance review and explicit Linux blocking-gate approval question, the user replied “ok we need to continue” (DEC-019). Local checks remain advisory.
+
+Final merge approved on 2026-10-11: “Ok then we need to merge it to master” (DEC-023). This permits the production PR and exact-head merge after checks pass, not check bypasses or unrelated fixes.
 
 ## Plan Self-Check
 
@@ -430,6 +445,7 @@ The earlier W001 warning is resolved: the plan is now tracked in commit `4f480f0
 
 ## Execution Notes
 
+- The user authorized merging the full feature to master after the workflow summary (DEC-023). Task 4.4 is IN PROGRESS; implementation/cleanup/final local checks remain complete. Freshly fetched master is `a3d5a82`, two documentation commits ahead of the branch's base, with no executable-code changes. The primary worktree is clean; no production PR exists yet. Integrate those corrections and run a fresh production PR before the exact-head merge; preserve all baseline metrics and scoped commits.
 - Task 4.2 is COMPLETED. Final sequential validation on `17b47bb2350347ea7227ccd8ae26059449fba587` ran from `2026-10-11T13:57:09.2312274Z` to `2026-10-11T14:03:52.1907455Z`, exit 0: all 15 comprehensive checks, 1277/1277 frontend coverage tests in 116 files, 82/82 script tests, 950/950 nextest backend tests, a separate 1277/1277 plain frontend run, and plain workspace tests (app 315, core 593, crypto 42; doc-test targets also pass). Frontend used explicit local `VITEST_MAX_WORKERS=4`; no assertions, timeouts, thresholds, or CI settings changed. The new lcov files were written at 13:58:33.119/14:00:38.873 UTC, after run start, and the fresh 625-function delta at 14:00:39.140 UTC. Independent parsing confirms a valid advisory policy exit 1 on the same four Windows differences, not input/tool failure. Explicit final `coverage:diff` passes 46/48 (95.8%) against the unchanged 80% limit. All three self-tests, targeted script formatting, skill sync, actionlint, links, baseline preservation, and source/workflow equality with green Linux head `3e296fd` pass. Original final log is retained; a readable UTF-8 copy handles PowerShell's mixed encoding without altering the original evidence. Final advisory delta is saved externally as `crap-final-advisory-delta-20261011.json`; ignored delta/input files are removed again. No scratch branches/worktrees or unintended untracked files remain. Milestone 4 and the plan now meet all exit criteria; no additional process/skill changes are needed beyond the maintained tests and diagnosis docs already delivered.
 - Task 4.2 is IN PROGRESS after cleanup. Fresh comprehensive coverage, a separate plain full frontend run, and plain `cargo test --workspace --quiet` run sequentially under watcher `sh_12b40cb470017feZzTGPsPf34G`; log `C:\Users\Francisco\AppData\Local\Temp\opencode\crap-final-verification-20261011.log`. Frontend uses explicit local `VITEST_MAX_WORKERS=4`, with unchanged assertions/timeouts/thresholds/CI settings. Independently, all three parser/path/policy self-tests, skill sync, actionlint, and the plan checker passed. The final production source, scripts, dependencies, lint/configuration, and workflow are byte-identical to green Linux head `3e296fd`; only documentation/changelog/ledger changed afterward. All PR #332 checks passed, including SonarCloud, CodeQL, Codecov patch, and the seven CI jobs. Saved completed Test logs independently confirm two actual Codecov storage transfers (`Upload queued for processing complete`) in each of the three control runs, not merely successful action steps. Await the final local notification before marking Task 4.2 or the plan complete; the canonical baseline is unchanged.
 - Task 4.1 is COMPLETED: PRs #330–333 are CLOSED with `mergedAt: null`; all five clean disposable worktrees and their local control/advisory branches are removed. The four remote control branches are removed; the advisory remote had already been deleted, so the first combined remote-delete attempt refused and the verified four-ref retry succeeded. No local/remote `ci/crap-*` branch remains. Each three M2 probe commit returned exactly 1 against freshly fetched master and primary HEAD before cleanup. All evidence and run metadata remain in the approved temp directory; the local advisory delta was saved before removing only the four named generated outputs. Canonical JSON and provenance are byte-identical to `189bb55`; the repository has no unintended untracked files. Maintained helper/tests, proposal, plan, and decision record are kept. Task 4.2 can now run; final diagnostics will again be saved externally and their ignored outputs removed afterward.
