@@ -34,6 +34,7 @@ import {
   isAnyOverlayOpen,
 } from '../../state/ui';
 import { preferences } from '../../state/preferences';
+import { authState, lockJournal } from '../../state/auth';
 import { registerKeyboardShortcuts } from '../../lib/keyboard-shortcuts';
 import { isEscapeClaimed } from '../../lib/escape-claim';
 import { onboardingMode, minimizeOnboarding } from '../../state/onboarding';
@@ -67,10 +68,15 @@ export default function MainLayout() {
     if (onboardingMode() === 'minimized') return;
     // Never fire when any dialog is or was open at keydown — they handle their own Escape
     if (escWhileOverlayOpen.has(e) || isAnyOverlayOpen()) return;
-    if (preferences().escAction === 'quit') {
+    const action = preferences().escAction;
+    if (action === 'quit') {
       getCurrentWindow()
         .close()
         .catch((err) => log.error('Failed to close window:', err));
+    } else if (action === 'lock' && authState() === 'unlocked') {
+      // MainLayout stays mounted during 'locking' (the lock animation), so key repeat
+      // would call lockJournal() again without the 'unlocked' check.
+      void lockJournal().catch((err) => log.error('Failed to lock journal:', err));
     }
   };
 

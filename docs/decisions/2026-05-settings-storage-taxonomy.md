@@ -77,7 +77,7 @@ Q5: Is this a security enforcement setting or integrity-critical?
 | `firstDayOfWeek` | `number\|null` | `null` (system default) |
 | `hideTitles` | `boolean` | `false` |
 | `enableSpellcheck` | `boolean` | `true` |
-| `escAction` | `'none'\|'quit'` | `'none'` |
+| `escAction` | `'none'\|'quit'\|'lock'` | `'none'` |
 | `autoLockEnabled` | `boolean` | `false` |
 | `autoLockTimeout` | `number` (seconds) | `300` |
 | `autoLockOnFocusLoss` | `boolean` | `false` |

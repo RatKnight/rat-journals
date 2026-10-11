@@ -316,7 +316,8 @@
       "escLabel": "Action de la touche ÉCHAP",
       "escNone": "Ne rien faire",
       "escQuit": "Quitter l'application",
-      "escHint": "Lorsqu'elle est définie sur « Quitter », appuyez sur ÉCHAP pour fermer l'application lorsqu'aucun dialogue n'est ouvert.",
+      "escLock": "Verrouiller le journal",
+      "escHint": "Appuyer sur ÉCHAP quitte l'application ou verrouille le journal, selon ce réglage. Sans effet lorsqu'un dialogue est ouvert.",
       "languageLabel": "Langue",
       "languageHint": "Sélectionnez la langue d'affichage."
     },

@@ -42,7 +42,7 @@ The first time you create a journal, a **three-step overlay tour** appears to hi
 2. **Import your entries**: bring in content from Day One, Obsidian, or plain text files via the Import panel.
 3. **Read the documentation**: links to the online guides and keyboard shortcut reference.
 
-Each step shows a callout card with a direct action link. You can navigate with **Back** and **Next**, or click the **Minimize** (`⊟`) button in the card header to collapse the tour into a floating help icon (`?`) at the bottom-right of the window. Pressing **Escape** while the tour is open minimizes it rather than closing the app.
+Each step shows a callout card with a direct action link. You can navigate with **Back** and **Next**, or click the **Minimize** (`⊟`) button in the card header to collapse the tour into a floating help icon (`?`) at the bottom-right of the window. Pressing **Escape** while the tour is open minimizes it. It does not quit the app or lock the journal, whatever the ESC key action is set to.
 
 To resume or permanently dismiss the tour, click the `?` icon and choose **Resume Tour** or **Dismiss**. Completing all three steps also dismisses it automatically. The tour only ever appears once per app profile. It does not repeat on subsequent launches or when adding new journals.
 

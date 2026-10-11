@@ -316,7 +316,8 @@
       "escLabel": "Azione tasto ESC",
       "escNone": "Non fare nulla",
       "escQuit": "Chiudi applicazione",
-      "escHint": "Se impostato su \"Chiudi\", premere Escape chiude l'applicazione se non ci sono finestre di dialogo aperte.",
+      "escLock": "Blocca il diario",
+      "escHint": "Premere Escape chiude l'applicazione o blocca il diario, in base a questa impostazione. Non ha effetto quando è aperta una finestra di dialogo.",
       "languageLabel": "Lingua",
       "languageHint": "Seleziona la lingua di visualizzazione."
     },

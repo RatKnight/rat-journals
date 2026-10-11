@@ -78,6 +78,17 @@ describe('PreferencesOverlay — immediate persistence lifecycle', () => {
     expect(stored.hideTitles).toBe(true);
   });
 
+  it('offers and persists the "Lock the journal" ESC key action', () => {
+    renderWithI18n(() => <PreferencesOverlay isOpen onClose={() => {}} />);
+
+    const escSelect = screen.getByLabelText(/esc key action/i) as HTMLSelectElement;
+    expect(screen.getByRole('option', { name: 'Lock the journal' })).toBeInTheDocument();
+    fireEvent.change(escSelect, { target: { value: 'lock' } });
+
+    const stored = JSON.parse(localStorage.getItem('preferences') ?? '{}');
+    expect(stored.escAction).toBe('lock');
+  });
+
   it('persists Security auto-lock changes immediately and closes via close button only', () => {
     const onClose = vi.fn();
     const [isOpen, setIsOpen] = createSignal(true);

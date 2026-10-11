@@ -69,6 +69,7 @@ export default function PreferencesGeneralTab(_props: TabProps) {
         >
           <option value="none">{t('prefs.general.escNone')}</option>
           <option value="quit">{t('prefs.general.escQuit')}</option>
+          <option value="lock">{t('prefs.general.escLock')}</option>
         </select>
         <p class="mt-2 text-xs text-tertiary leading-relaxed">{t('prefs.general.escHint')}</p>
       </div>

@@ -19,7 +19,7 @@ Preferences are now **close-only**: there is no Save/Cancel footer. Reversible s
 |---------|-------------|
 | Theme | Light, dark, or follow system (auto) |
 | Language | Interface language: English, French, German, Hindi, Italian, Portuguese (Brazil), or Spanish |
-| ESC key action | Do nothing or quit the app when pressing Escape |
+| ESC key action | Do nothing, quit the app, or lock the journal when pressing Escape. Escape has no effect while a dialog is open |
 
 ## Writing Settings
 

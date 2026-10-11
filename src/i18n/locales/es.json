@@ -316,7 +316,8 @@
       "escLabel": "Acción de la tecla ESC",
       "escNone": "No hacer nada",
       "escQuit": "Cerrar la aplicación",
-      "escHint": "Cuando se establece en \"Cerrar\", presionar Escape cierra la aplicación si no hay ningún diálogo abierto.",
+      "escLock": "Bloquear el diario",
+      "escHint": "Al presionar Escape, la aplicación se cierra o el diario se bloquea, según este ajuste. No tiene efecto mientras hay un diálogo abierto.",
       "languageLabel": "Idioma",
       "languageHint": "Selecciona el idioma de visualización."
     },

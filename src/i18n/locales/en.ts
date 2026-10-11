@@ -385,7 +385,9 @@ const en = {
       escLabel: 'ESC key action',
       escNone: 'Do nothing',
       escQuit: 'Quit the app',
-      escHint: 'When set to "Quit", pressing Escape closes the app while no dialog is open.',
+      escLock: 'Lock the journal',
+      escHint:
+        'Pressing Escape quits the app or locks the journal, depending on this setting. It has no effect while a dialog is open.',
       languageLabel: 'Language',
       languageHint: 'Select the display language.',
     },

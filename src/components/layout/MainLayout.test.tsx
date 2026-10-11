@@ -11,11 +11,13 @@ import {
   setIsTimestampDialogOpen,
   isSearchOpen,
   isPreferencesOpen,
+  setIsPreferencesOpen,
   selectedDate,
   setSelectedDate,
 } from '../../state/ui';
 import { setPreferences, resetPreferences } from '../../state/preferences';
 import { setEntryDates } from '../../state/entries';
+import { startOnboarding, dismissOnboarding, onboardingMode } from '../../state/onboarding';
 
 const mockClose = vi.hoisted(() => vi.fn(() => Promise.resolve()));
 
@@ -41,6 +43,32 @@ vi.mock('../../lib/tauri', () =>
 vi.mock('@tauri-apps/api/window', () => ({
   getCurrentWindow: () => ({ close: mockClose }),
 }));
+
+// Keep the real auth module, but control the auth state and replace lockJournal() so
+// the Escape → lock tests do not run the real lock flow.
+const authMocks = vi.hoisted(() => ({
+  lockJournal: vi.fn(() => Promise.resolve()),
+  state: 'unlocked' as string,
+}));
+
+vi.mock('../../state/auth', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../state/auth')>()),
+  authState: () => authMocks.state,
+  lockJournal: authMocks.lockJournal,
+}));
+
+const mockLogError = vi.hoisted(() => vi.fn());
+
+vi.mock('../../lib/logger', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../lib/logger')>();
+  return {
+    ...actual,
+    createLogger: (module: string) =>
+      module === 'MainLayout'
+        ? { ...actual.createLogger(module), error: mockLogError }
+        : actual.createLogger(module),
+  };
+});
 
 // Isolate MainLayout's own keydown-guard logic from its heavy child tree
 // (editor, sidebar, calendar, overlays) — none of it is relevant here.
@@ -83,6 +111,11 @@ describe('MainLayout global keydown guards', () => {
     resetUiState();
     resetPreferences();
     mockClose.mockClear();
+    authMocks.lockJournal.mockReset();
+    authMocks.lockJournal.mockImplementation(() => Promise.resolve());
+    authMocks.state = 'unlocked';
+    mockLogError.mockClear();
+    dismissOnboarding();
   });
 
   afterEach(() => {
@@ -126,12 +159,13 @@ describe('MainLayout global keydown guards', () => {
   // `document` before handleGlobalEsc (see delegateEvents above). The guard must still
   // see that a dialog owned this Escape.
   it.each([
-    ['Insert Link', LinkOverlay, isLinkDialogOpen, setIsLinkDialogOpen],
-    ['Insert Timestamp', TimestampOverlay, isTimestampDialogOpen, setIsTimestampDialogOpen],
+    ['quit', 'Insert Link', LinkOverlay, isLinkDialogOpen, setIsLinkDialogOpen],
+    ['quit', 'Insert Timestamp', TimestampOverlay, isTimestampDialogOpen, setIsTimestampDialogOpen],
+    ['lock', 'Insert Link', LinkOverlay, isLinkDialogOpen, setIsLinkDialogOpen],
   ] as const)(
-    'does not quit when Escape closes the real %s dialog',
-    (_name, Overlay, isOpen, setOpen) => {
-      setPreferences({ escAction: 'quit' });
+    'does not %s when Escape closes the real %s dialog',
+    (action, _name, Overlay, isOpen, setOpen) => {
+      setPreferences({ escAction: action });
       renderWithI18n(() => <MainLayout />);
       renderWithI18n(() => (
         <Overlay editor={dialogEditor} isOpen={isOpen()} onClose={() => setOpen(false)} />
@@ -145,8 +179,90 @@ describe('MainLayout global keydown guards', () => {
 
       expect(isOpen()).toBe(false);
       expect(mockClose).not.toHaveBeenCalled();
+      expect(authMocks.lockJournal).not.toHaveBeenCalled();
     },
   );
+
+  describe('with escAction "lock"', () => {
+    const pressEscape = () =>
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+
+    beforeEach(() => {
+      setPreferences({ escAction: 'lock' });
+    });
+
+    it('locks the journal on Escape and does not quit', () => {
+      renderWithI18n(() => <MainLayout />);
+
+      pressEscape();
+
+      expect(authMocks.lockJournal).toHaveBeenCalledTimes(1);
+      expect(mockClose).not.toHaveBeenCalled();
+    });
+
+    it('does not lock on Escape while Preferences is open', () => {
+      setIsPreferencesOpen(true);
+      renderWithI18n(() => <MainLayout />);
+
+      pressEscape();
+
+      expect(authMocks.lockJournal).not.toHaveBeenCalled();
+    });
+
+    it('minimizes the onboarding tour instead of locking', () => {
+      startOnboarding();
+      renderWithI18n(() => <MainLayout />);
+
+      pressEscape();
+
+      expect(onboardingMode()).toBe('minimized');
+      expect(authMocks.lockJournal).not.toHaveBeenCalled();
+    });
+
+    it('does not lock again while a lock is already in progress', () => {
+      authMocks.state = 'locking';
+      renderWithI18n(() => <MainLayout />);
+
+      pressEscape();
+
+      expect(authMocks.lockJournal).not.toHaveBeenCalled();
+    });
+
+    it('locks only once when Escape repeats during the lock animation', () => {
+      authMocks.lockJournal.mockImplementation(() => {
+        authMocks.state = 'locking';
+        return new Promise<void>(() => {});
+      });
+      renderWithI18n(() => <MainLayout />);
+
+      pressEscape();
+      pressEscape();
+
+      expect(authMocks.lockJournal).toHaveBeenCalledTimes(1);
+    });
+
+    it('logs a failed lock instead of leaving an unhandled rejection', async () => {
+      const failure = new Error('lock failed');
+      authMocks.lockJournal.mockImplementation(() => Promise.reject(failure));
+      renderWithI18n(() => <MainLayout />);
+
+      pressEscape();
+
+      await waitFor(() =>
+        expect(mockLogError).toHaveBeenCalledWith('Failed to lock journal:', failure),
+      );
+    });
+  });
+
+  it('neither quits nor locks on Escape with escAction "none"', () => {
+    setPreferences({ escAction: 'none' });
+    renderWithI18n(() => <MainLayout />);
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+
+    expect(mockClose).not.toHaveBeenCalled();
+    expect(authMocks.lockJournal).not.toHaveBeenCalled();
+  });
 
   it('does not quit on Escape that cancels an IME composition', () => {
     setPreferences({ escAction: 'quit' });
@@ -192,8 +308,8 @@ describe('MainLayout global keydown guards', () => {
       host = undefined;
     });
 
-    const pressEscapeInBody = (editable: boolean) => {
-      setPreferences({ escAction: 'quit' });
+    const pressEscapeInBody = (editable: boolean, escAction: 'quit' | 'lock' = 'quit') => {
+      setPreferences({ escAction });
       renderWithI18n(() => <MainLayout />);
       host = document.createElement('div');
       document.body.appendChild(host);
@@ -227,6 +343,13 @@ describe('MainLayout global keydown guards', () => {
       pressEscapeInBody(false);
 
       expect(mockClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('locks on Escape pressed in the entry body', () => {
+      pressEscapeInBody(true, 'lock');
+
+      expect(authMocks.lockJournal).toHaveBeenCalledTimes(1);
+      expect(mockClose).not.toHaveBeenCalled();
     });
   });
 

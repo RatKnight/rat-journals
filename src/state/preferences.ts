@@ -8,7 +8,7 @@ export type { DateFormatStyle };
 
 const log = createLogger('Preferences');
 
-export type EscAction = 'none' | 'quit';
+export type EscAction = 'none' | 'quit' | 'lock';
 
 export type ToolbarItemKey =
   | 'underline'

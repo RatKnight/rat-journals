@@ -213,7 +213,7 @@ Reversible settings apply immediately. The dialog is close-only (no Save/Cancel 
 |---------|-------------|
 | Theme | Light, dark, or follow system (auto) |
 | Language | Choose app language |
-| ESC key action | Do nothing or quit the app on Escape |
+| ESC key action | Do nothing, quit the app, or lock the journal on Escape |
 | First day of week | Sunday, Monday, or auto-detect from locale |
 | Allow future entries | Write entries for dates that haven't happened yet |
 | Hide titles | Remove the title field for a minimal look |

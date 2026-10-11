@@ -456,6 +456,8 @@ After TODO-0125, the same gap would **lock the journal** in place of quitting th
 
 Parent: [`TODO-0125: Add a "Lock journal" option to the ESC key action (#313)`](TODO.md)
 
+**Status (2026-10-11):** Completed as designed below. `handleGlobalEsc` branches on `escAction` after all guards, and the `'lock'` branch runs only while `authState() === 'unlocked'`. The optional E2E was skipped. Unit tests cover the guard order with the real Insert Link dialog and a real TipTap editor. The self-check found a related gap, fixed in a separate commit: with `prefers-reduced-motion` the `.lock-backdrop` is hidden, so a Header Lock click during the 700 ms lock (from Escape, the idle timer, or a focus loss) could start a second `lockJournal()`. The Header button now reads `authState() === 'locking'` in place of a local flag.
+
 **Context**: Explored 2026-10-08. **Prerequisite: TODO-0127 must ship first.** Without it, Escape pressed to close the Insert Link or Insert Timestamp dialog, or the tag dropdown, would also lock the journal. See [TODO-0127-01](#todo-0127-01-editor-local-dialogs-and-the-global-escape-guard). This section assumes that TODO-0127's guards are in place: the dialog signals are in `isAnyOverlayOpen()`, there is an `isEscapeClaimed(e)` early return (`src/lib/escape-claim.ts`, TODO-0150; it replaced the `e.defaultPrevented` check), and there is an `e.isComposing` early return.
 
 ### Current flow and where the change goes

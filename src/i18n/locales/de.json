@@ -316,7 +316,8 @@
       "escLabel": "ESC-Tastenkonfiguration",
       "escNone": "Nichts tun",
       "escQuit": "Anwendung beenden",
-      "escHint": "Wenn auf „Beenden“ gesetzt, schließt Escape die Anwendung, sofern kein Dialog geöffnet ist.",
+      "escLock": "Tagebuch sperren",
+      "escHint": "Escape beendet die Anwendung oder sperrt das Tagebuch, je nach dieser Einstellung. Solange ein Dialog geöffnet ist, hat Escape keine Wirkung.",
       "languageLabel": "Sprache",
       "languageHint": "Wähle die Anzeigesprache."
     },

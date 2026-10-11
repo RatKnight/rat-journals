@@ -316,7 +316,8 @@
       "escLabel": "Ação da tecla ESC",
       "escNone": "Não fazer nada",
       "escQuit": "Fechar o aplicativo",
-      "escHint": "Quando definido como «Fechar», pressionar Escape fecha o aplicativo se nenhum diálogo estiver aberto.",
+      "escLock": "Bloquear o diário",
+      "escHint": "Pressionar Escape fecha o aplicativo ou bloqueia o diário, conforme esta configuração. Não tem efeito enquanto um diálogo estiver aberto.",
       "languageLabel": "Idioma",
       "languageHint": "Selecione o idioma de exibição."
     },
