@@ -192,6 +192,7 @@ Adopt **cargo-crap for Rust CRAP** (Phase 0 advisory with acceptance checks → 
 - [x] Finish the requested pre-merge self-check and merge advisory PR #327 with user approval
 - [x] Produce and review the canonical baseline from post-merge master Linux CI
 - [x] Obtain separate Task 1.6 approval before any blocking-gate implementation
+- [x] Implement and validate the Linux gate, local advisory caller, policy docs, cleanup, and final checks (see the completed implementation plan)
 
 ## Second opinion (coding agent, Herdr tab wK:t4)
 
@@ -241,4 +242,4 @@ Reviewer additions (all adopted): automated gate-script tests against the real p
 
 Reviewer removals/adjustments (all adopted): dedup-timeout fix out; local Windows step not described as a blocking mirror; annotations preferably emitted by the policy script from the same delta JSON (a second `--format github` pass acceptable but must not be confused with the gate verdict).
 
-**Resulting plan**: `docs/plans/2026-10-10-crap-complexity-gates-plan.md` (manual-planning v2.0.0, four milestones). The current primary-worktree plan and companion decisions file are the execution ledger; its initial tracking warning was resolved when the plan was committed. Tasks 1.7 and 1.8 were added for the inherited security prerequisite and the user-requested full self-check. The advisory merge, canonical master baseline, and separate blocking-gate approval are complete. M2 implementation is in progress.
+**Resulting plan**: `docs/plans/2026-10-10-crap-complexity-gates-plan.md` (manual-planning v2.0.0, four milestones). The primary-worktree plan and companion decisions file are the execution ledger; its initial tracking warning was resolved when the plan was committed. Tasks 1.7 and 1.8 addressed the inherited security prerequisite and the requested full self-check. All milestones are complete, including approved Linux blocking policy, both negative controls, advisory local comparison, documentation, cleanup, and final verification. Completion is not a primary-branch merge approval. The plan records exact evidence and the local four-worker validation limit.

@@ -2,7 +2,7 @@
 
 ## Metadata
 
-- Plan Status: IN PROGRESS
+- Plan Status: COMPLETED
 - Plan Format: manual-planning v2.0.0
 - Template: milestoned
 - Tracking: tracked (by user request)
@@ -31,7 +31,7 @@
 - The primary branch contains advisory reporting/normalization, workspace Clippy and frontend ESLint settings, Vitest failure reporting, the equivalent auth cleanup helper/tests, and the separately approved inherited Git-selection fix.
 - Merged PR #327 contains only the advisory reporting/normalization work and inherited runner infrastructure with its approved Git-selection fix. It deliberately excludes the independent Clippy, ESLint, Vitest, and auth commits. Local full-gate results validate the primary branch; PR CI results validate that narrower PR, not the independent changes.
 - Tasks 1.8 and 1.4 are COMPLETED. The normalizer boundary fix is primary `d7b8dfc` and advisory `926d30f`; replacement CI run 38097918038 and every PR check passed on exact head `926d30f9a7ae5234a0e8ebf6bbdf736d3a2eeb99`. PR #327 merged under DEC-017 as `8a345d70abe8fb5c3aba842150f5b0c2af5a66d9`. Master CI run 38099433982 passed all seven jobs, and its probe-free Linux report and production provenance are verified.
-- Merge `4a88bd7` includes master `f1bb84f73f44dd40028299682d0b6ef2f2326ca7` (DEC-018), whose master CI run 38103562280 passed all seven jobs. Task 1.5's dedicated commit `189bb55` contains only the canonical 624-entry Linux baseline and producer-record sidecar. DEC-019 authorizes M2. Milestones 1–3 are complete: the Linux gate passes unchanged code and rejects both negative controls; local checks are advisory; policy docs and changelog are finished. Disposable PRs are closed without merge, scratch branches/worktrees are removed, and evidence remains outside the repository. Task 4.2 final fresh verification is next. This plan and companion decisions file remain the execution ledger; older execution notes are dated evidence, not current status.
+- All four milestones are COMPLETED on the primary branch. The approved Linux policy passes unchanged code and rejects both negative controls; local comparisons remain advisory. Final fresh local checks passed with explicit four-worker frontend concurrency and unchanged tests/timeouts/thresholds. The reviewed 624-entry Linux baseline and provenance are byte-identical to dedicated commit `189bb55`. Documentation/changelog are finished; disposable PRs are closed without merge and scratch branches/worktrees are removed. Evidence remains outside the repository. Production source and workflow are identical to fully green Linux CI head `3e296fd`; later changes are documentation only. Completion does not authorize merging the primary branch or fixing the unrelated frontend timeouts. This plan and companion decisions file are the final execution ledger; older execution notes are dated evidence, not current status.
 
 ### Initial repository facts (before implementation)
 
@@ -334,7 +334,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 ### Milestone 4: Cleanup And Final Verification
 
-- Status: IN PROGRESS
+- Status: COMPLETED
 - Purpose: ensure the repository contains only intentional final artifacts and the complete change is verified.
 - Exit Criteria: intermediate artifacts removed, every `## Pre-flight Checks` item passes, and Task 4.2 final verification passes (including Linux CI policy exit 0 and the successful local advisory analysis). After these criteria pass and task/milestone statuses are reconciled, set Plan Status to COMPLETED; that status change is the consequence of verification, not a prerequisite.
 
@@ -351,7 +351,7 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 #### Task 4.2: Final Verification
 
-- Status: IN PROGRESS
+- Status: COMPLETED
 - Depends On: 4.1, 4.3
 - Objective: validate the integrated change after cleanup.
 - Steps:
@@ -390,18 +390,18 @@ CI computes per-function CRAP scores for the whole Rust workspace from the exist
 
 ## Pre-flight Checks
 
-- [ ] `cmd.exe /c bun run type-check`
-- [ ] `cmd.exe /c bun run lint`
-- [ ] `cmd.exe /c bun run format:check`
-- [ ] `cargo fmt --all --check`
-- [ ] `cmd.exe /c bun run test:run`
-- [ ] `cargo test --workspace`
-- [ ] `cargo clippy --workspace --all-targets -- -D warnings`
-- [ ] `cmd.exe /c bun run coverage:diff` (with both lcov files freshly generated)
-- [ ] `node scripts/check-crap-gate.mjs --self-test`
-- [ ] `node scripts/normalize-crap-baseline.mjs --self-test`
-- [ ] `cmd.exe /c bun run sync-skills` (no DRIFT)
-- [ ] `cmd.exe /c bun run validate:locales`
+- [x] `cmd.exe /c bun run type-check`
+- [x] `cmd.exe /c bun run lint`
+- [x] `cmd.exe /c bun run format:check`
+- [x] `cargo fmt --all --check`
+- [x] `cmd.exe /c bun run test:run` (explicit local `VITEST_MAX_WORKERS=4`)
+- [x] `cargo test --workspace` (with `--quiet`)
+- [x] `cargo clippy --workspace --all-targets -- -D warnings`
+- [x] `cmd.exe /c bun run coverage:diff` (with both lcov files freshly generated)
+- [x] `node scripts/check-crap-gate.mjs --self-test`
+- [x] `node scripts/normalize-crap-baseline.mjs --self-test`
+- [x] `cmd.exe /c bun run sync-skills` (no DRIFT)
+- [x] `cmd.exe /c bun run validate:locales`
 
 ## Decision Log
 
@@ -409,7 +409,7 @@ Entries live in [2026-10-10-crap-complexity-gates-decisions.md](2026-10-10-crap-
 
 ## Final Verification
 
-Task 4.2: successful fresh coverage generation, the full pre-flight list, all three platform-independent local script self-tests (exit 0), and a successful local CRAP analysis with a clearly reported ADVISORY policy verdict. Local policy exit 0 is NOT required: exit 1 may reflect legitimate platform differences against the Linux baseline; exit 2 is an input/tool failure to diagnose. The REQUIRED blocking unchanged-code check is a green Linux CI PR run with the gating step active and the policy script exiting 0. Complete verification before setting Plan Status to COMPLETED.
+Task 4.2 passed: fresh frontend/backend coverage, all pre-flight checks, all three platform-independent self-tests, and valid fresh local CRAP analysis with an ADVISORY policy exit 1 on four Windows differences. Full Linux CI run 38142680713 and every PR #332 check passed with the production gate exiting 0. Production source, scripts, dependencies, lint configuration, and workflow are unchanged since that checked head; later changes are documentation only. The two negative runs fail only the intended gate with exit 1 and preserve actual Codecov transfers plus both artifacts. Final local log and diagnostic evidence are recorded below. No default-concurrency success, proven timeout root cause, primary-branch merge, or Windows canonical baseline is claimed.
 
 ## Approval Gate
 
@@ -422,7 +422,7 @@ $ python "C:\Users\Francisco\.config\opencode\skills\manual-planning\scripts\che
 0 error(s), 0 warning(s)
 ```
 
-Run: 2026-10-11 (continuation check after canonical baseline review)
+Run: 2026-10-11 (final completion check)
 
 Checker exit code: 0.
 
@@ -430,6 +430,8 @@ The earlier W001 warning is resolved: the plan is now tracked in commit `4f480f0
 
 ## Execution Notes
 
+- Task 4.2 is COMPLETED. Final sequential validation on `17b47bb2350347ea7227ccd8ae26059449fba587` ran from `2026-10-11T13:57:09.2312274Z` to `2026-10-11T14:03:52.1907455Z`, exit 0: all 15 comprehensive checks, 1277/1277 frontend coverage tests in 116 files, 82/82 script tests, 950/950 nextest backend tests, a separate 1277/1277 plain frontend run, and plain workspace tests (app 315, core 593, crypto 42; doc-test targets also pass). Frontend used explicit local `VITEST_MAX_WORKERS=4`; no assertions, timeouts, thresholds, or CI settings changed. The new lcov files were written at 13:58:33.119/14:00:38.873 UTC, after run start, and the fresh 625-function delta at 14:00:39.140 UTC. Independent parsing confirms a valid advisory policy exit 1 on the same four Windows differences, not input/tool failure. Explicit final `coverage:diff` passes 46/48 (95.8%) against the unchanged 80% limit. All three self-tests, targeted script formatting, skill sync, actionlint, links, baseline preservation, and source/workflow equality with green Linux head `3e296fd` pass. Original final log is retained; a readable UTF-8 copy handles PowerShell's mixed encoding without altering the original evidence. Final advisory delta is saved externally as `crap-final-advisory-delta-20261011.json`; ignored delta/input files are removed again. No scratch branches/worktrees or unintended untracked files remain. Milestone 4 and the plan now meet all exit criteria; no additional process/skill changes are needed beyond the maintained tests and diagnosis docs already delivered.
+- Task 4.2 is IN PROGRESS after cleanup. Fresh comprehensive coverage, a separate plain full frontend run, and plain `cargo test --workspace --quiet` run sequentially under watcher `sh_12b40cb470017feZzTGPsPf34G`; log `C:\Users\Francisco\AppData\Local\Temp\opencode\crap-final-verification-20261011.log`. Frontend uses explicit local `VITEST_MAX_WORKERS=4`, with unchanged assertions/timeouts/thresholds/CI settings. Independently, all three parser/path/policy self-tests, skill sync, actionlint, and the plan checker passed. The final production source, scripts, dependencies, lint/configuration, and workflow are byte-identical to green Linux head `3e296fd`; only documentation/changelog/ledger changed afterward. All PR #332 checks passed, including SonarCloud, CodeQL, Codecov patch, and the seven CI jobs. Saved completed Test logs independently confirm two actual Codecov storage transfers (`Upload queued for processing complete`) in each of the three control runs, not merely successful action steps. Await the final local notification before marking Task 4.2 or the plan complete; the canonical baseline is unchanged.
 - Task 4.1 is COMPLETED: PRs #330–333 are CLOSED with `mergedAt: null`; all five clean disposable worktrees and their local control/advisory branches are removed. The four remote control branches are removed; the advisory remote had already been deleted, so the first combined remote-delete attempt refused and the verified four-ref retry succeeded. No local/remote `ci/crap-*` branch remains. Each three M2 probe commit returned exactly 1 against freshly fetched master and primary HEAD before cleanup. All evidence and run metadata remain in the approved temp directory; the local advisory delta was saved before removing only the four named generated outputs. Canonical JSON and provenance are byte-identical to `189bb55`; the repository has no unintended untracked files. Maintained helper/tests, proposal, plan, and decision record are kept. Task 4.2 can now run; final diagnostics will again be saved externally and their ignored outputs removed afterward.
 - Task 3.5 is COMPLETED: all four CRAP, workspace Clippy, frontend ESLint, and failure-reporting entries are verified under `0.7.5 / Unreleased / Internal`; the CRAP entry links to the finished policy and blind-spot documentation. No developer-only entry moved into a user-facing section. Milestones 2 and 3 now meet all exit criteria. Cleanup and final fresh verification remain Milestone 4.
 - Task 2.4 is COMPLETED: CI best practices now state the whole-function/repository-wide Linux policy, 0/1/2 failure contract, coverage/artifact ordering, all-local-platform advisory behavior, path alignment, reviewed baseline update/provenance rules, and closure/macro/cfg-dead limits. Canonical `ci-gate-diagnosis` includes artifact-first recipes, all-0% path checks, and the same policy/limits. Root `CLAUDE.md` adds only a self-test command and a short gotcha with pointers. All new relative links resolve, required anchors are present, `sync-skills` exits 0 without DRIFT, and no generated mirror is edited or staged. No website docs change applies to this developer-only check.
