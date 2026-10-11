@@ -175,6 +175,18 @@ async function main() {
     results.failed.push('Script Tests');
   }
 
+  // 6c. These pure policy/path tests are blocking; local score comparisons are advisory.
+  header('CRAP Policy Self-Tests');
+  const crapPaths = run('node scripts/normalize-crap-baseline.mjs --self-test', 'CRAP path self-test');
+  const crapPolicy = run('node scripts/check-crap-gate.mjs --self-test', 'CRAP policy self-test');
+  if (crapPaths.success && crapPolicy.success) {
+    success('CRAP path and policy self-tests passed');
+    results.passed.push('CRAP Policy Self-Tests');
+  } else {
+    error('CRAP path or policy self-test failed');
+    results.failed.push('CRAP Policy Self-Tests');
+  }
+
   // 7. Backend Tests (Rust) — with coverage when cargo-llvm-cov is available
   header('Backend Tests (Rust)');
   const cargoPath = 'src-tauri';

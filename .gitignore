@@ -37,6 +37,7 @@ coverage/
 lcov.info
 /crap-report.json
 /crap-delta.json
+/crap-baseline-input.json
 /crap-report.provenance.txt
 
 # Test artifacts
