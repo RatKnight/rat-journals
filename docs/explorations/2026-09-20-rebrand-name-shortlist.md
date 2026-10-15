@@ -7,9 +7,16 @@
 > [x] Decision Record — the decision, its context, alternatives, and tradeoffs
 >
 > **Decision (2026-09-20): the new display name is "Fenmark."** Domain: `fenmark.app`
-> (user to purchase). No code, config, or identifier has been changed as part of this
+> (purchased 2026-09-20). No code, config, or identifier has been changed as part of this
 > exploration — implementation is tracked separately in
 > `docs/plans/2026-09-20-mini-diarium-display-name-rebrand-plan.md`.
+>
+> **Revalidated 2026-10-12:** RDAP (`pubapi.registry.google`) shows `fenmark.app`
+> registered 2026-09-20 at Namecheap, expiring 2028-09-20, status
+> `client transfer prohibited`. A fresh web search for a "Fenmark" journal/diary/privacy
+> app found no new same-category collision. The USPTO and TMview (EU/UK/international)
+> register searches are clear for software (Rounds 6-7); the nearest live mark is FENOMARK
+> (medical diagnostics). Timo will be told the name when Stage 1 ships.
 
 ## Context
 
@@ -210,6 +217,52 @@ it, but it does close some of the gap between Fenmark and its siblings from Roun
 siblings (Fenmoor, Fenholt, Fenray, Wrenmark, Fendrick) have not yet had this same
 deep-dive pass, so a direct cleanliness comparison isn't settled.
 
+### Round 6 — USPTO register search (2026-10-12)
+
+Queried the USPTO trademark search backend (`tmsearch.uspto.gov`, the API behind the public
+Trademark Search UI) for the word mark and close variants: `fenmark*`, `*fenmark*`,
+`fen*mark`, `"fen mark"`, `fenmar*`, and the sound-alikes `fenmarc`, `phenmark`, `fennmark`,
+`venmark`, `fenmarq`.
+
+| Mark | Status | Classes | Owner | Relevance |
+|---|---|---|---|---|
+| FENMARK (reg. 1037784, filed 1975) | **Dead** | 6 (prefabricated curtain-wall modules) | Inland-Ryerson Construction Products | The only exact match. Dead, and in building materials — no conflict |
+| FENOMARK / FENOMARK DIAGNOSTICS (serials 99858274, 99858259, 99858268; filed 2026-06-01) | Live, pending (non-final action mailed) | 5, 9, 10, 42 | FenoMark Diagnostics AB (Sweden) | Closest live mark, and it includes class 9/42 software. Its goods are limited to clinical/diagnostic test software and medical research ("all products in relation to scientific research and development, laboratory research or medical research"). Different trade channel from a consumer journal app; low risk, but watch it. Being a Swedish company, it likely also has (or will have) an EU filing |
+| FENNELMARK | Live | 16 (paper goods) | Wittywears Designs LLC | Different mark and class |
+| FENMARS | Live | 20 (furniture) | Yuegou Yihuan Import and Export Trade | Different mark and class |
+| VENMARK | Live | 11 (lighting/heating) | Venmark, LLC | Different class |
+
+**Result (US):** no live FENMARK mark, and no live similar mark covering consumer software,
+journaling or privacy apps. This is a self-run register search, not a legal clearance
+opinion.
+
+### Round 7 — TMview register search (2026-10-12)
+
+TMview (EUIPO's search tool over EUIPO, UKIPO, WIPO and the participating national offices)
+was searched with "contains" matching, through a headless browser (`agent-browser`), because
+its API refuses scripted requests.
+
+- **"fenmark" — 14 hits, none relevant to software:**
+  - FENMARK, USPTO 73043789 — ended (same dead 1975 mark as Round 6).
+  - 芬马克 FENMARK, CNIPA 53487205 — registered, class 2 (paints), a Beijing building-materials
+    company. China only; different goods.
+  - EM EFFENMARK EFFICIENCY ENERGY MARKET, OEPM M3630780 — registered, class 42, Spanish
+    energy-efficiency consultancy. Different mark (Effenmark) and different services.
+  - FENMARKET (Mexico, class 30), TuffenMark (UK, classes 18/25/26), and German "…reifenmarkt" /
+    "Schlaraffenmarkt" / "Greifenmarke" marks — substring matches only, unrelated goods.
+  - **No EUIPO or UKIPO mark for FENMARK.**
+- **"fenomark" — 2 hits, same owner:** FenoMark Diagnostics AB has **EUIPO 019371058
+  (registered, filed 2026-05-27)** and the pending US application from Round 6. Both cover
+  classes 5, 9, 10, 42, and every software/SaaS item is limited to clinical/diagnostic test
+  analysis and "scientific research and development, laboratory research or medical research".
+
+**Result (EU/UK/international):** no conflicting FENMARK mark. The nearest live mark is
+FENOMARK, one letter away, registered in the EU with class 9/42 software — but limited to
+medical diagnostics and research, a different market and buyer from a consumer journaling
+app. Low risk; the residual is that FenoMark could object to a future Fenmark trademark
+filing in class 9. TMview states it "does not constitute official registers". This is a
+self-run search, not a legal clearance opinion.
+
 ## Risks & Unknowns
 
 - **Risk**: None of the six shortlisted names has a clean `.com`. Whichever is chosen
@@ -226,6 +279,8 @@ deep-dive pass, so a direct cleanliness comparison isn't settled.
 - **Gap**: None of these six have had a formal trademark-register search (USPTO TESS,
   EUIPO, etc.) — only web and app-store search coverage. That is a distinct, more
   rigorous check still needed before treating any name as settled.
+  **Update 2026-10-12:** done for Fenmark (Rounds 6-7); the Round 4 siblings are still
+  unchecked.
 - **Gap**: A wider set of ~24 other candidates were checked and eliminated during this
   exploration; the full list is kept in the appendix below so this search isn't
   accidentally repeated in a future session.
@@ -258,14 +313,20 @@ deep-dive pass, so a direct cleanliness comparison isn't settled.
 - [x] User picks a direction from the shortlist — **decided 2026-09-20: Fenmark**
 - [x] Resolve the domain strategy — **decided: `.app` (`fenmark.app`), decoupled from a
       `.com`, since no `.com` survived this entire exploration**
-- [x] Purchase `fenmark.app` — done, 2026-09-20
-- [ ] Run a formal trademark-register search (USPTO TESS / EUIPO) on "Fenmark" before
-      treating the name as fully settled — still open; Round 5 found several
-      unrelated-industry businesses already using the name, which raises (but does not
-      confirm) the odds of a formal registration existing somewhere
+- [x] Purchase `fenmark.app` — done, 2026-09-20 (re-confirmed via RDAP 2026-10-12;
+      renew before 2028-09-20)
+- [x] Formal trademark-register search, **US (USPTO)** — done 2026-10-12, clear for
+      software (see Round 6)
+- [x] Formal trademark-register search, **EU/UK/international (TMview)** — done
+      2026-10-12, clear for software (see Round 7)
+- [ ] Tell Timo the chosen name and a timeframe — deferred by decision (2026-10-12) until
+      the Stage 1 release ships; he knows only that the process started (audit Email Log
+      message 5; plan Task 4.6)
 - [ ] Feed "Fenmark" / `fenmark.app` into
       `docs/plans/2026-09-20-mini-diarium-display-name-rebrand-plan.md` Task 1.1 (the
-      plan's own placeholder find-and-replace step)
+      plan's own placeholder find-and-replace step) — still pending; the plan was
+      revalidated on 2026-10-12 but its placeholders are intentionally kept until the
+      trademark search is done
 
 ## Appendix: Eliminated Candidates (for reference — do not re-propose without new information)
 
