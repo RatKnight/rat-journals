@@ -111,6 +111,8 @@ All 4 open alerts are dev-only or build-time-only; nothing shipped is affected. 
 
 Sole chain: `@wdio/utils@9.32.0 → @puppeteer/browsers@^2.2.0 → extract-zip@2.0.1` (dev-only, E2E browser downloads). `extract-zip` is unmaintained with no patched version for either advisory. The real fix is now available: WebdriverIO 10 (`@wdio/cli` 10.0.2, `webdriverio` 10.0.2) requires `@puppeteer/browsers@^3.2.1`, whose dependencies are `yargs` and `modern-tar` only. TODO-0108 was updated to list both advisories and record that its trigger is met; TODO-0152 tracks the upgrade and its acceptance (full E2E pass, both lockfiles clean of `extract-zip` and `@puppeteer/browsers@2.x`).
 
+**Outcome (2026-10-16):** TODO-0152 landed on master (CI run [38823340824](https://github.com/fjrevoredo/mini-diarium/actions/runs/38823340824), E2E Tests green); Dependabot rescanned and every alert in this review (#51, #58, #81, #85) is now `fixed`.
+
 ## Action taken
 
 - `package.json`: removed `@tailwindcss/typography`; added the `katex` override.
