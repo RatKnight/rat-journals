@@ -82,6 +82,16 @@ PRs. Read before starting.
   locally (Phase 3 step 4). On Windows/WSL, the Nix CI workflow fails after
   the push and prints the new hash; apply it as a follow-up commit (Phase 5).
   The workflow never commits the fix by itself.
+- **`@playwright/test` bumps must move the CI pins in `.github/workflows/ci.yml`.**
+  The CI `Test` job pins the Playwright version in two places, each with a
+  "bump alongside `@playwright/test`" comment: the
+  `playwright-chromium-<version>-${hashFiles('bun.lock')}` cache key and the
+  `bunx playwright@<version> install --with-deps chromium` step. If either
+  lags, CI restores or installs the old browser revision and the "Print
+  layout tests" step fails with
+  `Executable doesn't exist at …/chrome-headless-shell-…`. Bump both lines in
+  the same change set; `git diff --stat` then shows one extra file before the
+  `nix/package.nix` follow-up.
 
 ## Workflow
 
