@@ -10,7 +10,11 @@ pub use mini_diarium_crypto::auth::{
 // Keep the sub-module-qualified paths that the in-core db modules use
 // (`crate::auth::{password, keypair, auto_key}::…`) resolving without touching those call
 // sites. Sealed to the crate — they are not part of the public façade.
-pub(crate) use mini_diarium_crypto::auth::{auto_key, keypair, password};
+pub(crate) use mini_diarium_crypto::auth::{auto_key, password};
+// Production code reaches key files through `KeyFileMethod`; the X25519 module only builds
+// legacy slots for tests (`add_keypair_slot` and its fixtures).
+#[cfg(any(test, feature = "test-support"))]
+pub(crate) use mini_diarium_crypto::auth::keypair;
 
 /// Information about a registered auth method (returned to frontend)
 #[derive(Debug, serde::Serialize)]
