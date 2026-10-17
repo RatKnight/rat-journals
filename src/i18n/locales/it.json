@@ -127,6 +127,8 @@
       "sendFeedback": "Invia feedback",
       "passwordMode": "Password",
       "keyFileMode": "File chiave",
+      "allMethodsMode": "Tutti i metodi",
+      "upgradeAllMethodsNote": "Inserisci tutti i metodi di sblocco insieme per completare l’aggiornamento della crittografia di questo diario.",
       "unlockMethodAria": "Metodo di sblocco",
       "passwordLabel": "Password",
       "passwordPlaceholder": "Inserisci la tua password",
@@ -806,6 +808,7 @@
     "noBackupsYet": "Non ci sono ancora backup. La cartella compare dopo il primo backup.",
     "backgroundTaskFailed": "Qualcosa è andato storto in background, quindi il diario è stato bloccato per tenerlo al sicuro. Sbloccalo per continuare.",
     "keyUpgradeFailed": "Mini Diarium non è riuscito ad aggiornare la crittografia di questo diario. Finché non ci riesce, chiunque abbia una copia del file del diario o di un backup può aprirlo senza la tua password. Blocca il diario e sbloccalo con la tua password per riprovare.",
+    "upgradeNeedsAllMethods": "Mini Diarium deve aggiornare la crittografia di questo diario perché un futuro computer quantistico non possa violarla, e per farlo ha bisogno di tutti i metodi di sblocco del diario insieme. Blocca il diario, scegli «Tutti i metodi» nella schermata di sblocco e inserisci insieme la password e i file chiave.",
     "internalError": "Si è verificato un errore interno.",
     "unexpectedError": "Si è verificato un errore imprevisto."
   }

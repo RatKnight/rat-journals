@@ -40,6 +40,15 @@ pub(crate) fn read_private_key_from_file(key_path: &str) -> Result<[u8; 32], Str
     Ok(private_key)
 }
 
+/// Reads a key file as a [`crate::auth::KeyFileMethod`] (either format: the bytes of a
+/// legacy X25519 private key are used as-is as a v2 secret).
+pub(crate) fn read_key_file(key_path: &str) -> Result<crate::auth::KeyFileMethod, String> {
+    let mut bytes = read_private_key_from_file(key_path)?;
+    let key_file = crate::auth::KeyFileMethod::from_secret(bytes);
+    bytes.zeroize();
+    Ok(key_file)
+}
+
 /// One-time migration: if `db_settings` has no "require_all_auth" key and the legacy
 /// `config.json` had it set to true for the active journal, write "true" to `db_settings`
 /// then clear the config.json flag.
@@ -119,15 +128,12 @@ pub(crate) fn verify_credentials_and_collect_slots(
                 slot_id
             }
             MultiAuthCredential::Keypair { key_path } => {
-                let mut private_key = read_private_key_from_file(key_path)?;
-                let pub_key = crate::auth::derive_public_key(private_key);
-                let (slot_id, wrapped_key) = crate::db::get_keypair_slot_by_pubkey(conn, &pub_key)?
+                let key_file = read_key_file(key_path)?;
+                let (slot_id, wrapped_key) = crate::db::get_key_file_slot(conn, &key_file)?
                     .ok_or("Key file does not match any registered key")?;
-                let method = crate::auth::PrivateKeyMethod { private_key };
-                method
-                    .unwrap_master_key(&wrapped_key)
+                key_file
+                    .unwrap_any(&wrapped_key)
                     .map_err(|_| "Key file authentication failed".to_string())?;
-                private_key.zeroize();
                 crate::db::update_slot_last_used(conn, slot_id)?;
                 slot_id
             }
@@ -173,7 +179,8 @@ pub(crate) fn perform_unlock(mode: UnlockMode, state: &DiaryState) -> Result<(),
         return Err("No journal found. Please create one first.".to_string());
     }
 
-    // The password, when one was used, is kept for the legacy-slot upgrade below.
+    // The credentials that were used are kept for the encryption upgrade below.
+    let mut key_files: Vec<crate::auth::KeyFileMethod> = Vec::new();
     let (mut db_conn, label, rotation_password) = match mode {
         UnlockMode::Password(password) => {
             let rotation_password = Zeroizing::new(password.clone());
@@ -198,6 +205,7 @@ pub(crate) fn perform_unlock(mode: UnlockMode, state: &DiaryState) -> Result<(),
                         .to_string(),
                 );
             }
+            key_files.push(read_key_file(&key_path)?);
             (conn, "Journal unlocked with key file", None)
         }
         UnlockMode::AllMethods(credentials) => {
@@ -240,21 +248,27 @@ pub(crate) fn perform_unlock(mode: UnlockMode, state: &DiaryState) -> Result<(),
                     warn!("Failed to write require_all_auth MAC: {}", e);
                 }
             }
-            let rotation_password = credentials.iter().find_map(|c| match c {
-                MultiAuthCredential::Password { value } => Some(Zeroizing::new(value.clone())),
-                MultiAuthCredential::Keypair { .. } => None,
-            });
+            let mut rotation_password = None;
+            for cred in &credentials {
+                match cred {
+                    MultiAuthCredential::Password { value } => {
+                        rotation_password = Some(Zeroizing::new(value.clone()))
+                    }
+                    MultiAuthCredential::Keypair { key_path } => {
+                        key_files.push(read_key_file(key_path)?)
+                    }
+                }
+            }
             (conn, "Journal unlocked via multi-auth", rotation_password)
         }
     };
 
-    let rotated = match rotation_password {
-        Some(password) => upgrade_legacy_password_slot(&mut db_conn, &password, state),
-        None => {
-            warn_if_legacy_password_slot(&db_conn);
-            false
-        }
-    };
+    let rotated = upgrade_journal_encryption(
+        &mut db_conn,
+        rotation_password.as_deref().map(String::as_str),
+        &key_files,
+        state,
+    );
 
     let mut db_state = state
         .db
@@ -297,62 +311,82 @@ fn load_active_auto_key(state: &DiaryState) -> Option<Zeroizing<[u8; 32]>> {
     Some(key)
 }
 
-/// Replaces the master key of a journal that still has a legacy (pre-v2) password slot.
+/// Replaces the master key of a journal that still has legacy key-wrapping material: a
+/// pre-v2 password slot (exposed today) or an X25519 key-file slot (exposed to a future
+/// quantum computer). See `mini_diarium_core::db::rekey`. Returns true if the key was rotated.
 ///
-/// A legacy slot let anyone holding the journal file recover the master key without the
-/// password, so re-wrapping alone is not enough — see `mini_diarium_core::db::rekey`. Needs
-/// the password that just unlocked the journal; the local key is passed through so a
-/// local-key slot survives. Returns true if the key was rotated.
+/// Rotation needs the credential of every password and upgraded key-file slot, because each
+/// can only be re-wrapped with its own credential. So it runs when:
+/// - a legacy password slot exists (exploitable now; legacy key-file slots whose file was
+///   not supplied are kept, re-wrapped by public key), or
+/// - legacy key-file slots exist and the files for all of them were supplied.
 ///
-/// A failure is not returned: the journal is open and fully readable under the old key, so
-/// refusing the unlock would only lock the user out. It is logged and recorded as
-/// [`super::NOTICE_KEY_UPGRADE_FAILED`] so the UI can warn that the journal is still
-/// exposed, and the upgrade is retried on the next password unlock.
-pub(crate) fn upgrade_legacy_password_slot(
+/// When something is left to do it records a security notice instead of failing the unlock
+/// (the journal is open and fully readable under the old key; refusing would only lock the
+/// user out): [`super::NOTICE_UPGRADE_NEEDS_ALL_METHODS`] when more credentials are needed,
+/// [`super::NOTICE_KEY_UPGRADE_FAILED`] on any other failure. Both are retried on the next
+/// unlock.
+pub(crate) fn upgrade_journal_encryption(
     db: &mut crate::db::DatabaseConnection,
-    password: &str,
+    password: Option<&str>,
+    key_files: &[crate::auth::KeyFileMethod],
     state: &DiaryState,
 ) -> bool {
-    match crate::db::has_legacy_password_material(db) {
-        Ok(true) => {}
-        Ok(false) => return false,
+    let set_notice = |code: &'static str| {
+        if let Ok(mut notice) = state.security_notice.lock() {
+            *notice = Some(code);
+        }
+    };
+    let material = match crate::db::legacy_material(db) {
+        Ok(m) => m,
         Err(e) => {
-            warn!("Could not check for a legacy password slot: {}", e);
+            warn!("Could not check for legacy key-wrapping material: {}", e);
             return false;
         }
+    };
+    if !material.any() {
+        return false;
     }
-    info!("Legacy password slot found; rotating the master key");
+    let key_files_covered = material.key_files_cover(key_files);
+    if !material.password && !key_files_covered {
+        info!("Legacy key-file slot found; its key file is needed to upgrade it");
+        set_notice(super::NOTICE_UPGRADE_NEEDS_ALL_METHODS);
+        return false;
+    }
+
+    info!("Legacy key-wrapping material found; rotating the master key");
     let auto_key = load_active_auto_key(state);
-    match crate::db::rotate_master_key(db, password, auto_key.as_deref()) {
+    let credentials = crate::db::RotationCredentials {
+        password,
+        key_files,
+        auto_key: auto_key.as_deref(),
+    };
+    match crate::db::rotate_master_key(db, &credentials) {
         Ok(outcome) => {
             if outcome.slots_removed > 0 {
                 warn!(
-                    "Key rotation removed {} auth method(s) that could not be re-wrapped",
+                    "Key rotation removed {} local-key slot(s) that could not be re-wrapped",
                     outcome.slots_removed
                 );
             }
+            if outcome.legacy_key_file_slots_remaining > 0 {
+                set_notice(super::NOTICE_UPGRADE_NEEDS_ALL_METHODS);
+            }
             true
+        }
+        Err(e) if e == crate::db::ERR_NEEDS_ALL_METHODS => {
+            info!("Key rotation needs every unlock method of this journal");
+            set_notice(super::NOTICE_UPGRADE_NEEDS_ALL_METHODS);
+            false
         }
         Err(e) => {
             warn!(
                 "Master key rotation failed; will retry on next unlock: {}",
                 e
             );
-            if let Ok(mut notice) = state.security_notice.lock() {
-                *notice = Some(super::NOTICE_KEY_UPGRADE_FAILED);
-            }
+            set_notice(super::NOTICE_KEY_UPGRADE_FAILED);
             false
         }
-    }
-}
-
-/// Logs when a journal opened without a password still has a legacy password slot: its
-/// master key stays exposed until the journal is unlocked once with the password.
-fn warn_if_legacy_password_slot(db: &crate::db::DatabaseConnection) {
-    if matches!(crate::db::has_legacy_password_material(db), Ok(true)) {
-        warn!(
-            "This journal has a legacy password slot. Unlock it once with the password to              upgrade its encryption."
-        );
     }
 }
 
@@ -515,7 +549,20 @@ pub(crate) fn change_password_inner(
     if rotated {
         let old_password = Zeroizing::new(old_password);
         let auto_key = load_active_auto_key(state);
-        crate::db::rotate_master_key(db, &old_password, auto_key.as_deref())?;
+        let credentials = crate::db::RotationCredentials {
+            password: Some(&old_password),
+            key_files: &[],
+            auto_key: auto_key.as_deref(),
+        };
+        crate::db::rotate_master_key(db, &credentials).map_err(|e| {
+            if e == crate::db::ERR_NEEDS_ALL_METHODS {
+                "Before changing the password, lock the journal and unlock it with all of its \
+                 unlock methods at once to finish upgrading its encryption."
+                    .to_string()
+            } else {
+                e
+            }
+        })?;
     }
 
     let (slot_id, wrapped_key) =
@@ -1173,6 +1220,108 @@ mod tests {
         ];
         let err = super::verify_credentials_and_collect_slots(&creds, &db2).unwrap_err();
         assert!(err.contains("Duplicate credential"), "got: {}", err);
+    }
+
+    /// Adds a legacy X25519 key-file slot and writes its key file; returns the file path.
+    fn add_legacy_key_file(
+        db: &crate::db::DatabaseConnection,
+        fixture: &super::super::test_helpers::TestFixture,
+        name: &str,
+    ) -> String {
+        let kp = crate::auth::generate_keypair().unwrap();
+        let mut pub_key = [0u8; 32];
+        pub_key.copy_from_slice(&hex::decode(&kp.public_key_hex).unwrap());
+        crate::auth::add_keypair_slot(db, "Old key", pub_key).unwrap();
+        let path = fixture.path().join(name);
+        std::fs::write(&path, &kp.private_key_hex).unwrap();
+        path.to_str().unwrap().to_string()
+    }
+
+    fn legacy_key_file_slots(state: &super::DiaryState) -> usize {
+        let guard = state.db.lock().unwrap();
+        crate::db::legacy_material(guard.as_ref().unwrap())
+            .unwrap()
+            .key_file_public_keys
+            .len()
+    }
+
+    #[test]
+    fn test_key_file_only_journal_upgrades_on_key_file_unlock() {
+        let (fixture, state, db_path, _backups_dir) = make_state("kf_only_upgrade");
+        let db = create_database(&db_path, "password".to_string()).unwrap();
+        let key_path = add_legacy_key_file(&db, &fixture, "only.key");
+        let (pw_slot, _) = crate::db::get_password_slot(&db).unwrap().unwrap();
+        crate::db::delete_auth_slot(&db, pw_slot).unwrap();
+        drop(db);
+
+        super::perform_unlock(super::UnlockMode::Keypair(key_path.clone()), &state).unwrap();
+
+        assert_eq!(legacy_key_file_slots(&state), 0);
+        assert_eq!(super::take_security_notice_inner(&state).unwrap(), None);
+        // The same key file still opens the upgraded journal.
+        super::super::lock_diary_inner(&state).unwrap();
+        super::perform_unlock(super::UnlockMode::Keypair(key_path), &state).unwrap();
+    }
+
+    #[test]
+    fn test_password_unlock_leaves_legacy_key_file_and_asks_for_all_methods() {
+        let (fixture, state, db_path, _backups_dir) = make_state("kf_pw_pending");
+        let db = create_database(&db_path, "password".to_string()).unwrap();
+        let key_path = add_legacy_key_file(&db, &fixture, "pending.key");
+        drop(db);
+        assert!(
+            crate::db::peek_auth_slot_types(&db_path)
+                .unwrap()
+                .upgrade_pending
+        );
+
+        super::perform_unlock(super::UnlockMode::Password("password".to_string()), &state).unwrap();
+        assert_eq!(legacy_key_file_slots(&state), 1);
+        assert_eq!(
+            super::take_security_notice_inner(&state)
+                .unwrap()
+                .as_deref(),
+            Some(crate::commands::auth::NOTICE_UPGRADE_NEEDS_ALL_METHODS)
+        );
+
+        // The key file alone cannot finish it either: the password slot needs the password.
+        super::super::lock_diary_inner(&state).unwrap();
+        super::perform_unlock(super::UnlockMode::Keypair(key_path.clone()), &state).unwrap();
+        assert_eq!(legacy_key_file_slots(&state), 1);
+        assert_eq!(
+            super::take_security_notice_inner(&state)
+                .unwrap()
+                .as_deref(),
+            Some(crate::commands::auth::NOTICE_UPGRADE_NEEDS_ALL_METHODS)
+        );
+
+        // All methods at once finish the upgrade.
+        super::super::lock_diary_inner(&state).unwrap();
+        super::perform_unlock(
+            super::UnlockMode::AllMethods(vec![
+                super::MultiAuthCredential::Password {
+                    value: "password".to_string(),
+                },
+                super::MultiAuthCredential::Keypair {
+                    key_path: key_path.clone(),
+                },
+            ]),
+            &state,
+        )
+        .unwrap();
+        assert_eq!(legacy_key_file_slots(&state), 0);
+        assert_eq!(super::take_security_notice_inner(&state).unwrap(), None);
+        super::super::lock_diary_inner(&state).unwrap();
+        assert!(
+            !crate::db::peek_auth_slot_types(&db_path)
+                .unwrap()
+                .upgrade_pending
+        );
+
+        // Each method still opens the journal on its own.
+        super::perform_unlock(super::UnlockMode::Keypair(key_path), &state).unwrap();
+        super::super::lock_diary_inner(&state).unwrap();
+        super::perform_unlock(super::UnlockMode::Password("password".to_string()), &state).unwrap();
     }
 
     #[test]

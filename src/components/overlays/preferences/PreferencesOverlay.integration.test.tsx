@@ -17,11 +17,7 @@ vi.mock('../../../lib/tauri', async () => {
     listCustomFonts: vi.fn(() => Promise.resolve([])),
     changePassword: vi.fn(() => Promise.resolve()),
     verifyPassword: vi.fn(() => Promise.resolve()),
-    generateKeypair: vi.fn(() =>
-      Promise.resolve({ public_key_hex: 'aabb', private_key_hex: 'ccdd' }),
-    ),
-    registerKeypair: vi.fn(() => Promise.resolve()),
-    writeKeyFile: vi.fn(() => Promise.resolve()),
+    createKeyFile: vi.fn(() => Promise.resolve()),
     registerPassword: vi.fn(() => Promise.resolve()),
     removeAuthMethod: vi.fn(() => Promise.resolve()),
   };

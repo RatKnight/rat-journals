@@ -15,6 +15,20 @@ pub fn get_password_slot(db: &DatabaseConnection) -> Result<Option<(i64, Vec<u8>
     }
 }
 
+/// Returns the (id, wrapped_key) of the key-file slot this key file opens, or `None`.
+///
+/// Looks for an upgraded (v2) slot by the file's slot id first, then for a legacy X25519
+/// slot by the public key the same file bytes derive.
+pub fn get_key_file_slot(
+    db: &DatabaseConnection,
+    key_file: &crate::auth::KeyFileMethod,
+) -> Result<Option<(i64, Vec<u8>)>, String> {
+    if let Some(slot) = get_keypair_slot_by_pubkey(db, &key_file.slot_id())? {
+        return Ok(Some(slot));
+    }
+    get_keypair_slot_by_pubkey(db, &key_file.legacy_public_key())
+}
+
 /// Returns the (id, wrapped_key) of the keypair slot matching `pub_key`, or `None`.
 pub fn get_keypair_slot_by_pubkey(
     db: &DatabaseConnection,

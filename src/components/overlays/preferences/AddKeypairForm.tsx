@@ -47,10 +47,7 @@ export function AddKeypairForm(props: AddKeypairFormProps) {
         await tauri.verifyPassword(addKeypairPassword());
       }
 
-      // Step 2: Generate keypair (in-memory, no side effects yet)
-      const kp = await tauri.generateKeypair();
-
-      // Step 3: Prompt user to choose a save path
+      // Step 2: Prompt user to choose a save path
       const savePath = await save({
         title: t('prefs.security.savePrivateKeyTitle'),
         defaultPath: `mini-diarium-${addKeypairLabel().replace(/\s+/g, '-')}.key`,
@@ -61,16 +58,13 @@ export function AddKeypairForm(props: AddKeypairFormProps) {
         return;
       }
 
-      // Step 4: Register public key with the journal (DB write first) so a
-      // failed registration never touches disk.
-      await tauri.registerKeypair(
-        hasPasswordSlot() ? addKeypairPassword() : null,
-        kp.public_key_hex,
+      // Step 3: The backend generates the secret, writes the file, and registers it, removing
+      // the file again if registration fails. The secret never reaches the frontend.
+      await tauri.createKeyFile(
+        savePath,
         addKeypairLabel(),
+        hasPasswordSlot() ? addKeypairPassword() : null,
       );
-
-      // Step 5: Write private key to disk only after DB confirms registration
-      await tauri.writeKeyFile(savePath, kp.private_key_hex);
 
       await loadAuthMethods();
 

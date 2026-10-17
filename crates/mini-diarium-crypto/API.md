@@ -120,9 +120,13 @@ paths resolving.
 
 ### Functions & methods
 - `generate_keypair`, `derive_public_key`
+- `KeyFileMethod::{from_secret, generate, file_contents, slot_id, legacy_public_key,
+  wrap_master_key, unwrap_master_key, unwrap_any, is_v2_blob}` (symmetric key-file slot v2:
+  HKDF-SHA256 + AES-256-GCM; `unwrap_any` also opens a legacy X25519 slot with the same file)
 - `PasswordMethod::{new, wrap_master_key, unwrap_master_key, is_legacy_blob}` (raw Argon2id +
   AES-256-GCM; writes slot format v2 only, still reads the legacy format so it can be upgraded)
-- `KeypairMethod::wrap_master_key`, `PrivateKeyMethod::unwrap_master_key` (X25519 ECIES)
+- `KeypairMethod::wrap_master_key`, `PrivateKeyMethod::unwrap_master_key` (X25519 ECIES —
+  **legacy**, quantum-vulnerable; kept to read and upgrade old slots)
 - `AutoKeyMethod::{wrap_master_key, unwrap_master_key}` (device-bound 32-byte key, no KDF)
 
 The `wrapped_key` blob formats are documented in each method's source. **These are pure

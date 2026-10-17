@@ -258,19 +258,21 @@ links — the entry save path never does.
   one write unit.)
 
 ### Auth-slot management
-- `get_password_slot`, `get_keypair_slot_by_pubkey`, `list_auth_slots`, `insert_auth_slot`,
+- `get_password_slot`, `get_key_file_slot` (v2 slot id, then legacy public key), `get_keypair_slot_by_pubkey`, `list_auth_slots`, `insert_auth_slot`,
   `delete_auth_slot`, `count_auth_slots`, `update_auth_slot_wrapped_key`,
   `update_slot_last_used` (takes `&DatabaseConnection`), `get_auth_slot_type`
 
-### Master-key rotation (legacy password slots)
-- `has_legacy_password_material(db) -> Result<bool, String>` — true while the journal has a
-  pre-v2 password slot or the v1/v2 `metadata` password hash, either of which exposes a master
-  key to anyone holding the file.
-- `rotate_master_key(&mut db, password, auto_key: Option<&[u8; 32]>) -> Result<RekeyOutcome, String>`
-  — replaces the master key, re-encrypts every encrypted column, recomputes keyed fingerprints,
-  re-wraps every slot (a slot it cannot re-wrap is removed), deletes the legacy hash, then
-  `VACUUM`s. One write unit; on error nothing changes. Snapshots taken before it can no
-  longer be restored over the journal (restore requires the same master key).
+### Master-key rotation (legacy key-wrapping material)
+- `legacy_material(db) -> Result<LegacyMaterial, String>` — pre-v2 password material and the
+  public keys of legacy X25519 key-file slots; `has_legacy_password_material(db)` is the
+  password half.
+- `rotate_master_key(&mut db, &RotationCredentials { password, key_files, auto_key })
+  -> Result<RekeyOutcome, String>` — replaces the master key, re-wraps every slot (password
+  and v2 key-file slots need their credential, else `ERR_NEEDS_ALL_METHODS`; supplied legacy
+  key files are upgraded to v2, absent ones re-wrapped by public key; a local-key slot without
+  its key is removed), re-encrypts every encrypted column, recomputes keyed fingerprints,
+  deletes the legacy hash, then `VACUUM`s. One write unit; on error nothing changes.
+  Snapshots taken before it can no longer be restored over the journal.
 
 ### `db_settings` (operate on `&DatabaseConnection`)
 - `get_db_setting`, `set_db_setting`, `delete_db_setting`
@@ -325,7 +327,8 @@ are sealed (`pub(crate)`).
 - **Composed slot ops** (encapsulate the master-key wrap that `conn()`/`key()` sealing removes
   from consumers):
   - `add_password_slot(db, label, password) -> Result<i64, String>`
-  - `add_keypair_slot(db, label, public_key: [u8; 32]) -> Result<i64, String>`
+  - `add_key_file_slot(db, label, &KeyFileMethod) -> Result<i64, String>` (v2 symmetric slot;
+    `add_keypair_slot` for legacy X25519 slots is test-support only)
 
 There is intentionally **no `rewrap` function**: `change_password` recovers the master key by
 unwrapping the current password slot, so it needs no separate helper.

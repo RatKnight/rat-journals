@@ -8,6 +8,11 @@ use tauri::{AppHandle, Emitter, State, Wry};
 /// master-key rotation that should have replaced it failed, so the key is still exposed.
 pub const NOTICE_KEY_UPGRADE_FAILED: &str = "key-upgrade-failed";
 
+/// [`DiaryState::security_notice`] code: the journal still has legacy key-wrapping material
+/// that can only be upgraded with all of its unlock methods supplied at once (the unlock
+/// screen's "All methods" option).
+pub const NOTICE_UPGRADE_NEEDS_ALL_METHODS: &str = "upgrade-needs-all-methods";
+
 /// Shared state for the database connection
 pub struct DiaryState {
     pub db: Mutex<Option<DatabaseConnection>>,

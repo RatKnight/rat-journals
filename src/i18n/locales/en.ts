@@ -166,6 +166,9 @@ const en = {
       sendFeedback: 'Send feedback',
       passwordMode: 'Password',
       keyFileMode: 'Key File',
+      allMethodsMode: 'All methods',
+      upgradeAllMethodsNote:
+        "Enter every unlock method at once to finish upgrading this journal's encryption.",
       unlockMethodAria: 'Unlock method',
       passwordLabel: 'Password',
       passwordPlaceholder: 'Enter your password',
@@ -973,6 +976,8 @@ const en = {
       'Something went wrong in the background, so the journal was locked to keep it safe. Unlock it to continue.',
     keyUpgradeFailed:
       "Mini Diarium could not upgrade this journal's encryption. Until it does, anyone with a copy of the journal file or a backup can open it without your password. Lock the journal and unlock it with your password to try again.",
+    upgradeNeedsAllMethods:
+      "Mini Diarium needs to upgrade this journal's encryption so that a future quantum computer cannot break it, and it needs all of the journal's unlock methods at once to do that. Lock the journal, choose “All methods” on the unlock screen, and enter your password and key files together.",
     internalError: 'An internal error occurred.',
     unexpectedError: 'An unexpected error occurred.',
   },

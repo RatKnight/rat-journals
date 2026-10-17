@@ -9,7 +9,6 @@ use crate::db::queries;
 use log::info;
 use rusqlite::Connection;
 use std::path::Path;
-use x25519_dalek::{PublicKey, StaticSecret};
 
 /// Takes a verified snapshot before `apply_pending` runs, then migrates.
 ///
@@ -107,10 +106,11 @@ pub fn open_database<P1: AsRef<Path>, P2: AsRef<Path>>(
     Ok(db_conn)
 }
 
-/// Opens an existing v3 database using an X25519 private key file.
+/// Opens an existing v3 database using the 32 bytes of a key file.
 ///
-/// Only works with v3+ databases. The private key is loaded from `key_path`,
-/// used to unwrap the master key, then zeroized.
+/// Only works with v3+ databases. Accepts both slot formats: an upgraded (v2, symmetric)
+/// slot found by the file's slot id, or a legacy X25519 slot found by the public key the
+/// same bytes derive. Upgrading a legacy slot is the caller's job (see `db::rekey`).
 pub fn open_database_with_keypair<P1: AsRef<Path>, P2: AsRef<Path>>(
     db_path: P1,
     private_key_bytes: [u8; 32],
@@ -133,15 +133,18 @@ pub fn open_database_with_keypair<P1: AsRef<Path>, P2: AsRef<Path>>(
             .to_string());
     }
 
-    let static_secret = StaticSecret::from(private_key_bytes);
-    let public_key = PublicKey::from(&static_secret);
-    let pub_key_slice: &[u8] = public_key.as_bytes();
-
-    let slot_result = conn.query_row(
-        "SELECT id, wrapped_key FROM auth_slots WHERE type = 'keypair' AND public_key = ?1 LIMIT 1",
-        rusqlite::params![pub_key_slice],
-        |row| Ok((row.get::<_, i64>(0)?, row.get::<_, Vec<u8>>(1)?)),
-    );
+    let key_file = crate::auth::KeyFileMethod::from_secret(private_key_bytes);
+    let find = |id: &[u8; 32]| {
+        conn.query_row(
+            "SELECT id, wrapped_key FROM auth_slots WHERE type = 'keypair' AND public_key = ?1 LIMIT 1",
+            rusqlite::params![&id[..]],
+            |row| Ok((row.get::<_, i64>(0)?, row.get::<_, Vec<u8>>(1)?)),
+        )
+    };
+    let slot_result = match find(&key_file.slot_id()) {
+        Err(rusqlite::Error::QueryReturnedNoRows) => find(&key_file.legacy_public_key()),
+        other => other,
+    };
 
     let (slot_id, wrapped_key) = match slot_result {
         Ok(r) => r,
@@ -151,11 +154,8 @@ pub fn open_database_with_keypair<P1: AsRef<Path>, P2: AsRef<Path>>(
         Err(e) => return Err(format!("Database error: {}", e)),
     };
 
-    let unwrap_method = crate::auth::keypair::PrivateKeyMethod {
-        private_key: private_key_bytes,
-    };
-    let master_key_bytes = unwrap_method
-        .unwrap_master_key(&wrapped_key)
+    let master_key_bytes = key_file
+        .unwrap_any(&wrapped_key)
         .map_err(|e| format!("Failed to unlock with key file: {}", e))?;
 
     let encryption_key =

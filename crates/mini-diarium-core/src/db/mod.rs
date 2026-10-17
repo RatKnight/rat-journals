@@ -16,7 +16,10 @@ pub use schema::{
 // Master-key rotation for journals with a legacy (pre-v2) password slot.
 #[cfg(any(test, feature = "test-support"))]
 pub use rekey::downgrade_password_slot_for_tests;
-pub use rekey::{has_legacy_password_material, rotate_master_key, RekeyOutcome};
+pub use rekey::{
+    has_legacy_password_material, legacy_material, rotate_master_key, LegacyMaterial, RekeyOutcome,
+    RotationCredentials, ERR_NEEDS_ALL_METHODS,
+};
 
 // Locked-journal metadata — the one `db` read that needs no handle and no key.
 pub use peek::{peek_auth_slot_types, AuthSlotPeek, JournalPeek};
@@ -49,7 +52,8 @@ pub use queries::{
     read_attachment_bytes, remove_attachment_from_entry, strip_attachment_refs,
     DEFAULT_ATTACHMENT_MIME, MAX_STORED_BLOB_BYTES,
     // Auth slots
-    count_auth_slots, delete_auth_slot, get_auth_slot_type, get_keypair_slot_by_pubkey,
+    count_auth_slots, delete_auth_slot, get_auth_slot_type, get_key_file_slot,
+    get_keypair_slot_by_pubkey,
     get_password_slot, insert_auth_slot, list_auth_slots, update_auth_slot_wrapped_key,
     update_slot_last_used,
     // db_settings wrappers (operate on &DatabaseConnection)

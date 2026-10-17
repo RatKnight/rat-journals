@@ -14,7 +14,7 @@ import { peekAuthSlotTypes, type JournalPeek, type MultiAuthCredential } from '.
 import { mapTauriError } from '../../lib/errors';
 import PreAuthTools from './PreAuthTools';
 
-type UnlockMode = 'password' | 'keyfile';
+type UnlockMode = 'password' | 'keyfile' | 'all';
 
 export default function PasswordPrompt() {
   const t = useI18n();
@@ -33,6 +33,9 @@ export default function PasswordPrompt() {
     journals().find((j) => j.id === activeJournalId())?.auto_protected ?? false;
   const requiresAllAuth = () => journalPeek()?.require_all_auth ?? false;
   const multiAuthSlots = () => journalPeek()?.slots ?? [];
+  // Legacy key wrapping that only all methods together can upgrade (see SECURITY.md).
+  const upgradePending = () =>
+    (journalPeek()?.upgrade_pending ?? false) && multiAuthSlots().length > 1;
 
   onMount(async () => {
     if (!isAutoProtected()) {
@@ -173,6 +176,92 @@ export default function PasswordPrompt() {
     }
   };
 
+  // Combined form for every unlock method at once: required by require_all_auth, and offered
+  // to finish an encryption upgrade that needs all methods.
+  const multiAuthForm = (note: string) => (
+    <>
+      <Show when={isLoadingSlots()}>
+        <p class="text-sm text-secondary text-center py-4">{t('auth.prompt.unlocking')}</p>
+      </Show>
+
+      <Show when={!isLoadingSlots() && multiAuthSlots().length === 0}>
+        <div role="alert" class="rounded-md bg-error p-3">
+          <p class="text-sm text-error">{t('auth.prompt.multiAuthLoadError')}</p>
+        </div>
+      </Show>
+
+      <Show when={!isLoadingSlots() && multiAuthSlots().length > 0}>
+        <form onSubmit={handleMultiAuthSubmit} class="space-y-6">
+          <p class="text-sm text-secondary text-center">{note}</p>
+
+          <For each={multiAuthSlots()}>
+            {(slot) => (
+              <div>
+                <Show when={slot.slot_type === 'password'}>
+                  <label
+                    for={`slot-${slot.id}`}
+                    class="mb-2 block text-sm font-medium text-secondary"
+                  >
+                    {t('auth.prompt.passwordLabel')}
+                  </label>
+                  <input
+                    id={`slot-${slot.id}`}
+                    type="password"
+                    data-testid="password-unlock-input"
+                    value={password()}
+                    onInput={(e) => setPassword(e.currentTarget.value)}
+                    disabled={isUnlocking()}
+                    autofocus
+                    class="w-full rounded-md border border-primary bg-primary px-4 py-2 text-primary focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-tertiary"
+                    placeholder={t('auth.prompt.passwordPlaceholder')}
+                    autocomplete="current-password"
+                  />
+                </Show>
+
+                <Show when={slot.slot_type === 'keypair'}>
+                  <label class="mb-2 block text-sm font-medium text-secondary">{slot.label}</label>
+                  <div class="flex gap-2">
+                    <input
+                      type="text"
+                      value={keypairPaths()[slot.id] ?? ''}
+                      readOnly
+                      class="flex-1 rounded-md border border-primary px-4 py-2 text-primary bg-tertiary text-sm"
+                      placeholder={t('auth.prompt.keyFilePlaceholder')}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handlePickKeyFileForSlot(slot.id)}
+                      disabled={isUnlocking()}
+                      aria-label={t('auth.prompt.keyFileBrowseAria')}
+                      class="rounded-md border border-primary px-3 py-2 text-sm font-medium text-secondary hover:bg-hover focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                    >
+                      {t('common.browse')}
+                    </button>
+                  </div>
+                </Show>
+              </div>
+            )}
+          </For>
+
+          <Show when={error()}>
+            <div role="alert" class="rounded-md bg-error p-3">
+              <p class="text-sm text-error">{error()}</p>
+            </div>
+          </Show>
+
+          <button
+            type="submit"
+            data-testid="unlock-journal-button"
+            disabled={isUnlocking() || !allMultiAuthFilled()}
+            class="w-full rounded-md interactive-primary px-4 py-3 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isUnlocking() ? t('auth.prompt.unlocking') : t('auth.prompt.unlockButton')}
+          </button>
+        </form>
+      </Show>
+    </>
+  );
+
   return (
     <div class="flex flex-col h-full items-center bg-tertiary px-4 py-6">
       <div class="my-auto w-full max-w-md">
@@ -234,87 +323,7 @@ export default function PasswordPrompt() {
 
           {/* Multi-auth combined form — slot-driven */}
           <Show when={requiresAllAuth() && !isAutoProtected()}>
-            <Show when={isLoadingSlots()}>
-              <p class="text-sm text-secondary text-center py-4">{t('auth.prompt.unlocking')}</p>
-            </Show>
-
-            <Show when={!isLoadingSlots() && multiAuthSlots().length === 0}>
-              <div role="alert" class="rounded-md bg-error p-3">
-                <p class="text-sm text-error">{t('auth.prompt.multiAuthLoadError')}</p>
-              </div>
-            </Show>
-
-            <Show when={!isLoadingSlots() && multiAuthSlots().length > 0}>
-              <form onSubmit={handleMultiAuthSubmit} class="space-y-6">
-                <p class="text-sm text-secondary text-center">{t('auth.prompt.multiAuthNote')}</p>
-
-                <For each={multiAuthSlots()}>
-                  {(slot) => (
-                    <div>
-                      <Show when={slot.slot_type === 'password'}>
-                        <label
-                          for={`slot-${slot.id}`}
-                          class="mb-2 block text-sm font-medium text-secondary"
-                        >
-                          {t('auth.prompt.passwordLabel')}
-                        </label>
-                        <input
-                          id={`slot-${slot.id}`}
-                          type="password"
-                          data-testid="password-unlock-input"
-                          value={password()}
-                          onInput={(e) => setPassword(e.currentTarget.value)}
-                          disabled={isUnlocking()}
-                          autofocus
-                          class="w-full rounded-md border border-primary bg-primary px-4 py-2 text-primary focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-tertiary"
-                          placeholder={t('auth.prompt.passwordPlaceholder')}
-                          autocomplete="current-password"
-                        />
-                      </Show>
-
-                      <Show when={slot.slot_type === 'keypair'}>
-                        <label class="mb-2 block text-sm font-medium text-secondary">
-                          {slot.label}
-                        </label>
-                        <div class="flex gap-2">
-                          <input
-                            type="text"
-                            value={keypairPaths()[slot.id] ?? ''}
-                            readOnly
-                            class="flex-1 rounded-md border border-primary px-4 py-2 text-primary bg-tertiary text-sm"
-                            placeholder={t('auth.prompt.keyFilePlaceholder')}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handlePickKeyFileForSlot(slot.id)}
-                            disabled={isUnlocking()}
-                            aria-label={t('auth.prompt.keyFileBrowseAria')}
-                            class="rounded-md border border-primary px-3 py-2 text-sm font-medium text-secondary hover:bg-hover focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-                          >
-                            {t('common.browse')}
-                          </button>
-                        </div>
-                      </Show>
-                    </div>
-                  )}
-                </For>
-
-                <Show when={error()}>
-                  <div role="alert" class="rounded-md bg-error p-3">
-                    <p class="text-sm text-error">{error()}</p>
-                  </div>
-                </Show>
-
-                <button
-                  type="submit"
-                  data-testid="unlock-journal-button"
-                  disabled={isUnlocking() || !allMultiAuthFilled()}
-                  class="w-full rounded-md interactive-primary px-4 py-3 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isUnlocking() ? t('auth.prompt.unlocking') : t('auth.prompt.unlockButton')}
-                </button>
-              </form>
-            </Show>
+            {multiAuthForm(t('auth.prompt.multiAuthNote'))}
           </Show>
 
           {/* Password / key-file journal: mode toggle + form */}
@@ -354,6 +363,24 @@ export default function PasswordPrompt() {
               >
                 {t('auth.prompt.keyFileMode')}
               </button>
+              <Show when={upgradePending()}>
+                <button
+                  type="button"
+                  data-testid="all-methods-mode"
+                  onClick={() => {
+                    setMode('all');
+                    setError(null);
+                  }}
+                  aria-pressed={mode() === 'all'}
+                  class={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
+                    mode() === 'all'
+                      ? 'interactive-primary'
+                      : 'bg-primary text-secondary hover:bg-hover'
+                  }`}
+                >
+                  {t('auth.prompt.allMethodsMode')}
+                </button>
+              </Show>
             </div>
 
             {/* Password form */}
@@ -436,6 +463,11 @@ export default function PasswordPrompt() {
                   {isUnlocking() ? t('auth.prompt.unlocking') : t('auth.prompt.unlockWithKeyFile')}
                 </button>
               </form>
+            </Show>
+
+            {/* Every method at once, to finish an encryption upgrade */}
+            <Show when={mode() === 'all'}>
+              {multiAuthForm(t('auth.prompt.upgradeAllMethodsNote'))}
             </Show>
           </Show>
 

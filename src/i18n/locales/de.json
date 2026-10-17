@@ -127,6 +127,8 @@
       "sendFeedback": "Feedback senden",
       "passwordMode": "Passwort",
       "keyFileMode": "Schlüsseldatei",
+      "allMethodsMode": "Alle Methoden",
+      "upgradeAllMethodsNote": "Gib alle Entsperrmethoden auf einmal ein, um die Aktualisierung der Verschlüsselung dieses Tagebuchs abzuschließen.",
       "unlockMethodAria": "Entsperrmethode",
       "passwordLabel": "Passwort",
       "passwordPlaceholder": "Gib dein Passwort ein",
@@ -806,6 +808,7 @@
     "noBackupsYet": "Es gibt noch keine Sicherungen. Der Ordner erscheint nach der ersten Sicherung.",
     "backgroundTaskFailed": "Im Hintergrund ist ein Fehler aufgetreten, deshalb wurde das Tagebuch zum Schutz gesperrt. Entsperre es, um fortzufahren.",
     "keyUpgradeFailed": "Mini Diarium konnte die Verschlüsselung dieses Tagebuchs nicht aktualisieren. Bis dahin kann jeder mit einer Kopie der Tagebuchdatei oder einer Sicherung es ohne dein Passwort öffnen. Sperre das Tagebuch und entsperre es mit deinem Passwort, um es erneut zu versuchen.",
+    "upgradeNeedsAllMethods": "Mini Diarium muss die Verschlüsselung dieses Tagebuchs aktualisieren, damit ein zukünftiger Quantencomputer sie nicht brechen kann, und braucht dafür alle Entsperrmethoden des Tagebuchs gleichzeitig. Sperre das Tagebuch, wähle auf dem Entsperrbildschirm „Alle Methoden“ und gib dein Passwort und deine Schlüsseldateien zusammen ein.",
     "internalError": "Ein interner Fehler ist aufgetreten.",
     "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten."
   }

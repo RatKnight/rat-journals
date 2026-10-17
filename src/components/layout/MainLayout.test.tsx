@@ -432,6 +432,15 @@ describe('MainLayout security notice', () => {
     expect(authMocks.dismissSecurityNotice).toHaveBeenCalledTimes(1);
   });
 
+  it('asks for all methods when the upgrade needs them', async () => {
+    authMocks.securityNotice = 'upgrade-needs-all-methods';
+    const { findByTestId } = renderWithI18n(() => <MainLayout />);
+
+    const banner = await findByTestId('security-notice');
+    expect(banner.textContent).toContain('All methods');
+    expect(banner.textContent).toContain('quantum');
+  });
+
   it('shows no warning without a notice', () => {
     const { queryByTestId } = renderWithI18n(() => <MainLayout />);
     expect(queryByTestId('security-notice')).toBeNull();

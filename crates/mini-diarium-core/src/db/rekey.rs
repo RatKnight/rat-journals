@@ -1,28 +1,36 @@
-//! Master-key rotation for journals that were protected by a legacy password slot.
+//! Master-key rotation for journals that still carry legacy key-wrapping material.
 //!
-//! Before password slot format v2, the wrapping key of a password slot was derived from the
-//! Argon2 hash *stored inside the slot*, so anyone with a copy of the journal (or of any
-//! backup) could unwrap the master key without the password. Re-wrapping the same master key
-//! in the v2 format is not enough: every existing copy still yields that key, and it would
-//! keep decrypting everything written from now on. So the master key is replaced:
+//! Two legacy slot formats expose the master key to anyone holding a copy of the journal (or
+//! of any backup):
+//!
+//! - **Password slots before format v2** derived their wrapping key from the Argon2 hash
+//!   *stored inside the slot*, so the key could be unwrapped without the password — today.
+//! - **X25519 key-file slots** store the recipient public key. A large quantum computer
+//!   (Shor's algorithm) could recover the private key from it and unwrap the master key
+//!   without the key file — "harvest now, decrypt later".
+//!
+//! Re-wrapping the same master key in a new format is not enough: every existing copy still
+//! yields that key, and it would keep decrypting everything written from now on. So the
+//! master key is replaced:
 //!
 //! 1. a fresh random master key is generated;
-//! 2. every encrypted column is decrypted with the old key and re-encrypted with the new one,
+//! 2. every auth slot is re-wrapped for it (see [`RotationCredentials`] for what each slot
+//!    type needs). A password or v2 key-file slot can only be re-wrapped with its own
+//!    credential, so rotation fails with [`ERR_NEEDS_ALL_METHODS`] — changing nothing —
+//!    unless the caller supplies every one of them;
+//! 3. every encrypted column is decrypted with the old key and re-encrypted with the new one,
 //!    and the master-key–keyed fingerprints (tags, images, attachments) and the
 //!    `require_all_auth` MAC are recomputed;
-//! 3. every auth slot is re-wrapped for the new key (password → v2 format, key files via
-//!    their stored public key, the local key when the caller supplies it); a slot that cannot
-//!    be re-wrapped is deleted, since it could only ever unlock the exposed old key;
 //! 4. the legacy v1/v2 `metadata` password hash is deleted;
 //!
 //! all inside one write transaction, so a failure leaves the journal exactly as it was. After
 //! the commit the file is `VACUUM`ed so the old blobs do not linger in free pages.
 //!
 //! Snapshots taken before the rotation are still encrypted with the old key and still hold the
-//! legacy slot. They cannot be restored over the rotated journal (restore requires the same
+//! legacy slots. They cannot be restored over the rotated journal (restore requires the same
 //! master key) and should be deleted once the user has a post-rotation backup.
 
-use crate::auth::{AutoKeyMethod, KeypairMethod, PasswordMethod};
+use crate::auth::{AutoKeyMethod, KeyFileMethod, KeypairMethod, PasswordMethod};
 use crate::crypto::cipher;
 use crate::db::queries::with_write_transaction;
 use crate::db::schema::DatabaseConnection;
@@ -31,14 +39,57 @@ use rand_core::{OsRng, RngCore};
 use rusqlite::{params, OptionalExtension};
 use zeroize::Zeroizing;
 
+/// Returned by [`rotate_master_key`] when a password or key-file slot cannot be re-wrapped
+/// because its credential was not supplied. Nothing was changed.
+pub const ERR_NEEDS_ALL_METHODS: &str =
+    "Upgrading this journal's encryption needs all of its unlock methods at once";
+
+/// The credentials available for re-wrapping slots during [`rotate_master_key`].
+///
+/// - `password` re-wraps the password slot it opens (v2 format).
+/// - `key_files` re-wrap the key-file slots they open; a legacy X25519 slot is converted to
+///   the v2 (symmetric) format. A legacy X25519 slot whose file is absent is re-wrapped with
+///   its stored public key, which keeps it working but leaves it quantum-vulnerable and
+///   counted in [`RekeyOutcome::legacy_key_file_slots_remaining`].
+/// - `auto_key` re-wraps the local-key slot; without it that slot is removed.
+pub struct RotationCredentials<'a> {
+    pub password: Option<&'a str>,
+    pub key_files: &'a [KeyFileMethod],
+    pub auto_key: Option<&'a [u8; 32]>,
+}
+
 /// What [`rotate_master_key`] did.
 #[derive(Debug, Default, PartialEq, Eq)]
 pub struct RekeyOutcome {
     /// Number of encrypted values re-encrypted under the new master key.
     pub values_reencrypted: usize,
-    /// Auth slots that could not be re-wrapped and were removed (e.g. a local-key slot when
-    /// the local key was not supplied). Their credentials no longer unlock the journal.
+    /// Local-key slots that could not be re-wrapped and were removed.
     pub slots_removed: usize,
+    /// Legacy X25519 key-file slots kept (re-wrapped by public key) because their key file was
+    /// not supplied. Until they are upgraded the journal is not quantum-resistant.
+    pub legacy_key_file_slots_remaining: usize,
+}
+
+/// Legacy key-wrapping material still present in a journal.
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct LegacyMaterial {
+    /// A pre-v2 password slot or the v1/v2 `metadata` password hash.
+    pub password: bool,
+    /// Public keys of the legacy X25519 key-file slots.
+    pub key_file_public_keys: Vec<[u8; 32]>,
+}
+
+impl LegacyMaterial {
+    pub fn any(&self) -> bool {
+        self.password || !self.key_file_public_keys.is_empty()
+    }
+
+    /// True when `key_files` include the file for every legacy key-file slot.
+    pub fn key_files_cover(&self, key_files: &[KeyFileMethod]) -> bool {
+        self.key_file_public_keys
+            .iter()
+            .all(|pk| key_files.iter().any(|kf| &kf.legacy_public_key() == pk))
+    }
 }
 
 /// Encrypted columns that hold `cipher::encrypt` output keyed by the master key.
@@ -55,23 +106,53 @@ const ENCRYPTED_COLUMNS: &[(&str, &str)] = &[
     ("entry_attachments", "name_encrypted"),
 ];
 
+/// Returns the legacy key-wrapping material still in the journal.
+pub fn legacy_material(db: &DatabaseConnection) -> Result<LegacyMaterial, String> {
+    legacy_material_conn(db.conn())
+}
+
 /// Returns true when the journal still carries legacy password material: a password slot in
 /// the pre-v2 format, or the v1/v2 `metadata` password hash. Either one exposes the current
 /// master key (or an older key) to anyone holding the file.
 pub fn has_legacy_password_material(db: &DatabaseConnection) -> Result<bool, String> {
-    let conn = db.conn();
-    let mut stmt = conn
-        .prepare("SELECT wrapped_key FROM auth_slots WHERE type = 'password'")
-        .map_err(|e| format!("Failed to read auth slots: {}", e))?;
-    let blobs = stmt
-        .query_map([], |row| row.get::<_, Vec<u8>>(0))
-        .map_err(|e| format!("Failed to read auth slots: {}", e))?
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|e| format!("Failed to read auth slots: {}", e))?;
-    if blobs.iter().any(|b| PasswordMethod::is_legacy_blob(b)) {
-        return Ok(true);
+    Ok(legacy_material(db)?.password)
+}
+
+/// [`legacy_material`] on a raw connection; needs no key, so the locked-journal peek uses it.
+pub(crate) fn legacy_material_conn(conn: &rusqlite::Connection) -> Result<LegacyMaterial, String> {
+    let rows: Vec<(String, Option<Vec<u8>>, Vec<u8>)> = {
+        let mut stmt = conn
+            .prepare(
+                "SELECT type, public_key, wrapped_key FROM auth_slots \
+                 WHERE type IN ('password', 'keypair')",
+            )
+            .map_err(|e| format!("Failed to read auth slots: {}", e))?;
+        let rows = stmt
+            .query_map([], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)))
+            .map_err(|e| format!("Failed to read auth slots: {}", e))?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| format!("Failed to read auth slots: {}", e))?;
+        rows
+    };
+    let mut material = LegacyMaterial::default();
+    for (slot_type, public_key, wrapped) in rows {
+        match slot_type.as_str() {
+            "password" if PasswordMethod::is_legacy_blob(&wrapped) => material.password = true,
+            "keypair" if !KeyFileMethod::is_v2_blob(&wrapped) => {
+                if let Some(pk) = public_key
+                    .as_deref()
+                    .and_then(|p| <[u8; 32]>::try_from(p).ok())
+                {
+                    material.key_file_public_keys.push(pk);
+                }
+            }
+            _ => {}
+        }
     }
-    legacy_metadata_present(conn)
+    if !material.password {
+        material.password = legacy_metadata_present(conn)?;
+    }
+    Ok(material)
 }
 
 fn table_exists(conn: &rusqlite::Connection, table: &str) -> Result<bool, String> {
@@ -101,13 +182,12 @@ fn legacy_metadata_present(conn: &rusqlite::Connection) -> Result<bool, String> 
 
 /// Replaces the journal's master key and re-wraps every auth slot for it.
 ///
-/// `password` must be the journal's current password (it was just used to unlock). `auto_key`
-/// is the journal's local key from `config.json`, if it has one; without it a local-key slot
-/// is removed. See the module docs for the full procedure. On error nothing is changed.
+/// See the module docs for the full procedure and [`RotationCredentials`] for what each slot
+/// needs. Fails with [`ERR_NEEDS_ALL_METHODS`] when a password or v2 key-file slot's
+/// credential is missing. On any error nothing is changed.
 pub fn rotate_master_key(
     db: &mut DatabaseConnection,
-    password: &str,
-    auto_key: Option<&[u8; 32]>,
+    credentials: &RotationCredentials<'_>,
 ) -> Result<RekeyOutcome, String> {
     let mut new_key_bytes = Zeroizing::new([0u8; 32]);
     OsRng.fill_bytes(new_key_bytes.as_mut());
@@ -116,10 +196,13 @@ pub fn rotate_master_key(
     let outcome = with_write_transaction(db, || {
         let conn = db.conn();
         let old_key = db.key();
-        // First, so a wrong password fails before any re-encryption work is done.
+        // First, so a missing credential fails before any re-encryption work is done.
+        let (slots_removed, legacy_key_file_slots_remaining) =
+            rewrap_slots(conn, old_key, &new_key_bytes, credentials)?;
         let mut outcome = RekeyOutcome {
             values_reencrypted: 0,
-            slots_removed: rewrap_slots(conn, old_key, &new_key_bytes, password, auto_key)?,
+            slots_removed,
+            legacy_key_file_slots_remaining,
         };
 
         for (table, column) in ENCRYPTED_COLUMNS {
@@ -160,8 +243,8 @@ pub fn rotate_master_key(
     }
 
     info!(
-        "Master key rotated: {} values re-encrypted, {} auth slot(s) removed",
-        outcome.values_reencrypted, outcome.slots_removed
+        "Master key rotated: {} values re-encrypted, {} slot(s) removed, {} legacy key-file slot(s) left",
+        outcome.values_reencrypted, outcome.slots_removed, outcome.legacy_key_file_slots_remaining
     );
     Ok(outcome)
 }
@@ -256,16 +339,16 @@ fn recompute_fingerprints(
     Ok(())
 }
 
-/// Re-wraps every auth slot for `new_key`. Returns the number of slots removed because they
-/// could not be re-wrapped. Fails (rolling everything back) on a slot type it does not know,
-/// rather than delete a credential it does not understand.
+/// Re-wraps every auth slot for `new_key`. Returns (local-key slots removed, legacy key-file
+/// slots kept). Fails — rolling everything back — on a password or v2 key-file slot whose
+/// credential is missing ([`ERR_NEEDS_ALL_METHODS`]) or a slot type it does not know, rather
+/// than delete a credential.
 fn rewrap_slots(
     conn: &rusqlite::Connection,
     old_key: &cipher::Key,
     new_key: &[u8; 32],
-    password: &str,
-    auto_key: Option<&[u8; 32]>,
-) -> Result<usize, String> {
+    credentials: &RotationCredentials<'_>,
+) -> Result<(usize, usize), String> {
     let slots: Vec<SlotRow> = {
         let mut stmt = conn
             .prepare("SELECT id, type, public_key, wrapped_key FROM auth_slots ORDER BY id ASC")
@@ -279,41 +362,57 @@ fn rewrap_slots(
             .map_err(|e| format!("Failed to read auth slots: {}", e))?;
         rows
     };
+    let opens = |unwrapped: Result<crate::auth::SecretBytes, String>| {
+        unwrapped
+            .map(|k| k[..] == old_key.as_bytes()[..])
+            .unwrap_or(false)
+    };
 
-    let mut password_rewrapped = false;
     let mut removed = 0;
+    let mut legacy_remaining = 0;
     for (id, slot_type, public_key, wrapped) in slots {
-        let rewrapped: Option<Vec<u8>> = match slot_type.as_str() {
+        // (new wrapped_key, new public_key column value); None removes the slot.
+        let rewrapped: Option<(Vec<u8>, Option<Vec<u8>>)> = match slot_type.as_str() {
             "password" => {
-                // Only the slot the supplied password actually opens is re-wrapped.
-                let method = PasswordMethod::new(password.to_string());
-                let opens = method
-                    .unwrap_master_key(&wrapped)
-                    .map(|k| k[..] == old_key.as_bytes()[..])
-                    .unwrap_or(false);
-                if opens && !password_rewrapped {
-                    password_rewrapped = true;
-                    Some(method.wrap_master_key(new_key)?)
-                } else {
-                    None
-                }
+                let method = credentials
+                    .password
+                    .map(|p| PasswordMethod::new(p.to_string()))
+                    .filter(|m| opens(m.unwrap_master_key(&wrapped)))
+                    .ok_or(ERR_NEEDS_ALL_METHODS)?;
+                Some((method.wrap_master_key(new_key)?, None))
             }
             "keypair" => {
                 let public_key: [u8; 32] = public_key
                     .as_deref()
                     .and_then(|p| p.try_into().ok())
                     .ok_or_else(|| format!("Key-file slot {id} has no valid public key"))?;
-                Some(KeypairMethod { public_key }.wrap_master_key(new_key)?)
+                let legacy = !KeyFileMethod::is_v2_blob(&wrapped);
+                let file = credentials.key_files.iter().find(|kf| {
+                    let id_matches = if legacy {
+                        kf.legacy_public_key() == public_key
+                    } else {
+                        kf.slot_id() == public_key
+                    };
+                    id_matches && opens(kf.unwrap_any(&wrapped))
+                });
+                match (file, legacy) {
+                    // Upgrade (or re-wrap) to the v2 format with the supplied file.
+                    (Some(kf), _) => {
+                        Some((kf.wrap_master_key(new_key)?, Some(kf.slot_id().to_vec())))
+                    }
+                    // A legacy slot can still be re-wrapped from its public key.
+                    (None, true) => {
+                        legacy_remaining += 1;
+                        Some((KeypairMethod { public_key }.wrap_master_key(new_key)?, None))
+                    }
+                    (None, false) => return Err(ERR_NEEDS_ALL_METHODS.to_string()),
+                }
             }
-            "auto" => match auto_key {
+            "auto" => match credentials.auto_key {
                 Some(auto_key_bytes) => {
                     let method = AutoKeyMethod { auto_key_bytes };
-                    let opens = method
-                        .unwrap_master_key(&wrapped)
-                        .map(|k| k[..] == old_key.as_bytes()[..])
-                        .unwrap_or(false);
-                    if opens {
-                        Some(method.wrap_master_key(new_key)?)
+                    if opens(method.unwrap_master_key(&wrapped)) {
+                        Some((method.wrap_master_key(new_key)?, None))
                     } else {
                         None
                     }
@@ -328,12 +427,19 @@ fn rewrap_slots(
         };
 
         match rewrapped {
-            Some(blob) => {
+            Some((blob, new_public_key)) => {
                 conn.execute(
                     "UPDATE auth_slots SET wrapped_key = ?1 WHERE id = ?2",
                     params![blob, id],
                 )
                 .map_err(|e| format!("Failed to update auth slot {id}: {}", e))?;
+                if let Some(pk) = new_public_key {
+                    conn.execute(
+                        "UPDATE auth_slots SET public_key = ?1 WHERE id = ?2",
+                        params![pk, id],
+                    )
+                    .map_err(|e| format!("Failed to update auth slot {id}: {}", e))?;
+                }
             }
             None => {
                 warn!("Key rotation: removing {slot_type} slot {id}, it cannot be re-wrapped");
@@ -343,11 +449,7 @@ fn rewrap_slots(
             }
         }
     }
-
-    if !password_rewrapped {
-        return Err("Cannot rotate key: the password does not open this journal".to_string());
-    }
-    Ok(removed)
+    Ok((removed, legacy_remaining))
 }
 
 /// Rewrites the journal's password slot in the legacy (pre-v2) format for the same master
@@ -387,6 +489,42 @@ mod tests {
 
     fn downgrade_password_slot(db: &DatabaseConnection, password: &str) {
         downgrade_password_slot_for_tests(db, password).unwrap();
+    }
+
+    fn creds<'a>(
+        password: Option<&'a str>,
+        key_files: &'a [KeyFileMethod],
+        auto_key: Option<&'a [u8; 32]>,
+    ) -> RotationCredentials<'a> {
+        RotationCredentials {
+            password,
+            key_files,
+            auto_key,
+        }
+    }
+
+    /// Adds a legacy X25519 key-file slot; returns the key-file bytes (the private key).
+    fn add_legacy_key_file(db: &DatabaseConnection) -> [u8; 32] {
+        let kp = crate::auth::generate_keypair().unwrap();
+        let mut public_key = [0u8; 32];
+        public_key.copy_from_slice(&hex::decode(&kp.public_key_hex).unwrap());
+        let mut private_key = [0u8; 32];
+        private_key.copy_from_slice(&hex::decode(&kp.private_key_hex).unwrap());
+        crate::auth::add_keypair_slot(db, "Old key", public_key).unwrap();
+        private_key
+    }
+
+    fn keypair_slots(db: &DatabaseConnection) -> Vec<(Vec<u8>, Vec<u8>)> {
+        let mut stmt = db
+            .conn()
+            .prepare("SELECT public_key, wrapped_key FROM auth_slots WHERE type = 'keypair'")
+            .unwrap();
+        let rows = stmt
+            .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))
+            .unwrap()
+            .map(|r| r.unwrap())
+            .collect();
+        rows
     }
 
     struct Fixture {
@@ -492,9 +630,10 @@ mod tests {
         assert!(has_legacy_password_material(&db).unwrap());
 
         let old_key = cipher::Key::from_slice(db.key().as_bytes()).unwrap();
-        let outcome = rotate_master_key(&mut db, "pw", None).unwrap();
+        let outcome = rotate_master_key(&mut db, &creds(Some("pw"), &[], None)).unwrap();
 
         assert_eq!(outcome.slots_removed, 0);
+        assert_eq!(outcome.legacy_key_file_slots_remaining, 1);
         assert!(outcome.values_reencrypted >= 8);
         assert_ne!(db.key().as_bytes(), old_key.as_bytes());
         assert!(!has_legacy_password_material(&db).unwrap());
@@ -521,7 +660,7 @@ mod tests {
         let old_key = *db.key().as_bytes();
         let blobs_before = all_encrypted_blobs(&db);
 
-        assert!(rotate_master_key(&mut db, "wrong", None).is_err());
+        assert!(rotate_master_key(&mut db, &creds(Some("wrong"), &[], None)).is_err());
 
         assert_eq!(db.key().as_bytes(), &old_key);
         assert_eq!(all_encrypted_blobs(&db), blobs_before);
@@ -540,7 +679,7 @@ mod tests {
         crate::auth::add_password_slot(&db, "Password", "pw").unwrap();
         downgrade_password_slot(&db, "pw");
 
-        let outcome = rotate_master_key(&mut db, "pw", Some(&auto_key)).unwrap();
+        let outcome = rotate_master_key(&mut db, &creds(Some("pw"), &[], Some(&auto_key))).unwrap();
         assert_eq!(outcome.slots_removed, 0);
         drop(db);
         assert!(open_database_auto(&path, &auto_key, backups.path()).is_ok());
@@ -558,11 +697,98 @@ mod tests {
         crate::auth::add_password_slot(&db, "Password", "pw").unwrap();
         downgrade_password_slot(&db, "pw");
 
-        let outcome = rotate_master_key(&mut db, "pw", None).unwrap();
+        let outcome = rotate_master_key(&mut db, &creds(Some("pw"), &[], None)).unwrap();
         assert_eq!(outcome.slots_removed, 1);
         drop(db);
         assert!(open_database_auto(&path, &auto_key, backups.path()).is_err());
         assert!(open_database(&path, "pw".to_string(), backups.path()).is_ok());
+    }
+
+    #[test]
+    fn supplied_legacy_key_file_is_upgraded_to_v2() {
+        let tmp = tempfile::Builder::new().suffix(".db").tempfile().unwrap();
+        let path = tmp.path().to_path_buf();
+        let backups = tempfile::tempdir().unwrap();
+
+        let mut db = create_database(&path, "pw".to_string()).unwrap();
+        let fixture = populate(&db);
+        let file_bytes = add_legacy_key_file(&db);
+        let legacy_public = KeyFileMethod::from_secret(file_bytes).legacy_public_key();
+        let material = legacy_material(&db).unwrap();
+        assert_eq!(material.key_file_public_keys, vec![legacy_public]);
+        assert!(!material.password);
+
+        let files = [KeyFileMethod::from_secret(file_bytes)];
+        assert!(material.key_files_cover(&files));
+        let outcome = rotate_master_key(&mut db, &creds(Some("pw"), &files, None)).unwrap();
+        assert_eq!(outcome.legacy_key_file_slots_remaining, 0);
+
+        assert!(!legacy_material(&db).unwrap().any());
+        let slots = keypair_slots(&db);
+        assert_eq!(slots.len(), 1);
+        assert!(KeyFileMethod::is_v2_blob(&slots[0].1));
+        assert_eq!(slots[0].0, files[0].slot_id().to_vec());
+        // The X25519 public key is gone from the journal.
+        assert_ne!(slots[0].0, legacy_public.to_vec());
+        assert_content_intact(&db, &fixture);
+        drop(db);
+
+        // The same, unchanged key file still opens the journal; so does the password.
+        let db = open_database_with_keypair(&path, file_bytes, backups.path()).unwrap();
+        assert_content_intact(&db, &fixture);
+        drop(db);
+        assert!(open_database(&path, "pw".to_string(), backups.path()).is_ok());
+    }
+
+    #[test]
+    fn key_file_only_journal_upgrades_with_its_file() {
+        let tmp = tempfile::Builder::new().suffix(".db").tempfile().unwrap();
+        let path = tmp.path().to_path_buf();
+        let backups = tempfile::tempdir().unwrap();
+
+        let mut db = create_database(&path, "pw".to_string()).unwrap();
+        let file_bytes = add_legacy_key_file(&db);
+        let (pw_slot, _) = crate::db::get_password_slot(&db).unwrap().unwrap();
+        crate::db::delete_auth_slot(&db, pw_slot).unwrap();
+
+        let files = [KeyFileMethod::from_secret(file_bytes)];
+        rotate_master_key(&mut db, &creds(None, &files, None)).unwrap();
+        assert!(!legacy_material(&db).unwrap().any());
+        drop(db);
+        assert!(open_database_with_keypair(&path, file_bytes, backups.path()).is_ok());
+    }
+
+    #[test]
+    fn missing_v2_key_file_or_password_refuses_and_changes_nothing() {
+        let tmp = tempfile::Builder::new().suffix(".db").tempfile().unwrap();
+        let mut db = create_database(tmp.path(), "pw".to_string()).unwrap();
+        let fixture = populate(&db);
+        let key_file = KeyFileMethod::generate();
+        crate::auth::add_key_file_slot(&db, "New key", &key_file).unwrap();
+        let old_key = *db.key().as_bytes();
+        let blobs_before = all_encrypted_blobs(&db);
+
+        // Password only: the v2 key-file slot cannot be re-wrapped.
+        let err = rotate_master_key(&mut db, &creds(Some("pw"), &[], None)).unwrap_err();
+        assert_eq!(err, ERR_NEEDS_ALL_METHODS);
+        // Key file only: the password slot cannot be re-wrapped.
+        let files = [KeyFileMethod::from_secret(
+            hex::decode(key_file.file_contents().as_str())
+                .unwrap()
+                .try_into()
+                .unwrap(),
+        )];
+        let err = rotate_master_key(&mut db, &creds(None, &files, None)).unwrap_err();
+        assert_eq!(err, ERR_NEEDS_ALL_METHODS);
+
+        assert_eq!(db.key().as_bytes(), &old_key);
+        assert_eq!(all_encrypted_blobs(&db), blobs_before);
+        assert_content_intact(&db, &fixture);
+
+        // Both together succeed.
+        rotate_master_key(&mut db, &creds(Some("pw"), &files, None)).unwrap();
+        assert_ne!(db.key().as_bytes(), &old_key);
+        assert_content_intact(&db, &fixture);
     }
 
     #[test]

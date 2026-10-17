@@ -1,4 +1,5 @@
 pub mod auto_key;
+pub mod keyfile;
 pub mod keypair;
 pub mod password;
 
@@ -8,6 +9,7 @@ pub mod password;
 // re-export them as `pub(crate)` and keep its `crate::auth::{password, keypair, auto_key}::…`
 // paths resolving with zero churn.
 pub use auto_key::AutoKeyMethod;
+pub use keyfile::KeyFileMethod;
 pub use keypair::{derive_public_key, generate_keypair, KeypairMethod, PrivateKeyMethod};
 pub use password::PasswordMethod;
 

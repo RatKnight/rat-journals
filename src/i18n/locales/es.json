@@ -127,6 +127,8 @@
       "sendFeedback": "Enviar comentarios",
       "passwordMode": "Contraseña",
       "keyFileMode": "Archivo de clave",
+      "allMethodsMode": "Todos los métodos",
+      "upgradeAllMethodsNote": "Introduce todos los métodos de desbloqueo a la vez para terminar de actualizar el cifrado de este diario.",
       "unlockMethodAria": "Método de desbloqueo",
       "passwordLabel": "Contraseña",
       "passwordPlaceholder": "Ingresa tu contraseña",
@@ -806,6 +808,7 @@
     "noBackupsYet": "Todavía no hay copias de seguridad. La carpeta aparece después de la primera copia.",
     "backgroundTaskFailed": "Algo salió mal en segundo plano, así que el diario se bloqueó para mantenerlo seguro. Desbloquéalo para continuar.",
     "keyUpgradeFailed": "Mini Diarium no pudo actualizar el cifrado de este diario. Hasta que lo haga, cualquiera con una copia del archivo del diario o de una copia de seguridad puede abrirlo sin tu contraseña. Bloquea el diario y desbloquéalo con tu contraseña para intentarlo de nuevo.",
+    "upgradeNeedsAllMethods": "Mini Diarium necesita actualizar el cifrado de este diario para que un futuro ordenador cuántico no pueda romperlo, y para ello necesita todos los métodos de desbloqueo del diario a la vez. Bloquea el diario, elige «Todos los métodos» en la pantalla de desbloqueo e introduce tu contraseña y tus archivos de clave juntos.",
     "internalError": "Ocurrió un error interno.",
     "unexpectedError": "Ocurrió un error inesperado."
   }

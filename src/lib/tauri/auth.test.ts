@@ -15,9 +15,7 @@ import {
   verifyPassword,
   peekAuthSlotTypes,
   listAuthMethods,
-  generateKeypair,
-  writeKeyFile,
-  registerKeypair,
+  createKeyFile,
   registerPassword,
   removeAuthMethod,
   unlockJournalAllMethods,
@@ -27,7 +25,6 @@ import {
   takeSecurityNotice,
   type AuthMethodInfo,
   type JournalPeek,
-  type KeypairFiles,
   type MultiAuthCredential,
 } from './auth';
 
@@ -145,36 +142,21 @@ describe('auth command wrappers (IPC contract)', () => {
     expect(mockInvoke).toHaveBeenCalledWith('list_auth_methods');
   });
 
-  it('generateKeypair → generate_keypair and passes the files through', async () => {
-    const files: KeypairFiles = { public_key_hex: 'pub', private_key_hex: 'priv' };
-    mockInvoke.mockResolvedValue(files);
-    await expect(generateKeypair()).resolves.toEqual(files);
-    expect(mockInvoke).toHaveBeenCalledWith('generate_keypair');
-  });
-
-  it('writeKeyFile → write_key_file { path, privateKeyHex } (camelCase)', async () => {
-    await writeKeyFile('/key', 'deadbeef');
-    expect(mockInvoke).toHaveBeenCalledWith('write_key_file', {
-      path: '/key',
-      privateKeyHex: 'deadbeef',
-    });
-  });
-
-  it('registerKeypair → register_keypair { currentPassword, publicKeyHex, label }', async () => {
-    await registerKeypair('pw', 'pub', 'my key');
-    expect(mockInvoke).toHaveBeenCalledWith('register_keypair', {
+  it('createKeyFile → create_key_file { path, label, currentPassword }', async () => {
+    await createKeyFile('/k.key', 'my key', 'pw');
+    expect(mockInvoke).toHaveBeenCalledWith('create_key_file', {
+      path: '/k.key',
+      label: 'my key',
       currentPassword: 'pw',
-      publicKeyHex: 'pub',
-      label: 'my key',
     });
   });
 
-  it('registerKeypair passes null currentPassword through unchanged', async () => {
-    await registerKeypair(null, 'pub', 'my key');
-    expect(mockInvoke).toHaveBeenCalledWith('register_keypair', {
-      currentPassword: null,
-      publicKeyHex: 'pub',
+  it('createKeyFile passes null currentPassword through unchanged', async () => {
+    await createKeyFile('/k.key', 'my key', null);
+    expect(mockInvoke).toHaveBeenCalledWith('create_key_file', {
+      path: '/k.key',
       label: 'my key',
+      currentPassword: null,
     });
   });
 

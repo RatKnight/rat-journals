@@ -73,15 +73,12 @@ export interface AuthSlotPeek {
 export interface JournalPeek {
   slots: AuthSlotPeek[];
   require_all_auth: boolean;
+  /** Legacy key wrapping remains; with several methods, finishing it needs all of them. */
+  upgrade_pending?: boolean;
 }
 
 export async function peekAuthSlotTypes(): Promise<JournalPeek> {
   return await invoke('peek_auth_slot_types');
-}
-
-export interface KeypairFiles {
-  public_key_hex: string;
-  private_key_hex: string;
 }
 
 export type MultiAuthCredential =
@@ -91,20 +88,16 @@ export async function listAuthMethods(): Promise<AuthMethodInfo[]> {
   return await invoke('list_auth_methods');
 }
 
-export async function generateKeypair(): Promise<KeypairFiles> {
-  return await invoke('generate_keypair');
-}
-
-export async function writeKeyFile(path: string, privateKeyHex: string): Promise<void> {
-  await invoke('write_key_file', { path, privateKeyHex });
-}
-
-export async function registerKeypair(
-  currentPassword: string | null,
-  publicKeyHex: string,
+/**
+ * Creates a key file at `path` (must end in `.key`) and registers it as an unlock method.
+ * The secret is generated and written by the backend; it never reaches the frontend.
+ */
+export async function createKeyFile(
+  path: string,
   label: string,
+  currentPassword: string | null,
 ): Promise<void> {
-  await invoke('register_keypair', { currentPassword, publicKeyHex, label });
+  await invoke('create_key_file', { path, label, currentPassword });
 }
 
 export async function registerPassword(newPassword: string): Promise<void> {

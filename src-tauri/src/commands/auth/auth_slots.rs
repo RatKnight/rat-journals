@@ -3,44 +3,6 @@ use tauri::State;
 
 use super::{with_unlocked_db, DiaryState};
 
-/// Generates a new X25519 keypair.
-///
-/// The caller is responsible for saving the private key securely (to a file).
-/// Only the public key is stored in the diary; the private key never touches disk
-/// through this application.
-#[tauri::command]
-pub fn generate_keypair() -> Result<crate::auth::KeypairFiles, String> {
-    crate::auth::generate_keypair()
-}
-
-/// Writes a hex-encoded private key to a file path chosen by the user.
-///
-/// This is used after `generate_keypair` to persist the private key.
-/// On Unix, the file is created with mode 0o600 (owner read/write only).
-/// On Windows, NTFS ACLs restrict the file to the current user by default.
-#[tauri::command]
-pub fn write_key_file(path: String, private_key_hex: String) -> Result<(), String> {
-    #[cfg(unix)]
-    {
-        use std::io::Write;
-        use std::os::unix::fs::OpenOptionsExt;
-        let mut file = std::fs::OpenOptions::new()
-            .write(true)
-            .create(true)
-            .truncate(true)
-            .mode(0o600)
-            .open(&path)
-            .map_err(|e| format!("Failed to write key file: {}", e))?;
-        file.write_all(private_key_hex.as_bytes())
-            .map_err(|e| format!("Failed to write key file: {}", e))
-    }
-    #[cfg(not(unix))]
-    {
-        std::fs::write(&path, &private_key_hex)
-            .map_err(|e| format!("Failed to write key file: {}", e))
-    }
-}
-
 /// Adds a password authentication method using the master key held in the current session.
 ///
 /// Fails if a password slot already exists — use `change_password` to update it.
@@ -67,52 +29,94 @@ pub fn register_password(new_password: String, state: State<DiaryState>) -> Resu
     })
 }
 
-/// Registers a new keypair auth method.
+/// Creates a new key file and registers it as an unlock method.
 ///
-/// Requires the current password only when a password slot already exists.
-/// If no password slot exists, being unlocked is sufficient (same model as register_password).
-/// The master key is wrapped for the given public key and stored in auth_slots.
+/// The key-file secret is generated here and written straight to `path`, so it never passes
+/// through the frontend. The slot uses the symmetric, quantum-resistant v2 format
+/// ([`crate::auth::KeyFileMethod`]). Requires the current password only when a password slot
+/// exists; otherwise being unlocked is sufficient (same model as `register_password`).
+///
+/// `path` must end in `.key` and must not be a network (UNC) path: this command can create
+/// a file, so it is limited to the one kind of file it exists to write. The file is written
+/// before the slot is added, and removed again if adding the slot fails, so a slot never
+/// exists without its file.
 #[tauri::command]
-pub fn register_keypair(
-    current_password: Option<String>,
-    public_key_hex: String,
+pub fn create_key_file(
+    path: String,
     label: String,
+    current_password: Option<String>,
     state: State<DiaryState>,
 ) -> Result<(), String> {
-    with_unlocked_db(&state, |db| {
+    create_key_file_inner(&path, &label, current_password, &state)
+}
+
+pub(crate) fn create_key_file_inner(
+    path: &str,
+    label: &str,
+    current_password: Option<String>,
+    state: &DiaryState,
+) -> Result<(), String> {
+    let target = std::path::Path::new(path);
+    let is_key = target
+        .extension()
+        .and_then(|e| e.to_str())
+        .is_some_and(|e| e.eq_ignore_ascii_case("key"));
+    if !is_key {
+        return Err("A key file must be saved with the .key extension".to_string());
+    }
+    if path.starts_with("\\\\") || path.starts_with("//") {
+        return Err("A key file cannot be saved to a network location".to_string());
+    }
+    if label.trim().is_empty() {
+        return Err("A key file needs a label".to_string());
+    }
+
+    with_unlocked_db(state, |db| {
         // Identity gate: require password verification only when a password slot exists.
-        // If no password slot, being unlocked is sufficient (same model as register_password).
-        let password_slot = crate::db::get_password_slot(db)?;
-        if let Some((_, wrapped_key)) = password_slot {
+        if let Some((_, wrapped_key)) = crate::db::get_password_slot(db)? {
             let pwd = current_password
                 .ok_or("Password required to add a key file when a password method exists")?;
-            let method = crate::auth::PasswordMethod::new(pwd);
-            method
+            crate::auth::PasswordMethod::new(pwd)
                 .unwrap_master_key(&wrapped_key)
                 .map_err(|_| "Incorrect password".to_string())?;
         }
 
-        // Decode public key
-        let pub_key_vec =
-            hex::decode(&public_key_hex).map_err(|_| "Invalid public key hex".to_string())?;
-        if pub_key_vec.len() != 32 {
-            return Err("Invalid public key: expected 32 bytes".to_string());
+        let key_file = crate::auth::KeyFileMethod::generate();
+        write_secret_file(target, &key_file.file_contents())?;
+        if let Err(e) = crate::auth::add_key_file_slot(db, label, &key_file) {
+            let _ = std::fs::remove_file(target);
+            return Err(e);
         }
-        let mut pub_key = [0u8; 32];
-        pub_key.copy_from_slice(&pub_key_vec);
-
-        // Reject duplicate public key registrations
-        if crate::db::get_keypair_slot_by_pubkey(db, &pub_key_vec)?.is_some() {
-            return Err("A keypair with this public key is already registered".to_string());
-        }
-
-        // Wrap master_key for the new keypair using the session key and store the slot.
-        crate::auth::add_keypair_slot(db, &label, pub_key)?;
 
         // The label is user-supplied and these records are captured into the debug dump.
-        info!("Keypair auth method registered");
+        info!("Key file auth method registered");
         Ok(())
     })
+}
+
+/// Writes `contents` to `path`, readable only by the owner on Unix (also when the file
+/// already existed). On Windows, NTFS ACLs restrict the user profile to its owner.
+fn write_secret_file(path: &std::path::Path, contents: &str) -> Result<(), String> {
+    let err = |e: std::io::Error| format!("Failed to write key file: {}", e);
+    #[cfg(unix)]
+    {
+        use std::io::Write;
+        use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
+        let mut file = std::fs::OpenOptions::new()
+            .write(true)
+            .create(true)
+            .truncate(true)
+            .mode(0o600)
+            .open(path)
+            .map_err(err)?;
+        file.set_permissions(std::fs::Permissions::from_mode(0o600))
+            .map_err(err)?;
+        file.write_all(contents.as_bytes()).map_err(err)
+    }
+    #[cfg(not(unix))]
+    {
+        std::fs::write(path, contents).map_err(err)
+    }
 }
 
 /// Pure inner of `remove_auth_method` — takes `&DiaryState` so it can be tested without Tauri.
@@ -450,5 +454,66 @@ mod tests {
 
         let count_after = crate::db::count_auth_slots(&db).unwrap();
         assert_eq!(count_after, 1, "Should have one keypair slot remaining");
+    }
+
+    #[test]
+    fn test_create_key_file_writes_v2_slot_and_unlocks() {
+        let (fixture, state, db_path, _backups) = make_state("create_key_file");
+        drop(create_database(&db_path, "pw".to_string()).unwrap());
+        super::super::perform_unlock(super::super::UnlockMode::Password("pw".to_string()), &state)
+            .unwrap();
+        let key_path = fixture.path().join("new.key");
+        let key_str = key_path.to_str().unwrap().to_string();
+
+        // Password gate.
+        assert!(super::create_key_file_inner(&key_str, "Mine", None, &state).is_err());
+        assert!(
+            super::create_key_file_inner(&key_str, "Mine", Some("bad".into()), &state).is_err()
+        );
+        assert!(
+            !key_path.exists(),
+            "no file may be written when the gate fails"
+        );
+
+        super::create_key_file_inner(&key_str, "Mine", Some("pw".into()), &state).unwrap();
+        let contents = std::fs::read_to_string(&key_path).unwrap();
+        assert_eq!(contents.len(), 64);
+        assert!(contents.chars().all(|c| c.is_ascii_hexdigit()));
+        {
+            let guard = state.db.lock().unwrap();
+            let db = guard.as_ref().unwrap();
+            let slots = crate::db::list_auth_slots(db).unwrap();
+            assert!(slots
+                .iter()
+                .any(|s| s.slot_type == "keypair" && s.label == "Mine"));
+            assert!(!crate::db::legacy_material(db).unwrap().any());
+        }
+
+        super::super::lock_diary_inner(&state).unwrap();
+        super::super::perform_unlock(super::super::UnlockMode::Keypair(key_str), &state).unwrap();
+    }
+
+    #[test]
+    fn test_create_key_file_rejects_other_extensions_and_network_paths() {
+        let (fixture, state, db_path, _backups) = make_state("create_key_file_paths");
+        drop(create_database(&db_path, "pw".to_string()).unwrap());
+        super::super::perform_unlock(super::super::UnlockMode::Password("pw".to_string()), &state)
+            .unwrap();
+
+        let txt = fixture.path().join("startup.bat");
+        let err =
+            super::create_key_file_inner(txt.to_str().unwrap(), "Mine", Some("pw".into()), &state)
+                .unwrap_err();
+        assert!(err.contains(".key"), "got: {err}");
+        assert!(!txt.exists());
+
+        let err = super::create_key_file_inner(
+            r"\\server\share\x.key",
+            "Mine",
+            Some("pw".into()),
+            &state,
+        )
+        .unwrap_err();
+        assert!(err.contains("network"), "got: {err}");
     }
 }

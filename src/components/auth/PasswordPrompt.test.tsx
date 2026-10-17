@@ -64,6 +64,46 @@ describe('PasswordPrompt component', () => {
     });
   }
 
+  function setUpgradePendingJournal() {
+    mocks.journals.mockReturnValue([
+      { id: 'j1', name: 'My Journal', path: '/tmp', auto_protected: false },
+    ]);
+    mocks.peekAuthSlotTypes.mockResolvedValue({
+      slots: [
+        { id: 1, slot_type: 'password', label: 'Password' },
+        { id: 2, slot_type: 'keypair', label: 'My Key' },
+      ],
+      require_all_auth: false,
+      upgrade_pending: true,
+    });
+  }
+
+  it('offers "All methods" while an upgrade needs every method, and submits them together', async () => {
+    setUpgradePendingJournal();
+    renderWithI18n(() => <PasswordPrompt />);
+
+    const allButton = await screen.findByTestId('all-methods-mode');
+    fireEvent.click(allButton);
+
+    await screen.findByText(
+      "Enter every unlock method at once to finish upgrading this journal's encryption.",
+    );
+    expect(screen.getByText('My Key')).toBeInTheDocument();
+    // Password and key-file modes stay available: the upgrade never blocks a normal unlock.
+    expect(screen.getByRole('button', { name: 'Password' })).toBeInTheDocument();
+  });
+
+  it('does not offer "All methods" without a pending upgrade or with a single method', async () => {
+    mocks.peekAuthSlotTypes.mockResolvedValue({
+      slots: [{ id: 1, slot_type: 'password', label: 'Password' }],
+      require_all_auth: false,
+      upgrade_pending: true,
+    });
+    renderWithI18n(() => <PasswordPrompt />);
+    await vi.waitFor(() => expect(mocks.peekAuthSlotTypes).toHaveBeenCalled());
+    expect(screen.queryByTestId('all-methods-mode')).toBeNull();
+  });
+
   it('renders password input with correct testid and type', () => {
     renderWithI18n(() => <PasswordPrompt />);
 

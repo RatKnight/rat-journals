@@ -3,7 +3,7 @@
 // crate as of open-core M3a (TODO-0082). Re-export it here so the curated core façade
 // (crates/mini-diarium-core/API.md) is byte-for-byte unchanged for consumers.
 pub use mini_diarium_crypto::auth::{
-    derive_public_key, generate_keypair, AutoKeyMethod, KeypairFiles, KeypairMethod,
+    derive_public_key, generate_keypair, AutoKeyMethod, KeyFileMethod, KeypairFiles, KeypairMethod,
     PasswordMethod, PrivateKeyMethod, SecretBytes,
 };
 
@@ -44,13 +44,34 @@ pub fn add_password_slot(
     crate::db::insert_auth_slot(db, "password", label, None, &wrapped_key, &now)
 }
 
-/// Wraps the current session's master key for `public_key` (X25519 ECIES) and stores it
-/// as a `keypair` auth slot, returning the new slot's row id.
+/// Wraps the current session's master key for a key file (slot format v2, symmetric) and
+/// stores it as a `keypair` auth slot, returning the new slot's row id.
 ///
-/// The master key is read from the open connection (`db.key()`), wrapped for the given
-/// public key, and inserted — the wrap→insert order mirrors the historical
-/// `register_keypair` path. Callers own the identity gate, hex decode, and duplicate-key
-/// check; this performs only the master-key wrap and the insert.
+/// The slot's `public_key` column holds the key file's slot id, not a public key. Callers
+/// own the identity gate; this performs only the wrap and the insert.
+pub fn add_key_file_slot(
+    db: &crate::db::DatabaseConnection,
+    label: &str,
+    key_file: &KeyFileMethod,
+) -> Result<i64, String> {
+    let wrapped_key = key_file
+        .wrap_master_key(db.key().as_bytes())
+        .map_err(|e| format!("Failed to wrap master key for key file: {}", e))?;
+    let now = chrono::Utc::now().to_rfc3339();
+    crate::db::insert_auth_slot(
+        db,
+        "keypair",
+        label,
+        Some(&key_file.slot_id()),
+        &wrapped_key,
+        &now,
+    )
+}
+
+/// Wraps the master key for an X25519 public key (the **legacy**, quantum-vulnerable
+/// key-file format) and stores it as a `keypair` slot. Test fixtures only: production code
+/// creates key-file slots with [`add_key_file_slot`].
+#[cfg(any(test, feature = "test-support"))]
 pub fn add_keypair_slot(
     db: &crate::db::DatabaseConnection,
     label: &str,

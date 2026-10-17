@@ -5,24 +5,17 @@ import { save } from '@tauri-apps/plugin-dialog';
 import { renderWithI18n } from '../../../test/i18n-test-utils';
 import { AddKeypairForm } from './AddKeypairForm';
 
-const { mockVerifyPassword, mockGenerateKeypair, mockRegisterKeypair, mockWriteKeyFile } =
-  vi.hoisted(() => ({
-    mockVerifyPassword: vi.fn(() => Promise.resolve()),
-    mockGenerateKeypair: vi.fn(() =>
-      Promise.resolve({ public_key_hex: 'aabbcc', private_key_hex: 'ddeeff' }),
-    ),
-    mockRegisterKeypair: vi.fn(() => Promise.resolve()),
-    mockWriteKeyFile: vi.fn(() => Promise.resolve()),
-  }));
+const { mockVerifyPassword, mockCreateKeyFile } = vi.hoisted(() => ({
+  mockVerifyPassword: vi.fn(() => Promise.resolve()),
+  mockCreateKeyFile: vi.fn(() => Promise.resolve()),
+}));
 
 vi.mock('../../../lib/tauri', async () => {
   const actual = await vi.importActual<typeof import('../../../lib/tauri')>('../../../lib/tauri');
   return {
     ...actual,
     verifyPassword: mockVerifyPassword,
-    generateKeypair: mockGenerateKeypair,
-    registerKeypair: mockRegisterKeypair,
-    writeKeyFile: mockWriteKeyFile,
+    createKeyFile: mockCreateKeyFile,
   };
 });
 
@@ -59,7 +52,7 @@ describe('AddKeypairForm', () => {
     await vi.waitFor(() => {
       expect(screen.getByText('Label is required')).toBeInTheDocument();
     });
-    expect(mockGenerateKeypair).not.toHaveBeenCalled();
+    expect(mockCreateKeyFile).not.toHaveBeenCalled();
   });
 
   it('shows error when password is required but not provided', async () => {
@@ -88,26 +81,23 @@ describe('AddKeypairForm', () => {
     await vi.waitFor(() => {
       expect(screen.getByText('Key file save cancelled')).toBeInTheDocument();
     });
-    expect(mockRegisterKeypair).not.toHaveBeenCalled();
-    expect(mockWriteKeyFile).not.toHaveBeenCalled();
+    expect(mockCreateKeyFile).not.toHaveBeenCalled();
   });
 
-  it('does not write key file to disk when registerKeypair fails', async () => {
+  it('shows the error when creating the key file fails', async () => {
     vi.mocked(save).mockResolvedValueOnce('/home/testuser/.config/test.key');
-    mockRegisterKeypair.mockRejectedValueOnce(new Error('DB write failed'));
+    mockCreateKeyFile.mockRejectedValueOnce(new Error('DB write failed'));
     renderForm();
     fireEvent.input(screen.getByPlaceholderText('e.g. My YubiKey'), {
       target: { value: 'My Key' },
     });
     fireEvent.click(getButton());
-    // Wait for the error to appear (confirming the async flow completed)
     await vi.waitFor(() => {
       expect(document.querySelector('.text-error')).toBeInTheDocument();
     });
-    expect(mockWriteKeyFile).not.toHaveBeenCalled();
   });
 
-  it('calls operations in security order: verifyPassword → generateKeypair → save → registerKeypair → writeKeyFile', async () => {
+  it('verifies the password, then asks where to save, then creates the key file', async () => {
     mockAuthMethods.mockReturnValue([
       { id: 1, slot_type: 'password', label: 'Password', last_used: null },
     ]);
@@ -116,19 +106,12 @@ describe('AddKeypairForm', () => {
     mockVerifyPassword.mockImplementation(async () => {
       callOrder.push('verifyPassword');
     });
-    mockGenerateKeypair.mockImplementation(async () => {
-      callOrder.push('generateKeypair');
-      return { public_key_hex: 'aabbcc', private_key_hex: 'ddeeff' };
-    });
     vi.mocked(save).mockImplementation(async () => {
       callOrder.push('save');
       return '/home/testuser/.config/test.key';
     });
-    mockRegisterKeypair.mockImplementation(async () => {
-      callOrder.push('registerKeypair');
-    });
-    mockWriteKeyFile.mockImplementation(async () => {
-      callOrder.push('writeKeyFile');
+    mockCreateKeyFile.mockImplementation(async () => {
+      callOrder.push('createKeyFile');
     });
 
     renderForm();
@@ -141,15 +124,14 @@ describe('AddKeypairForm', () => {
     fireEvent.click(getButton());
 
     await vi.waitFor(() => {
-      expect(mockWriteKeyFile).toHaveBeenCalled();
+      expect(mockCreateKeyFile).toHaveBeenCalled();
     });
 
-    expect(callOrder).toEqual([
-      'verifyPassword',
-      'generateKeypair',
-      'save',
-      'registerKeypair',
-      'writeKeyFile',
-    ]);
+    expect(callOrder).toEqual(['verifyPassword', 'save', 'createKeyFile']);
+    expect(mockCreateKeyFile).toHaveBeenCalledWith(
+      '/home/testuser/.config/test.key',
+      'My Key',
+      'mypassword',
+    );
   });
 });

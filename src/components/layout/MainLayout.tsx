@@ -117,15 +117,19 @@ export default function MainLayout() {
         {/* Header */}
         <Header showMenu onMenuClick={() => setIsSidebarCollapsed(!isSidebarCollapsed())} />
 
-        {/* The encryption upgrade failed: the journal file is still exposed (see SECURITY.md) */}
-        <Show when={securityNotice() === 'key-upgrade-failed'}>
+        {/* The encryption upgrade failed or needs all methods: the journal file is still exposed */}
+        <Show when={securityNotice()}>
           <div class="px-6 pt-2">
             <div
               role="alert"
               data-testid="security-notice"
               class="rounded-md bg-warning p-3 flex items-center justify-between gap-2"
             >
-              <p class="text-sm text-warning">{t('errors.keyUpgradeFailed')}</p>
+              <p class="text-sm text-warning">
+                {securityNotice() === 'upgrade-needs-all-methods'
+                  ? t('errors.upgradeNeedsAllMethods')
+                  : t('errors.keyUpgradeFailed')}
+              </p>
               <button
                 type="button"
                 onClick={() => dismissSecurityNotice()}

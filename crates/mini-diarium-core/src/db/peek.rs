@@ -30,6 +30,10 @@ pub struct AuthSlotPeek {
 pub struct JournalPeek {
     pub slots: Vec<AuthSlotPeek>,
     pub require_all_auth: bool,
+    /// The journal still has a legacy password slot or a legacy (X25519) key-file slot. With
+    /// more than one unlock method, finishing the upgrade needs all of them at once, so the
+    /// unlock screen offers an "all methods" option.
+    pub upgrade_pending: bool,
 }
 
 /// Reads auth-slot types/labels and the `require_all_auth` flag from a locked journal.
@@ -58,6 +62,7 @@ pub fn peek_auth_slot_types<P: AsRef<Path>>(db_path: P) -> Result<JournalPeek, S
         return Ok(JournalPeek {
             slots: vec![],
             require_all_auth: false,
+            upgrade_pending: false,
         });
     }
 
@@ -86,9 +91,14 @@ pub fn peek_auth_slot_types<P: AsRef<Path>>(db_path: P) -> Result<JournalPeek, S
     let require_all_auth =
         get_db_setting_conn(&conn, "require_all_auth").is_some_and(|v| v == "true");
 
+    let upgrade_pending = crate::db::rekey::legacy_material_conn(&conn)
+        .map(|m| m.any())
+        .unwrap_or(false);
+
     Ok(JournalPeek {
         slots,
         require_all_auth,
+        upgrade_pending,
     })
 }
 

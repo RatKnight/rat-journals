@@ -287,17 +287,16 @@ fn unwrap_master_key(
                 })?
         }
         SnapshotCredential::PrivateKey(private_key) => {
-            let static_secret = x25519_dalek::StaticSecret::from(*private_key);
-            let public_key = x25519_dalek::PublicKey::from(&static_secret);
-            let wrapped = wrapped_key_for(conn, "keypair", Some(public_key.as_bytes()))
+            // Either slot format: upgraded (v2) by slot id, or legacy X25519 by public key.
+            let key_file = crate::auth::KeyFileMethod::from_secret(*private_key);
+            let wrapped = wrapped_key_for(conn, "keypair", Some(&key_file.slot_id()))
+                .or_else(|| wrapped_key_for(conn, "keypair", Some(&key_file.legacy_public_key())))
                 .ok_or_else(|| {
                     "This key file does not match any key in this backup.".to_string()
                 })?;
-            crate::auth::keypair::PrivateKeyMethod {
-                private_key: *private_key,
-            }
-            .unwrap_master_key(&wrapped)
-            .map_err(|_| "That key file does not open this backup.".to_string())?
+            key_file
+                .unwrap_any(&wrapped)
+                .map_err(|_| "That key file does not open this backup.".to_string())?
         }
         SnapshotCredential::AutoKey(auto_key) => {
             let wrapped = wrapped_key_for(conn, "auto", None).ok_or_else(|| {
