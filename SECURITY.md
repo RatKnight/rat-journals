@@ -59,9 +59,13 @@ Every entry title and body is encrypted separately with **AES-256-GCM**. Each en
 
 ### Password authentication
 
-Password slots derive a wrapping key via **Argon2id** (m=65536 KiB, t=3, p=4), then wrap the master key with AES-256-GCM. The password is never stored — only the Argon2id PHC hash (embedded in the slot blob for self-contained verification) and the resulting ciphertext.
+Password slots derive a wrapping key via raw **Argon2id** (m=65536 KiB, t=3, p=4, 16-byte random salt), then wrap the master key with AES-256-GCM. The slot stores only the salt, the Argon2id parameters, and the ciphertext; the derived key is never written anywhere. The salt and parameters are authenticated as AES-GCM associated data, and a wrong password is detected by the GCM tag check. Parameters read from disk are bounds-checked before the KDF runs.
 
 Changing your password re-derives and re-wraps the master key only. Entry ciphertext is untouched.
+
+**Legacy password slots (before v0.7.6).** Older releases stored the Argon2id PHC hash string in the slot and derived the wrapping key from the hash inside that string. Anyone with a copy of the journal file or of any backup could therefore recover the master key without the password. On the first unlock with the password after upgrading, Mini Diarium **rotates the master key**: it generates a new master key, re-encrypts every entry, tag, image, and attachment, recomputes the keyed fingerprints, re-wraps every auth method (password in the new format; key files via their public key; the local key if present), deletes the leftover v1/v2 password hash, and `VACUUM`s the file so the old ciphertext does not remain in free pages. All of this runs in one transaction; a failure leaves the journal unchanged and the upgrade is retried on the next unlock. A fresh backup is taken right after the rotation.
+
+What rotation cannot fix: **copies made before the upgrade** — older backups in the backups folder, cloud-sync history, or any other copy of the old file — still expose the old master key and the entries they contain. After upgrading, delete backups taken before the rotation and purge old versions from any sync provider. A journal that is only ever unlocked with a key file or the local key keeps its legacy password slot until it is unlocked once with the password.
 
 ### Key-file authentication
 

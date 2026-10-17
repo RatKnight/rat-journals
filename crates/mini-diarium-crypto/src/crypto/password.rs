@@ -62,9 +62,62 @@ pub fn hash_password(mut password: String, salt: &SaltString) -> Result<String, 
     Ok(password_hash.to_string())
 }
 
+/// Argon2id cost parameters as stored in a v2 password slot.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct KdfParams {
+    pub m_cost_kib: u32,
+    pub t_cost: u32,
+    pub p_cost: u32,
+}
+
+impl KdfParams {
+    /// The parameters used for every newly written password slot.
+    pub const DEFAULT: KdfParams = KdfParams {
+        m_cost_kib: MEMORY_SIZE_KIB,
+        t_cost: ITERATIONS,
+        p_cost: PARALLELISM,
+    };
+
+    /// Rejects parameters read from disk that are weaker than the OWASP minimum
+    /// (m=19 MiB, t=2) or large enough to exhaust memory (m > 1 GiB) when a crafted
+    /// journal or backup is opened.
+    pub fn validate(&self) -> Result<(), String> {
+        if !(19_456..=1_048_576).contains(&self.m_cost_kib)
+            || !(2..=32).contains(&self.t_cost)
+            || !(1..=16).contains(&self.p_cost)
+        {
+            return Err("Unsupported password slot parameters".to_string());
+        }
+        Ok(())
+    }
+}
+
+/// Derives a 32-byte wrapping key from a password and salt with raw Argon2id.
+///
+/// Unlike a PHC hash string, the output is never written to disk: only the salt and
+/// parameters are stored, so the key can be recomputed only by someone who knows the
+/// password.
+pub fn derive_wrapping_key(
+    password: &[u8],
+    salt: &[u8],
+    params: KdfParams,
+) -> Result<zeroize::Zeroizing<[u8; 32]>, String> {
+    params.validate()?;
+    let argon_params = Params::new(params.m_cost_kib, params.t_cost, params.p_cost, Some(32))
+        .map_err(|e| format!("Invalid Argon2 parameters: {}", e))?;
+    let argon2 = Argon2::new(Algorithm::Argon2id, Version::V0x13, argon_params);
+    let mut out = zeroize::Zeroizing::new([0u8; 32]);
+    argon2
+        .hash_password_into(password, salt, out.as_mut())
+        .map_err(|e| format!("Key derivation failed: {}", e))?;
+    Ok(out)
+}
+
 /// Derives a 32-byte encryption key from a PHC hash string (Argon2 output)
 ///
-/// This is used to derive an AES-256 wrapping key from a stored password hash.
+/// **Legacy only.** The PHC string contains the hash itself, so a key taken from it is
+/// only as secret as the string. It is kept solely to read v1/v2 journals and
+/// pre-v2 password slots so they can be upgraded; never use it for new data.
 pub fn derive_key_from_phc_hash(phc_hash: &str) -> Result<Vec<u8>, String> {
     let parsed =
         PasswordHash::new(phc_hash).map_err(|e| format!("Failed to parse password hash: {}", e))?;

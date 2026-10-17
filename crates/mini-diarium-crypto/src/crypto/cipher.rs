@@ -137,6 +137,51 @@ pub fn decrypt(key: &Key, ciphertext: &[u8]) -> Result<Vec<u8>, CipherError> {
     Ok(plaintext)
 }
 
+/// Encrypts like [`encrypt`], additionally authenticating `aad` (not stored in the output).
+///
+/// Used where a plaintext header must be bound to the ciphertext, e.g. the KDF salt and
+/// parameters of a password slot: changing any header byte makes decryption fail.
+pub fn encrypt_with_aad(key: &Key, plaintext: &[u8], aad: &[u8]) -> Result<Vec<u8>, CipherError> {
+    use aes_gcm::aead::Payload;
+    let cipher = Aes256Gcm::new(key.as_bytes().into());
+    let nonce_bytes = generate_nonce();
+    let nonce = Nonce::try_from(nonce_bytes.as_ref()).unwrap();
+    let ciphertext = cipher
+        .encrypt(
+            &nonce,
+            Payload {
+                msg: plaintext,
+                aad,
+            },
+        )
+        .map_err(|e| CipherError::EncryptionFailed(e.to_string()))?;
+    let mut result = Vec::with_capacity(NONCE_SIZE + ciphertext.len());
+    result.extend_from_slice(&nonce_bytes);
+    result.extend_from_slice(&ciphertext);
+    Ok(result)
+}
+
+/// Decrypts a blob produced by [`encrypt_with_aad`] with the same `aad`.
+pub fn decrypt_with_aad(key: &Key, ciphertext: &[u8], aad: &[u8]) -> Result<Vec<u8>, CipherError> {
+    use aes_gcm::aead::Payload;
+    if ciphertext.len() < NONCE_SIZE + 16 {
+        return Err(CipherError::DecryptionFailed(
+            "Ciphertext too short".to_string(),
+        ));
+    }
+    let cipher = Aes256Gcm::new(key.as_bytes().into());
+    let nonce = Nonce::try_from(&ciphertext[..NONCE_SIZE]).unwrap();
+    cipher
+        .decrypt(
+            &nonce,
+            Payload {
+                msg: &ciphertext[NONCE_SIZE..],
+                aad,
+            },
+        )
+        .map_err(|e| CipherError::DecryptionFailed(e.to_string()))
+}
+
 /// HKDF-SHA256 keyed fingerprint of a normalized tag name.
 /// Used to enforce UNIQUE deduplication at the DB level despite non-deterministic encryption.
 /// The fingerprint is keyed by the master key, so it leaks nothing to an offline attacker.

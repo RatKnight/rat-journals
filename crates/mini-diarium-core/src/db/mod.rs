@@ -1,5 +1,6 @@
 pub(crate) mod peek;
 pub(crate) mod queries;
+pub(crate) mod rekey;
 pub(crate) mod schema;
 
 // ── Curated public façade (the API contract — see crates/mini-diarium-core/API.md) ──
@@ -11,6 +12,11 @@ pub use schema::{
     create_database, create_database_auto, open_database, open_database_auto,
     open_database_with_keypair, DatabaseConnection, SCHEMA_VERSION,
 };
+
+// Master-key rotation for journals with a legacy (pre-v2) password slot.
+#[cfg(any(test, feature = "test-support"))]
+pub use rekey::downgrade_password_slot_for_tests;
+pub use rekey::{has_legacy_password_material, rotate_master_key, RekeyOutcome};
 
 // Locked-journal metadata — the one `db` read that needs no handle and no key.
 pub use peek::{peek_auth_slot_types, AuthSlotPeek, JournalPeek};

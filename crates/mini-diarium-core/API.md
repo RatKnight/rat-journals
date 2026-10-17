@@ -262,6 +262,16 @@ links — the entry save path never does.
   `delete_auth_slot`, `count_auth_slots`, `update_auth_slot_wrapped_key`,
   `update_slot_last_used` (takes `&DatabaseConnection`), `get_auth_slot_type`
 
+### Master-key rotation (legacy password slots)
+- `has_legacy_password_material(db) -> Result<bool, String>` — true while the journal has a
+  pre-v2 password slot or the v1/v2 `metadata` password hash, either of which exposes a master
+  key to anyone holding the file.
+- `rotate_master_key(&mut db, password, auto_key: Option<&[u8; 32]>) -> Result<RekeyOutcome, String>`
+  — replaces the master key, re-encrypts every encrypted column, recomputes keyed fingerprints,
+  re-wraps every slot (a slot it cannot re-wrap is removed), deletes the legacy hash, then
+  `VACUUM`s. One write unit; on error nothing changes. Snapshots taken before it can no
+  longer be restored over the journal (restore requires the same master key).
+
 ### `db_settings` (operate on `&DatabaseConnection`)
 - `get_db_setting`, `set_db_setting`, `delete_db_setting`
 - `verify_require_all_auth`, `write_require_all_auth_mac`
@@ -309,7 +319,8 @@ are sealed (`pub(crate)`).
 
 ### Functions & methods
 - `generate_keypair`, `derive_public_key`
-- `PasswordMethod::{wrap_master_key, unwrap_master_key}`,
+- `PasswordMethod::{wrap_master_key, unwrap_master_key, is_legacy_blob}` (writes the v2 slot
+  format only; reads v2 and legacy),
   `KeypairMethod::wrap_master_key`, `PrivateKeyMethod::unwrap_master_key`
 - **Composed slot ops** (encapsulate the master-key wrap that `conn()`/`key()` sealing removes
   from consumers):

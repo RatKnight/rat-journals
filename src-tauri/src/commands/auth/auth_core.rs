@@ -173,8 +173,10 @@ pub(crate) fn perform_unlock(mode: UnlockMode, state: &DiaryState) -> Result<(),
         return Err("No journal found. Please create one first.".to_string());
     }
 
-    let (db_conn, label) = match mode {
+    // The password, when one was used, is kept for the legacy-slot upgrade below.
+    let (mut db_conn, label, rotation_password) = match mode {
         UnlockMode::Password(password) => {
+            let rotation_password = Zeroizing::new(password.clone());
             let conn = open_database(&db_path, password, &backups_dir)?;
             migrate_require_all_auth_to_db(&conn, state);
             if crate::db::verify_require_all_auth(&conn) {
@@ -183,7 +185,7 @@ pub(crate) fn perform_unlock(mode: UnlockMode, state: &DiaryState) -> Result<(),
                         .to_string(),
                 );
             }
-            (conn, "Journal unlocked")
+            (conn, "Journal unlocked", Some(rotation_password))
         }
         UnlockMode::Keypair(key_path) => {
             let mut private_key = read_private_key_from_file(&key_path)?;
@@ -196,7 +198,7 @@ pub(crate) fn perform_unlock(mode: UnlockMode, state: &DiaryState) -> Result<(),
                         .to_string(),
                 );
             }
-            (conn, "Journal unlocked with key file")
+            (conn, "Journal unlocked with key file", None)
         }
         UnlockMode::AllMethods(credentials) => {
             let conn = match &credentials[0] {
@@ -238,7 +240,19 @@ pub(crate) fn perform_unlock(mode: UnlockMode, state: &DiaryState) -> Result<(),
                     warn!("Failed to write require_all_auth MAC: {}", e);
                 }
             }
-            (conn, "Journal unlocked via multi-auth")
+            let rotation_password = credentials.iter().find_map(|c| match c {
+                MultiAuthCredential::Password { value } => Some(Zeroizing::new(value.clone())),
+                MultiAuthCredential::Keypair { .. } => None,
+            });
+            (conn, "Journal unlocked via multi-auth", rotation_password)
+        }
+    };
+
+    let rotated = match rotation_password {
+        Some(password) => upgrade_legacy_password_slot(&mut db_conn, &password, state),
+        None => {
+            warn_if_legacy_password_slot(&db_conn);
+            false
         }
     };
 
@@ -251,13 +265,91 @@ pub(crate) fn perform_unlock(mode: UnlockMode, state: &DiaryState) -> Result<(),
 
     info!("{}", label);
 
-    // Post-unlock snapshot. Subject to the dedup and minimum-interval rules, so opening the
-    // app to read produces nothing, while a crash-only workflow (never locking, never
-    // exiting cleanly) still accumulates snapshots. The pre-migration snapshot that matters
-    // most was already taken inside `open_database*`, before `apply_pending` ran.
-    crate::commands::backup_triggers::snapshot_after_unlock(state);
+    if rotated {
+        // Every earlier snapshot is under the old, exposed key and can no longer be restored
+        // over this journal, so take a restorable baseline under the new key right away.
+        crate::commands::backup_triggers::snapshot_after_key_rotation(state);
+    } else {
+        // Post-unlock snapshot. Subject to the dedup and minimum-interval rules, so opening
+        // the app to read produces nothing, while a crash-only workflow (never locking, never
+        // exiting cleanly) still accumulates snapshots. The pre-migration snapshot that
+        // matters most was already taken inside `open_database*`, before `apply_pending` ran.
+        crate::commands::backup_triggers::snapshot_after_unlock(state);
+    }
 
     Ok(())
+}
+
+/// Loads the active journal's local key from `config.json`, if it has a valid one.
+fn load_active_auto_key(state: &DiaryState) -> Option<Zeroizing<[u8; 32]>> {
+    let active_id = crate::config::load_active_journal_id(&state.app_data_dir)?;
+    let journals = crate::config::load_journals(&state.app_data_dir);
+    let hex_key = journals
+        .iter()
+        .find(|j| j.id == active_id)
+        .and_then(|j| j.auto_key.as_deref())?;
+    let bytes = Zeroizing::new(hex::decode(hex_key).ok()?);
+    let mut key = Zeroizing::new([0u8; 32]);
+    if bytes.len() != key.len() {
+        return None;
+    }
+    key.copy_from_slice(&bytes);
+    Some(key)
+}
+
+/// Replaces the master key of a journal that still has a legacy (pre-v2) password slot.
+///
+/// A legacy slot let anyone holding the journal file recover the master key without the
+/// password, so re-wrapping alone is not enough — see `mini_diarium_core::db::rekey`. Needs
+/// the password that just unlocked the journal; the local key is passed through so a
+/// local-key slot survives. Returns true if the key was rotated.
+///
+/// A failure is logged and not returned: the journal is open and fully readable under the
+/// old key, so refusing the unlock would only lock the user out. The upgrade is retried on
+/// the next password unlock.
+pub(crate) fn upgrade_legacy_password_slot(
+    db: &mut crate::db::DatabaseConnection,
+    password: &str,
+    state: &DiaryState,
+) -> bool {
+    match crate::db::has_legacy_password_material(db) {
+        Ok(true) => {}
+        Ok(false) => return false,
+        Err(e) => {
+            warn!("Could not check for a legacy password slot: {}", e);
+            return false;
+        }
+    }
+    info!("Legacy password slot found; rotating the master key");
+    let auto_key = load_active_auto_key(state);
+    match crate::db::rotate_master_key(db, password, auto_key.as_deref()) {
+        Ok(outcome) => {
+            if outcome.slots_removed > 0 {
+                warn!(
+                    "Key rotation removed {} auth method(s) that could not be re-wrapped",
+                    outcome.slots_removed
+                );
+            }
+            true
+        }
+        Err(e) => {
+            warn!(
+                "Master key rotation failed; will retry on next unlock: {}",
+                e
+            );
+            false
+        }
+    }
+}
+
+/// Logs when a journal opened without a password still has a legacy password slot: its
+/// master key stays exposed until the journal is unlocked once with the password.
+fn warn_if_legacy_password_slot(db: &crate::db::DatabaseConnection) {
+    if matches!(crate::db::has_legacy_password_material(db), Ok(true)) {
+        warn!(
+            "This journal has a legacy password slot. Unlock it once with the password to              upgrade its encryption."
+        );
+    }
 }
 
 /// Creates a new encrypted diary database
@@ -362,27 +454,42 @@ pub fn get_diary_path(state: State<DiaryState>) -> Result<String, String> {
 /// Changes the diary password.
 ///
 /// In v3, this re-wraps the master key with the new password — no entry
-/// re-encryption is needed, making it O(1) instead of O(n).
+/// re-encryption is needed, making it O(1) instead of O(n). The exception is a journal whose
+/// password slot is still in the legacy format: its master key is rotated first.
 #[tauri::command]
 pub fn change_password(
     old_password: String,
     new_password: String,
     state: State<DiaryState>,
 ) -> Result<(), String> {
-    let db_state = state
+    let mut db_state = state
         .db
         .lock()
         .map_err(|_| "State lock poisoned".to_string())?;
     let db = db_state
-        .as_ref()
+        .as_mut()
         .ok_or("Journal must be unlocked to change password")?;
 
     // Find the password slot
-    let (slot_id, wrapped_key) =
+    let (_, wrapped_key) =
         crate::db::get_password_slot(db)?.ok_or("No password auth method found")?;
 
     // Verify old password and recover master_key
-    let old_method = crate::auth::PasswordMethod::new(old_password);
+    let old_method = crate::auth::PasswordMethod::new(old_password.clone());
+    old_method
+        .unwrap_master_key(&wrapped_key)
+        .map_err(|_| "Incorrect current password".to_string())?;
+
+    // A legacy slot means the current master key is exposed: rotate it first (this also
+    // re-wraps the password slot in the v2 format), then re-wrap for the new password below.
+    if crate::auth::PasswordMethod::is_legacy_blob(&wrapped_key) {
+        let old_password = Zeroizing::new(old_password);
+        let auto_key = load_active_auto_key(&state);
+        crate::db::rotate_master_key(db, &old_password, auto_key.as_deref())?;
+    }
+
+    let (slot_id, wrapped_key) =
+        crate::db::get_password_slot(db)?.ok_or("No password auth method found")?;
     let master_key_bytes = old_method
         .unwrap_master_key(&wrapped_key)
         .map_err(|_| "Incorrect current password".to_string())?;
@@ -846,6 +953,30 @@ mod tests {
             state.db.lock().unwrap().is_some(),
             "a successful unlock must install the connection into DiaryState"
         );
+    }
+
+    #[test]
+    fn test_perform_unlock_upgrades_legacy_password_slot() {
+        let (_fixture, state, db_path, _backups_dir) = make_state("perform_unlock_legacy");
+
+        let db = create_database(&db_path, "password".to_string()).unwrap();
+        crate::db::downgrade_password_slot_for_tests(&db, "password").unwrap();
+        assert!(crate::db::has_legacy_password_material(&db).unwrap());
+        drop(db);
+
+        super::perform_unlock(super::UnlockMode::Password("password".to_string()), &state).unwrap();
+
+        {
+            let guard = state.db.lock().unwrap();
+            let db = guard.as_ref().expect("journal must be unlocked");
+            assert!(!crate::db::has_legacy_password_material(db).unwrap());
+            let (_, wrapped) = crate::db::get_password_slot(db).unwrap().unwrap();
+            assert!(!crate::auth::PasswordMethod::is_legacy_blob(&wrapped));
+        }
+
+        // The upgraded journal opens again with the same password.
+        super::super::lock_diary_inner(&state).unwrap();
+        super::perform_unlock(super::UnlockMode::Password("password".to_string()), &state).unwrap();
     }
 
     #[test]

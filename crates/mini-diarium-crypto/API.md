@@ -73,8 +73,12 @@ frontend TypeScript):
 
 Reached at `crypto::cipher` / `crypto::password` (re-exported by core; also used by benches).
 
-- `cipher::{Key, encrypt, decrypt, CipherError, tag_name_fingerprint, image_fingerprint}`
+- `cipher::{Key, encrypt, decrypt, encrypt_with_aad, decrypt_with_aad, CipherError, tag_name_fingerprint, image_fingerprint}`
 - `password::{hash_password, verify_password, derive_key_from_phc_hash, generate_salt, PasswordError}`
+  (`derive_key_from_phc_hash` is **legacy-only**: it reads keys out of a stored hash and must
+  never protect new data)
+- `password::{derive_wrapping_key, KdfParams}` — raw Argon2id key derivation used by v2
+  password slots; `KdfParams::validate` bounds parameters read from disk
 
 The cipher is AES-256-GCM (12-byte random nonce prepended to the ciphertext). The fingerprint
 helpers are keyed HKDF-SHA256 outputs (hex-encoded), used by core for tag/image dedup without
@@ -116,7 +120,8 @@ paths resolving.
 
 ### Functions & methods
 - `generate_keypair`, `derive_public_key`
-- `PasswordMethod::{new, wrap_master_key, unwrap_master_key}` (Argon2id + AES-256-GCM)
+- `PasswordMethod::{new, wrap_master_key, unwrap_master_key, is_legacy_blob}` (raw Argon2id +
+  AES-256-GCM; writes slot format v2 only, still reads the legacy format so it can be upgraded)
 - `KeypairMethod::wrap_master_key`, `PrivateKeyMethod::unwrap_master_key` (X25519 ECIES)
 - `AutoKeyMethod::{wrap_master_key, unwrap_master_key}` (device-bound 32-byte key, no KDF)
 

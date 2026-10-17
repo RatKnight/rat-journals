@@ -248,6 +248,32 @@ pub(crate) fn snapshot_after_unlock(state: &DiaryState) {
     snapshot_blocking(db, &db_path, &backups_dir, SnapshotTrigger::Unlock);
 }
 
+/// Takes a snapshot right after the master key was rotated, bypassing the rate limits.
+///
+/// Every earlier snapshot is encrypted with the old key and cannot be restored over the
+/// rotated journal, so this is the first restorable backup under the new key.
+pub(crate) fn snapshot_after_key_rotation(state: &DiaryState) {
+    let Ok(_backup_ops) = state.backup_ops.lock() else {
+        warn!("Journal state lock failed; skipping the post-rotation snapshot");
+        return;
+    };
+    let Ok(db_state) = state.db.lock() else {
+        warn!("Journal state lock failed; skipping the post-rotation snapshot");
+        return;
+    };
+    let Some(db) = db_state.as_ref() else { return };
+    let (Ok(db_path), Ok(backups_dir)) = (state.db_path.lock(), state.backups_dir.lock()) else {
+        warn!("State lock failed; skipping the post-rotation snapshot");
+        return;
+    };
+    snapshot_blocking(
+        db,
+        &db_path,
+        &backups_dir,
+        SnapshotTrigger::destructive("key_rotation"),
+    );
+}
+
 /// Snapshots the currently unlocked journal, if any, before a destructive command runs.
 ///
 /// A locked journal is not an error: there is nothing open to snapshot, and the destructive
