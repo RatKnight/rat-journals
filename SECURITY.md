@@ -1,34 +1,12 @@
 # Security Policy
 
-> **Note**: Mini Diarium is a hobby project maintained in my spare time. While I take security seriously, I can't provide enterprise-level guarantees or rapid response times. Use this software at your own risk.
-
-## Supported Versions
-
-Only the latest release is actively supported with security fixes.
-
-| Version | Supported |
-| ------- | --------- |
-| 0.5.x   | Yes       |
-| 0.4.x   | No        |
-| < 0.4   | No        |
-
-## Reporting Vulnerabilities
-
-If you discover a security vulnerability, **please do not open a public issue**. Instead, report it privately via:
-
-- Email (check GitHub profile for contact)
-- GitHub Security Advisories (https://github.com/fjrevoredo/mini-diarium/security/advisories/new)
-
-**What to expect:**
-This is a hobby project maintained in my spare time. I'll do my best to respond and fix security issues promptly, but I can't guarantee specific timelines. Critical vulnerabilities affecting user data will be prioritized. For non-critical issues, fixes may take longer depending on complexity and my availability.
-
-If you don't hear back within a couple weeks, feel free to send a follow-up reminder.
+Rat Journal is a private, single-user build. There is no public release channel or vulnerability-reporting process; security fixes are made directly in this repository.
 
 ---
 
 ## Threat Model
 
-Mini Diarium is designed to protect diary content against a specific, well-defined threat: **an attacker who obtains a copy of your diary file** (e.g. from a stolen device, a compromised cloud sync folder, or a backup). In that scenario, the attacker sees only ciphertext.
+Rat Journal is designed to protect diary content against a specific, well-defined threat: **an attacker who obtains a copy of your diary file** (e.g. from a stolen device, a compromised cloud sync folder, or a backup). In that scenario, the attacker sees only ciphertext.
 
 ### Protected against
 
@@ -42,7 +20,7 @@ Mini Diarium is designed to protect diary content against a specific, well-defin
 ### Not protected against
 
 - **A running session on your device** — while the diary is unlocked, decrypted content and the master key exist in process memory. An attacker with local code execution or physical access to an unlocked, running session can read diary content. Locking the diary mitigates this; full mitigation requires OS-level memory protection outside the app's control.
-- **Malicious software on your device** — Mini Diarium does not defend against keyloggers, screen capture malware, or processes that can read another process's memory (e.g. via `ptrace`). Protect your device first.
+- **Malicious software on your device** — Rat Journal does not defend against keyloggers, screen capture malware, or processes that can read another process's memory (e.g. via `ptrace`). Protect your device first.
 - **Compromise of your sync provider** — if you store `diary.db` in a cloud-sync folder, the sync provider sees only the encrypted file. However, if the sync provider is also used to sync your key file or is an attack vector for modifying files on your device, that threat is outside the app's scope.
 - **Coercion or credential theft** — if an attacker can observe you typing your password or steal your key file from an unlocked device, the encryption offers no protection.
 
@@ -64,7 +42,7 @@ Password slots derive a wrapping key via raw **Argon2id** (m=65536 KiB, t=3, p=4
 
 Changing your password re-derives and re-wraps the master key only. Entry ciphertext is untouched.
 
-**Legacy password slots (before v0.7.6).** Older releases stored the Argon2id PHC hash string in the slot and derived the wrapping key from the hash inside that string. Anyone with a copy of the journal file or of any backup could therefore recover the master key without the password. On the first unlock with the password after upgrading, Mini Diarium **rotates the master key**: it generates a new master key, re-encrypts every entry, tag, image, and attachment, recomputes the keyed fingerprints, re-wraps every auth method (password in the new format; key files supplied at unlock in the new symmetric format, other legacy key files via their public key; the local key if present), deletes the leftover v1/v2 password hash, and `VACUUM`s the file so the old ciphertext does not remain in free pages. All of this runs in one transaction; a failure leaves the journal unchanged and the upgrade is retried on the next unlock. A fresh backup is taken right after the rotation.
+**Legacy password slots (before v0.7.6).** Older releases stored the Argon2id PHC hash string in the slot and derived the wrapping key from the hash inside that string. Anyone with a copy of the journal file or of any backup could therefore recover the master key without the password. On the first unlock with the password after upgrading, Rat Journal **rotates the master key**: it generates a new master key, re-encrypts every entry, tag, image, and attachment, recomputes the keyed fingerprints, re-wraps every auth method (password in the new format; key files supplied at unlock in the new symmetric format, other legacy key files via their public key; the local key if present), deletes the leftover v1/v2 password hash, and `VACUUM`s the file so the old ciphertext does not remain in free pages. All of this runs in one transaction; a failure leaves the journal unchanged and the upgrade is retried on the next unlock. A fresh backup is taken right after the rotation.
 
 What rotation cannot fix: **copies made before the upgrade** — older backups in the backups folder, cloud-sync history, or any other copy of the old file — still expose the old master key and the entries they contain. After upgrading, delete backups taken before the rotation and purge old versions from any sync provider. A journal that is only ever unlocked with a key file or the local key keeps its legacy password slot until it is unlocked once with the password.
 
@@ -84,7 +62,7 @@ Derived wrapping keys are stored only in Rust stack or heap memory and are **zer
 
 ## Operational Security
 
-- **Offline only** — the app makes no network requests. No data is transmitted to any server at any point. The About screen and onboarding tour surface links to GitHub and documentation; clicking these hands the URL to the OS, which opens your system browser. Mini Diarium itself makes no network call — the browser's connection is independent and outside the app's scope.
+- **Offline only** — the app makes no network requests. No data is transmitted to any server at any point. The About screen and onboarding tour surface links to GitHub and documentation; clicking these hands the URL to the OS, which opens your system browser. Rat Journal itself makes no network call — the browser's connection is independent and outside the app's scope.
 - **Defense-in-depth WebView isolation** — multiple layers prevent the embedded WebView from making outbound network requests: strict CSP (`connect-src 'self' ipc: http://ipc.localhost`; `worker-src`, `child-src`, `frame-src`, `object-src`, `form-action`, `manifest-src` all `'none'`); a document-start init script that nulls `RTCPeerConnection`, `WebTransport`, `Worker`, `SharedWorker`, `navigator.serviceWorker`, `navigator.sendBeacon`, `navigator.connection`, and `window.open` in all frames; `on_navigation` that blocks any non-app URL; and `on_new_window(Deny)` that blocks popup creation on all platforms. `fetch`/`XMLHttpRequest`/`WebSocket`/`EventSource` remain available for Tauri IPC and local app/runtime communication, with outbound access constrained by CSP and platform handlers. Windows builds additionally register a `WebResourceRequested` COM handler; macOS builds register a `WKContentRuleList` content-blocking rule.
 - **Local storage only** — diary content lives in a single SQLite file. Preferences are stored in `localStorage` (non-sensitive display settings only). Automatic backups are written to a local directory alongside the diary.
 - **No plaintext search index** — the SQLite FTS5 table that stored entry content in plaintext was removed in v0.2.0 (schema v4). The migration drops the table on first unlock for any database upgraded from an older version.

@@ -1,6 +1,6 @@
 # Architecture
 
-This document describes Mini Diarium's high-level architecture and data flow.
+This document describes Rat Journal's high-level architecture and data flow.
 
 - For principles and design philosophy, see [PHILOSOPHY.md](../PHILOSOPHY.md).
 - For the full threat model and cryptographic details, see [SECURITY.md](../SECURITY.md).
@@ -8,7 +8,7 @@ This document describes Mini Diarium's high-level architecture and data flow.
 
 ## Unlock Model
 
-Mini Diarium uses a wrapped master key design.
+Rat Journal uses a wrapped master key design.
 
 - A random master key encrypts all entries using AES-256-GCM
 - Authentication methods wrap the master key
@@ -77,7 +77,7 @@ When saving an entry:
 
 ## Layered Architecture
 
-Mini Diarium follows a layered structure.
+Rat Journal follows a layered structure.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="./diagrams/architecture-dark.svg">

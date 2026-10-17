@@ -76,7 +76,7 @@ describe('JournalPicker component', () => {
     mocks.renameJournal.mockResolvedValue(undefined);
     mocks.refreshAuthState.mockResolvedValue(undefined);
     mocks.checkJournalPath.mockResolvedValue(false);
-    mocks.getDefaultJournalDir.mockResolvedValue('/home/testuser/Documents/Mini Diarium');
+    mocks.getDefaultJournalDir.mockResolvedValue('/home/testuser/Documents/Rat Journal');
     mocks.loadPlatformInfo.mockResolvedValue(undefined);
   });
 
@@ -84,7 +84,7 @@ describe('JournalPicker component', () => {
   const createJournalNamed = async (name: string) => {
     const dialogMock = await import('@tauri-apps/plugin-dialog');
     vi.mocked(dialogMock.save).mockResolvedValueOnce(
-      '/home/testuser/Documents/Mini Diarium/diary.db',
+      '/home/testuser/Documents/Rat Journal/diary.db',
     );
     fireEvent.click(screen.getByText(/create new journal/i));
     await vi.waitFor(() => expect(dialogMock.save).toHaveBeenCalled());
@@ -177,7 +177,7 @@ describe('JournalPicker component', () => {
       expect(mocks.getDefaultJournalDir).toHaveBeenCalled();
       expect(dialogMock.save).toHaveBeenCalledWith(
         expect.objectContaining({
-          defaultPath: '/home/testuser/Documents/Mini Diarium/diary.db',
+          defaultPath: '/home/testuser/Documents/Rat Journal/diary.db',
         }),
       );
     });
@@ -304,7 +304,7 @@ describe('JournalPicker component', () => {
       fireEvent.click(screen.getByText(/create new journal/i));
 
       await vi.waitFor(() => {
-        expect(screen.getByText('/home/testuser/Documents/Mini Diarium')).toBeInTheDocument();
+        expect(screen.getByText('/home/testuser/Documents/Rat Journal')).toBeInTheDocument();
       });
       expect(mocks.getDefaultJournalDir).toHaveBeenCalled();
       expect(dialogMock.save).not.toHaveBeenCalled();
@@ -319,7 +319,7 @@ describe('JournalPicker component', () => {
       fireEvent.click(screen.getByText(/create new journal/i));
 
       await vi.waitFor(() => {
-        expect(screen.getByText('/home/testuser/Documents/Mini Diarium')).toBeInTheDocument();
+        expect(screen.getByText('/home/testuser/Documents/Rat Journal')).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('button', { name: /^browse/i }));
@@ -327,7 +327,7 @@ describe('JournalPicker component', () => {
       await vi.waitFor(() => {
         expect(screen.getByText('/home/testuser/elsewhere')).toBeInTheDocument();
       });
-      expect(screen.queryByText('/home/testuser/Documents/Mini Diarium')).not.toBeInTheDocument();
+      expect(screen.queryByText('/home/testuser/Documents/Rat Journal')).not.toBeInTheDocument();
     });
 
     it('creates the journal with the typed name and filename', async () => {
@@ -345,11 +345,11 @@ describe('JournalPicker component', () => {
 
       await vi.waitFor(() => {
         expect(mocks.checkJournalPath).toHaveBeenCalledWith(
-          '/home/testuser/Documents/Mini Diarium/work.db',
+          '/home/testuser/Documents/Rat Journal/work.db',
         );
         expect(mocks.addJournal).toHaveBeenCalledWith(
           'Work',
-          '/home/testuser/Documents/Mini Diarium',
+          '/home/testuser/Documents/Rat Journal',
           'work.db',
         );
       });
@@ -373,11 +373,11 @@ describe('JournalPicker component', () => {
         expect(mocks.addJournal).toHaveBeenCalled();
       });
       expect(mocks.checkJournalPath).toHaveBeenCalledWith(
-        '/home/testuser/Documents/Mini Diarium/work  notes.db',
+        '/home/testuser/Documents/Rat Journal/work  notes.db',
       );
       expect(mocks.addJournal).toHaveBeenCalledWith(
         'Work',
-        '/home/testuser/Documents/Mini Diarium',
+        '/home/testuser/Documents/Rat Journal',
         'work  notes.db',
       );
       // The field shows the name that was registered.

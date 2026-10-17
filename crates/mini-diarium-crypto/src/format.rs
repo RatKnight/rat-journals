@@ -1,7 +1,7 @@
 //! `format` — the reusable at-rest encrypted-row field codec.
 //!
 //! These three helpers are the **only** plaintext↔ciphertext transform used by every
-//! encrypted row Mini Diarium writes and reads: entry title/text/preview/metadata, tag
+//! encrypted row Rat Journal writes and reads: entry title/text/preview/metadata, tag
 //! names, and image bytes/thumbnails. Each is keyed by a bare [`cipher::Key`] and returns
 //! a display-only `String` error tagged with a caller-supplied `label`, so the codec is
 //! callable **without a live `rusqlite` handle** — the desktop SQLite layer

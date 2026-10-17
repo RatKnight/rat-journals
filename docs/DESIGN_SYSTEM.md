@@ -1,6 +1,6 @@
-# Design System — Mini Diarium
+# Design System — Rat Journal
 
-This document captures the color palette, theming strategy, and visual design constraints for Mini Diarium. Its purpose is to prevent design drift across the app, website, and any future contributions.
+This document captures the color palette, theming strategy, and visual design constraints for Rat Journal. Its purpose is to prevent design drift across the app, website, and any future contributions.
 
 The document is structured in two layers:
 1. **Design language** — implementation-agnostic: palette, intent, and decisions.
@@ -23,13 +23,13 @@ The black-and-gold combination is deliberate: it reads as private, weighty, and 
 
 ### Brand Color
 
-**Gold `#F5C94D`** is the single brand color for Mini Diarium. It appears in the logo and throughout the marketing website as the primary accent.
+**Gold `#F5C94D`** is the single brand color for Rat Journal. It appears in the logo and throughout the marketing website as the primary accent.
 
 It is **not** the interactive color inside the app. See "Interactive color" below for the rationale.
 
 ### Color Palette
 
-Mini Diarium uses two distinct palettes: one for the **website**, one for the **app**.
+Rat Journal uses two distinct palettes: one for the **website**, one for the **app**.
 
 #### Website palette (always dark)
 

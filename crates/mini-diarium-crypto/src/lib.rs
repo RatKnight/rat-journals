@@ -1,4 +1,4 @@
-//! `mini-diarium-crypto` — the reusable cryptographic layer of Mini Diarium.
+//! `mini-diarium-crypto` — the reusable cryptographic layer of Rat Journal.
 //!
 //! This crate holds the truly universal, WASM-targetable primitives: the
 //! AES-256-GCM cipher, Argon2id password hashing, and the X25519/HKDF

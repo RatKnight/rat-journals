@@ -16,7 +16,7 @@ Use this together with:
 
 ## Official Example in This Folder
 
-Mini Diarium ships an official example user plugin in this same folder:
+Rat Journal ships an official example user plugin in this same folder:
 
 - `docs/user-plugins/plain-text-timeline.rhai`
 
@@ -31,7 +31,7 @@ Use this file as your starting point for export plugins. It demonstrates:
 
 ## Philosophy Alignment (Required)
 
-User plugins should stay aligned with Mini Diarium's philosophy:
+User plugins should stay aligned with Rat Journal's philosophy:
 
 1. **Local-only by design**: no network behavior.
 2. **No marketplace model**: plugins are local files you control.
@@ -104,7 +104,7 @@ Use this flow to validate `plain-text-timeline.rhai` end-to-end.
    - Linux: `~/.local/share/com.minidiarium/`
 2. Create a `plugins/` folder there if it does not exist.
 3. Copy `docs/user-plugins/plain-text-timeline.rhai` into that `plugins/` folder.
-4. Restart Mini Diarium (plugins load at startup).
+4. Restart Rat Journal (plugins load at startup).
 5. Open **Diary → Export...** and select **Plain Text Timeline** from the format list.
 6. Export to a `.txt` file and verify:
    - each block starts with `YYYY-MM-DD | title`
@@ -118,7 +118,7 @@ Use this flow to validate any import plugin you create.
 
 1. Copy your import `.rhai` file into `{app_data_dir}/plugins/` (see above for the path on your OS).
 2. Prepare a small input file matching your plugin's expected format (start with 1-2 entries).
-3. Restart Mini Diarium (plugins load at startup).
+3. Restart Rat Journal (plugins load at startup).
 4. Open **Diary → Import...**.
 5. Select your import plugin from the format dropdown.
 6. Select your input file and run import.

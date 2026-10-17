@@ -97,18 +97,6 @@ if (buildPaths.success) {
   log(buildPaths.output, 'red');
 }
 
-// Donation address drift guard
-process.stdout.write('Donation addresses... ');
-const donationAddresses = run('bun run check:donation-addresses');
-if (donationAddresses.success) {
-  log('✓', 'green');
-  results.passed.push('Donation addresses');
-} else {
-  log('✗', 'red');
-  results.failed.push('Donation addresses');
-  log(donationAddresses.output, 'red');
-}
-
 // Test-runner ownership guard
 process.stdout.write('Test runners... ');
 const testRunners = run('bun run check:test-runners');

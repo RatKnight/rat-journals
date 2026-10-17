@@ -1,6 +1,6 @@
 # Frontend Best Practices
 
-Durable rules and diagnostic habits for Mini Diarium's SolidJS frontend. These focus on Solid reactivity, state ownership, Tauri IPC usage, user-facing error handling, TipTap/editor flows, accessibility, and test coverage that catches regressions early.
+Durable rules and diagnostic habits for Rat Journal's SolidJS frontend. These focus on Solid reactivity, state ownership, Tauri IPC usage, user-facing error handling, TipTap/editor flows, accessibility, and test coverage that catches regressions early.
 
 This is not a full SolidJS or TypeScript style guide. Use TypeScript strict mode, ESLint, Prettier, and the existing component patterns for routine style. This document covers the practices most likely to prevent security, privacy, state, and UI regressions in this codebase.
 

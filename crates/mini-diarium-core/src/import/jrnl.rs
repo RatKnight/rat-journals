@@ -7,7 +7,7 @@ use serde::Deserialize;
 #[derive(Debug, Deserialize)]
 struct JrnlJson {
     entries: Vec<JrnlEntry>,
-    #[allow(dead_code)] // jrnl JSON schema field; the tags summary is not used by Mini Diarium
+    #[allow(dead_code)] // jrnl JSON schema field; the tags summary is not used by Rat Journal
     tags: serde_json::Value,
 }
 

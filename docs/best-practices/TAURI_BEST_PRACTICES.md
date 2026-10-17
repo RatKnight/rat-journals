@@ -1,6 +1,6 @@
 # Tauri Best Practices
 
-Durable rules and diagnostic habits for Mini Diarium's Tauri v2 boundary. These focus on command registration, IPC validation, error sanitization, WebView security, and capability checks.
+Durable rules and diagnostic habits for Rat Journal's Tauri v2 boundary. These focus on command registration, IPC validation, error sanitization, WebView security, and capability checks.
 
 This is not a full Tauri tutorial. Use the official Tauri v2 docs for general setup, packaging, and plugin APIs. This document captures the practices that keep this app's frontend/backend boundary secure and diagnosable.
 

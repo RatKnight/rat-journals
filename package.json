@@ -1,5 +1,5 @@
 {
-  "name": "mini-diarium",
+  "name": "rat-journal",
   "version": "0.7.5",
   "description": "A modern, encrypted, local-first desktop journaling application",
   "type": "module",
@@ -29,12 +29,6 @@
     "check": "node scripts/quick-check.js",
     "diagrams": "node scripts/render-diagrams.mjs",
     "diagrams:check": "node scripts/verify-diagrams.mjs",
-    "website:blog": "node scripts/generate-website-blog.mjs",
-    "website:docs": "node scripts/generate-website-docs.mjs",
-    "website:build-static": "node scripts/generate-website-blog.mjs && node scripts/generate-website-docs.mjs && node scripts/fingerprint-website-assets.mjs",
-    "website:submit-indexnow": "node scripts/submit-indexnow.mjs",
-    "website:submit-indexnow:dry-run": "node scripts/submit-indexnow.mjs --dry-run",
-    "website:fingerprint": "node scripts/fingerprint-website-assets.mjs",
     "test:e2e": "node scripts/run-e2e.js clean",
     "test:e2e:stateful": "node scripts/run-e2e.js stateful",
     "test:e2e:local": "node scripts/e2e-local.js",
@@ -44,13 +38,11 @@
     "agent:dev:stop": "npx tsx scripts/agent-dev/stop.ts",
     "agent:dev:probe": "npx tsx scripts/agent-dev/probe.ts",
     "bench": "vitest bench",
-    "sync-skills": "node scripts/sync-skills.js",
     "check:ui-errors": "node scripts/check-ui-error-sanitization.js",
     "check:build-paths": "node scripts/check-stale-build-paths.js",
-    "check:donation-addresses": "node scripts/check-donation-addresses.js",
     "check:test-runners": "node scripts/check-test-runners.mjs",
     "test:print": "playwright test --config playwright.config.ts",
-    "postinstall": "node scripts/install-hooks.js && node scripts/sync-skills.js"
+    "postinstall": "node scripts/install-hooks.js"
   },
   "license": "MIT",
   "puppeteer": {

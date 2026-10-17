@@ -118,7 +118,7 @@
       "isAllDay": true,
       "starred": false,
       "duration": 0,
-      "text": "\"Quoted line\"\nThis\\-text\\-is\\-hyphenated\\.\n\\(Parenthetical\\.\\)\n\nDay One backslash-escapes punctuation like periods and hyphens in plain-text exports\\. Mini Diarium keeps the escaping as-is rather than stripping it\\."
+      "text": "\"Quoted line\"\nThis\\-text\\-is\\-hyphenated\\.\n\\(Parenthetical\\.\\)\n\nDay One backslash-escapes punctuation like periods and hyphens in plain-text exports\\. Rat Journal keeps the escaping as-is rather than stripping it\\."
     },
     {
       "uuid": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",

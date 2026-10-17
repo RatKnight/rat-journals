@@ -3,7 +3,7 @@ import { readdirSync, readFileSync, realpathSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it, expect } from 'vitest';
 
-// Regression guard for https://github.com/fjrevoredo/mini-diarium/issues/273
+// Regression guard for issue #273
 // (full RCA: docs/archive/2026-08-27-issue-273-enter-key-rca.md).
 //
 // A duplicate prosemirror-model install silently breaks TipTap's node-splitting and

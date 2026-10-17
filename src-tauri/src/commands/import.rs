@@ -42,7 +42,7 @@ pub(crate) fn import_entries(
     let mut entries_skipped = 0;
 
     for mut entry in entries {
-        // A re-imported Mini Diarium JSON export carries inline attachment refs whose ids
+        // A re-imported Rat Journal JSON export carries inline attachment refs whose ids
         // belong to the exporting journal; the files themselves are not in the JSON. Drop
         // the refs so they can never resolve to an unrelated attachment here. Stored image
         // refs (`image-id://N`) have the same problem, so drop those `<img>` tags too;

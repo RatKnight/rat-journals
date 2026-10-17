@@ -5,7 +5,7 @@ import { renderWithI18n } from '../../test/i18n-test-utils';
 import AboutOverlay from './AboutOverlay';
 
 describe('AboutOverlay', () => {
-  it('shows the app name and credits Mini Diarium as plain text', () => {
+  it('shows the app name and the original-author credit as plain text', () => {
     renderWithI18n(() => <AboutOverlay isOpen={true} onClose={() => {}} />);
 
     expect(screen.getAllByText('Rat Journal').length).toBeGreaterThan(0);

@@ -17,7 +17,6 @@ Event: push
 Ref: refs/heads/master
 Run ID: 38103562280
 Run attempt: 1
-Run URL: https://github.com/fjrevoredo/mini-diarium/actions/runs/38103562280
 Runner: Linux / X64
 rustc 1.95.0 (59807616e 2026-04-14)
 cargo-crap 0.6.1

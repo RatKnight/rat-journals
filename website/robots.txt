@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://mini-diarium.com/sitemap.xml

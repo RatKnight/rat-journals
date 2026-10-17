@@ -34,7 +34,7 @@ pub struct Entry {
     pub text: String,
 }
 
-/// Mini Diarium JSON export format (array-based, current format)
+/// Rat Journal JSON export format (array-based, current format)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct MiniDiariumJson {
     #[serde(default)]
@@ -53,11 +53,11 @@ struct MiniDiariumEntry {
     pub metadata: Option<EntryMetadata>,
 }
 
-/// Parses Mini Diary / Mini Diarium JSON and converts to DiaryEntry structs.
+/// Parses Mini Diary / Rat Journal JSON and converts to DiaryEntry structs.
 ///
 /// Supports both formats:
 /// - Legacy Mini Diary: `entries` is a date-keyed object
-/// - Current Mini Diarium: `entries` is an array of entry objects
+/// - Current Rat Journal: `entries` is an array of entry objects
 pub fn parse_minidiary_json(json_str: &str) -> Result<Vec<DiaryEntry>, String> {
     // Detect format by inspecting the `entries` field type
     let raw: serde_json::Value =
@@ -76,10 +76,10 @@ pub fn parse_minidiary_json(json_str: &str) -> Result<Vec<DiaryEntry>, String> {
 
 fn parse_minidiary_array_format(json_str: &str) -> Result<Vec<DiaryEntry>, String> {
     let doc: MiniDiariumJson = serde_json::from_str(json_str)
-        .map_err(|e| format!("Failed to parse Mini Diarium JSON: {}", e))?;
+        .map_err(|e| format!("Failed to parse Rat Journal JSON: {}", e))?;
 
     debug!(
-        "Parsed Mini Diarium array format with {} entries",
+        "Parsed Rat Journal array format with {} entries",
         doc.entries.len()
     );
 
@@ -362,7 +362,7 @@ mod tests {
     #[test]
     fn test_parse_minidiary_array_format_no_metadata() {
         let json = r#"{
-            "metadata": { "application": "Mini Diarium", "version": "0.5.0", "exportedAt": "2024-01-10T12:00:00Z" },
+            "metadata": { "application": "Rat Journal", "version": "0.5.0", "exportedAt": "2024-01-10T12:00:00Z" },
             "entries": [
                 { "id": 1, "date": "2024-01-01", "title": "Hello", "text": "<p>World</p>", "dateUpdated": "2024-01-01T00:00:00Z", "tags": [] }
             ]
@@ -379,7 +379,7 @@ mod tests {
     #[test]
     fn test_parse_minidiary_array_format_with_metadata() {
         let json = r#"{
-            "metadata": { "application": "Mini Diarium", "version": "0.5.3", "exportedAt": "2024-01-10T12:00:00Z" },
+            "metadata": { "application": "Rat Journal", "version": "0.5.3", "exportedAt": "2024-01-10T12:00:00Z" },
             "entries": [
                 {
                     "id": 2,
@@ -402,9 +402,9 @@ mod tests {
 
     #[test]
     fn test_parse_minidiary_array_format_backward_compat_no_metadata_field() {
-        // Old Mini Diarium exports without metadata field must still import cleanly
+        // Old Rat Journal exports without metadata field must still import cleanly
         let json = r#"{
-            "metadata": { "application": "Mini Diarium", "version": "0.5.0", "exportedAt": "2024-01-10T12:00:00Z" },
+            "metadata": { "application": "Rat Journal", "version": "0.5.0", "exportedAt": "2024-01-10T12:00:00Z" },
             "entries": [
                 { "id": 1, "date": "2024-01-05", "title": "Old", "text": "<p>Old entry</p>", "dateUpdated": "2024-01-05T00:00:00Z" }
             ]

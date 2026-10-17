@@ -1,6 +1,6 @@
 # Pre-commit Scripts
 
-Automated code quality checks for Mini Diarium.
+Automated code quality checks for Rat Journal.
 
 The full task-completion checklist (tests, formatting, CHANGELOG, TODO closure, summary template) lives in [`docs/best-practices/POST_TASK_BEST_PRACTICES.md`](../docs/best-practices/POST_TASK_BEST_PRACTICES.md). The scripts below are the mechanics that checklist relies on.
 

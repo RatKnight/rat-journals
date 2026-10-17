@@ -1,6 +1,6 @@
 # Built-in Plugin Guide
 
-This guide is for maintainers adding an **official plugin** that ships by default in Mini Diarium builds.
+This guide is for maintainers adding an **official plugin** that ships by default in Rat Journal builds.
 
 Use this together with:
 - `PHILOSOPHY.md` (source of truth for principles)

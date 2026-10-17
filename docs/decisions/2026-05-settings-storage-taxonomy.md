@@ -6,7 +6,7 @@
 
 ## Context
 
-Mini Diarium has four locations where persistent state lives:
+Rat Journal has four locations where persistent state lives:
 
 | Location | What it stores | Always accessible? | Encrypted? |
 |---|---|---|---|

@@ -1,4 +1,4 @@
-# E2E Tests (e2e/) — Mini Diarium
+# E2E Tests (e2e/) — Rat Journal
 
 > For project architecture and cross-cutting conventions see the [root CLAUDE.md](../CLAUDE.md).
 

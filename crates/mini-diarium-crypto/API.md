@@ -1,6 +1,6 @@
 # `mini-diarium-crypto` — Public API
 
-This crate is the **reusable, `rusqlite`-free cryptographic layer** of Mini Diarium: the
+This crate is the **reusable, `rusqlite`-free cryptographic layer** of Rat Journal: the
 AES-256-GCM cipher, Argon2id password hashing, and the X25519/HKDF master-key wrapping used by
 the auth methods. It was carved out of `mini-diarium-core` in open-core **M3a (TODO-0082)** so
 the universal cryptographic code compiles **without the desktop SQLite binding in its
@@ -97,7 +97,7 @@ row-assembly / SQL-binding as the desktop adapter.
 - `format::decrypt_utf8(key, ciphertext, label) -> Result<String, String>`
 - `format::decrypt_bytes(key, ciphertext, label) -> Result<Vec<u8>, String>`
 
-These are the **only** transform used by every encrypted row Mini Diarium writes and reads
+These are the **only** transform used by every encrypted row Rat Journal writes and reads
 (entry title/text/preview/metadata, tag names, image bytes/thumbnails). Each is keyed by a bare
 [`cipher::Key`] — no database handle — so the codec is callable against any storage substitute.
 This is a thin, opinionated wrapper over `cipher` (nonce-prepended AES-256-GCM blobs, UTF-8

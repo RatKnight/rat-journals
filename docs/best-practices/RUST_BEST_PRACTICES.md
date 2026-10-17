@@ -1,6 +1,6 @@
 # Rust Best Practices
 
-Durable rules and diagnostic habits for Mini Diarium's Rust backend. These are project-specific where encryption, journaling, and Tauri IPC shape the code, but they follow normal Rust practice: type-driven control flow, small modules, explicit error handling, narrow lock scopes, and tests against production code.
+Durable rules and diagnostic habits for Rat Journal's Rust backend. These are project-specific where encryption, journaling, and Tauri IPC shape the code, but they follow normal Rust practice: type-driven control flow, small modules, explicit error handling, narrow lock scopes, and tests against production code.
 
 This is not a full Rust style guide. Use `rustfmt`, Clippy, and the language's standard naming conventions for routine style. This document covers the rules most likely to prevent security, data-integrity, and maintainability regressions in this codebase.
 

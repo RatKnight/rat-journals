@@ -773,65 +773,6 @@ const en = {
     supportLink: 'Support Rat Journal',
   },
 
-  /** FeedbackOverlay */
-  feedback: {
-    title: 'Send feedback',
-    closeAria: 'Close',
-    intro: 'Found a problem or have an idea? Choose how you want to reach the developer.',
-    reportBug: 'Report a bug',
-    reportBugHint: 'Opens a GitHub issue form in your browser.',
-    suggestFeature: 'Suggest a feature',
-    suggestFeatureHint: 'Opens a GitHub issue form in your browser.',
-    emailDeveloper: 'Email the developer',
-    emailDeveloperHint: 'Opens your mail client. No GitHub account needed.',
-    privacyNote: 'Nothing is sent from the app. You review and send the message yourself.',
-  },
-
-  /** NotificationsOverlay */
-  notifications: {
-    title: "What's New",
-    closeAria: 'Close notifications',
-    empty: 'No announcements yet.',
-    markRead: 'Mark read',
-    markReadAria: 'Mark this notification as read',
-    dismissAll: 'Mark all read',
-    typeRelease: 'Release',
-    typeAnnouncement: 'Announcement',
-    typeTip: 'Tip',
-    readMore: 'Read more',
-    readMoreAria: 'Read more about {{ title }}',
-    detailCloseAria: 'Close notification detail',
-  },
-
-  /** ProjectSupportOverlay — reached via the streak-triggered Header icon or the
-   * About screen's "Support Rat Journal" button. */
-  support: {
-    title: 'Support Rat Journal',
-    closeAria: 'Close',
-    headerIconAria: 'Support Rat Journal',
-    openingLineAbout:
-      'Rat Journal is free, encrypted, and has no ads or tracking. If it has been useful to you, here are a few ways to help it keep going.',
-    openingLineMilestone:
-      "You've journaled a {{ streak }}-day streak and written {{ words }} words. If Rat Journal has helped you keep that habit, here are a few ways to support it.",
-    footerDefault: 'Any one of these helps more than you might think.',
-    footerThanked: 'Thank you for supporting Rat Journal!',
-    itemStarLabel: 'Star the project on GitHub',
-    itemStarButton: 'Star on GitHub',
-    itemReviewLabel: 'Leave a review on the Microsoft Store',
-    itemReviewButton: 'Leave a review',
-    itemShareLabel: 'Share Rat Journal with a friend',
-    itemShareButton: 'Copy share message',
-    itemNewsletterLabel: 'Subscribe to the newsletter',
-    itemNewsletterButton: 'Subscribe',
-    itemContributeLabel: 'Contribute code, translations, or ideas',
-    itemContributeButton: 'Contribute',
-    itemDonateLabel: 'Make a donation',
-    itemDonateButton: 'Donate',
-    shareMessage:
-      "I've been using Rat Journal, a free encrypted journaling app with no ads or tracking. Worth a look: https://mini-diarium.com/",
-    shareCopyFailed: "Couldn't copy — copy this yourself: {{ message }}",
-  },
-
   /** TimestampOverlay */
   timestamp: {
     popupTitle: 'Insert Timestamp',

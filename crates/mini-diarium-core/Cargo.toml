@@ -6,10 +6,10 @@ name = "mini-diarium-core"
 # wired into bump-version.sh/.ps1, the pre-release guard, or RELEASING.md.
 version = "0.1.0"
 edition = "2021"
-description = "Tauri-free business layer of Mini Diarium (crypto, auth, db, import/export, plugins)"
-authors = ["Francisco J. Revoredo"]
+description = "Tauri-free business layer of Rat Journal (crypto, auth, db, import/export, plugins)"
+authors = ["Rat Journal"]
 license = "MIT"
-repository = "https://github.com/fjrevoredo/mini-diarium"
+repository = "https://github.com/RatKnight/rat-journal"
 
 [lints]
 workspace = true

@@ -6,7 +6,7 @@
 
 ## Context
 
-Mini Diarium is moving toward trunk-based development: all work merges to `master` within one to two days. Without a flag mechanism, incomplete features can only land when they are complete enough to ship. This blocks the trunk integration model and pushes contributors toward long-lived branches (TBD gap B-2).
+Rat Journal is moving toward trunk-based development: all work merges to `master` within one to two days. Without a flag mechanism, incomplete features can only land when they are complete enough to ship. This blocks the trunk integration model and pushes contributors toward long-lived branches (TBD gap B-2).
 
 Two layers are needed:
 

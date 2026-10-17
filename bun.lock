@@ -3,7 +3,7 @@
   "configVersion": 0,
   "workspaces": {
     "": {
-      "name": "mini-diarium",
+      "name": "rat-journal",
       "dependencies": {
         "@kobalte/core": "^0.13.14",
         "@solid-primitives/i18n": "^2.2.1",

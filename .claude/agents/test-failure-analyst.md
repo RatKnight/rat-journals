@@ -58,7 +58,7 @@ SUGGESTED FOCUS: <1 sentence on highest-priority fix or root cause chain>
 7. **Strip ANSI/color codes** — output plain text only
 8. **Abbreviate known paths**: for this project, `src-tauri/src/` → `BE:`, `src/` → `FE:`, `src/components/` → `FE/comp/`
 
-## Project-Specific Knowledge (Mini Diarium)
+## Project-Specific Knowledge (Rat Journal)
 
 When analyzing tests for this project:
 - Backend tests live in `src-tauri/src/**/*.rs` — modules: auth, commands, crypto, db, import, export, backup

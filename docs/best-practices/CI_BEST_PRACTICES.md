@@ -295,7 +295,7 @@ Run all static checks in a **single `lint` job** to share toolchain and cache ov
 - **Type checker**
 - **Generated artifact verification** — lockfiles, generated code, diagrams
 
-Mini Diarium enables `clippy::cognitive_complexity` through the workspace lint table and `[lints] workspace = true` in all three crates. Root `clippy.toml` sets the threshold to 30. The lint is `warn`, but the existing `cargo clippy --workspace --all-targets -- -D warnings` command makes violations blocking. Do not add a crate-local Clippy config that hides the root config. Removing the obsolete `msrv = "1.75"` setting did not establish a new minimum supported Rust version.
+Rat Journal enables `clippy::cognitive_complexity` through the workspace lint table and `[lints] workspace = true` in all three crates. Root `clippy.toml` sets the threshold to 30. The lint is `warn`, but the existing `cargo clippy --workspace --all-targets -- -D warnings` command makes violations blocking. Do not add a crate-local Clippy config that hides the root config. Removing the obsolete `msrv = "1.75"` setting did not establish a new minimum supported Rust version.
 
 ```yaml
 - name: Format check
@@ -335,7 +335,7 @@ The hook is a complement to CI, not a replacement: it runs `--write`/auto-fix lo
 - **Pass explicit file lists to a runner when its directory or glob handling differs across versions or shells** — a pattern that silently matches nothing is a passing gate with zero tests
 - **Fail a runner that finds zero tests** — an empty run must not report success
 
-For the Mini Diarium ownership guard, select Git by an absolute executable path, not inherited PATH. The standard OS installation and explicit nonstandard-installation override are documented in [scripts/README.md](../../scripts/README.md#git-executable-for-the-ownership-guard). A missing selected executable must fail rather than fall back to PATH.
+For the Rat Journal ownership guard, select Git by an absolute executable path, not inherited PATH. The standard OS installation and explicit nonstandard-installation override are documented in [scripts/README.md](../../scripts/README.md#git-executable-for-the-ownership-guard). A missing selected executable must fail rather than fall back to PATH.
 
 ---
 
@@ -358,7 +358,7 @@ diff-cover coverage/lcov.info --compare-branch=origin/main --fail-under=80
 - **Run it as a pre-push gate**, not every commit — full coverage runs are slow
 - **Surface uncovered new lines as `file:line`** so the fix is actionable, not just a percentage
 
-> Mini Diarium: `bun run coverage:diff` (`scripts/check-diff-coverage.mjs`) implements this gate dependency-free over both `coverage/lcov.info` and `src-tauri/lcov.info`; threshold defaults to 80 to match `codecov.yml`. See root `CLAUDE.md` Gotcha #6.
+> Rat Journal: `bun run coverage:diff` (`scripts/check-diff-coverage.mjs`) implements this gate dependency-free over both `coverage/lcov.info` and `src-tauri/lcov.info`; threshold defaults to 80 to match `codecov.yml`. See root `CLAUDE.md` Gotcha #6.
 
 ---
 

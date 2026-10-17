@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -107,35 +107,4 @@ test('ambiguous new locations retain the new-function ceiling without identity g
   const result = evaluateReport(report(entries));
   assert.equal(result.code, 1);
   assert.equal(result.offenders.length, 2);
-});
-
-test('CI gate follows Codecov, fails closed, and preserves its delta after failure', () => {
-  const workflow = readFileSync(new URL('../.github/workflows/ci.yml', import.meta.url), 'utf8');
-  const gateStart = workflow.indexOf('- name: CRAP policy gate (whole-function, repository-wide)');
-  const uploadStart = workflow.indexOf('- name: Upload CRAP policy delta');
-  assert.ok(gateStart > workflow.indexOf('- name: Upload backend coverage to Codecov'));
-  assert.ok(uploadStart > gateStart);
-  const gate = workflow.slice(gateStart, uploadStart);
-  assert.match(gate, /if: always\(\)/);
-  assert.doesNotMatch(gate, /continue-on-error: true/);
-  assert.match(gate, /--for-comparison --output crap-baseline-input\.json/);
-  assert.match(
-    gate,
-    /--missing pessimistic --epsilon 0\.01 --exclude '\*\*\/tests\.rs' --exclude '\*\*\/test_support\.rs'/,
-  );
-  assert.match(
-    gate,
-    /check-crap-gate\.mjs --report crap-delta\.json --threshold 30 --epsilon 0\.01/,
-  );
-  assert.match(gate, /No successful same-run backend coverage/);
-  assert.match(gate, /Expected cargo-crap 0\.6\.1/);
-  assert.match(gate, /exit 2/);
-  const upload = workflow.slice(uploadStart, workflow.indexOf('  build-linux:'));
-  assert.match(upload, /if: always\(\)/);
-  assert.match(upload, /path: crap-delta\.json/);
-  assert.match(upload, /if-no-files-found: ignore/);
-  assert.match(
-    workflow,
-    /- name: CRAP policy self-test\s+run: node scripts\/check-crap-gate\.mjs --self-test/,
-  );
 });

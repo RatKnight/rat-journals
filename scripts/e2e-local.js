@@ -39,7 +39,7 @@ function run(command, description) {
 const skipBuild = process.argv.includes('--skip-build');
 
 log('\n╔══════════════════════════════╗', 'bold');
-log('║   Mini Diarium — E2E Local   ║', 'bold');
+log('║   Rat Journal — E2E Local   ║', 'bold');
 log('╚══════════════════════════════╝\n', 'bold');
 
 if (skipBuild) {

@@ -116,7 +116,7 @@ entry is silently skipped), two of them sharing the date 2023-04-03.
 | Entries | 4 raw (2 import, 2 are blank and skipped) |
 | Used by | `src/import/dayone.rs::tests::test_parse_dayone_sample_fixture` (automated) |
 
-Minimal fixture for issue [#294](https://github.com/fjrevoredo/mini-diarium/issues/294):
+Minimal fixture for issue #294:
 Day One omits the `"text"` key entirely for a blank entry (confirmed against
 independent Day One JSON parsers — see the format reference below), which used to
 fail `serde_json` deserialization for the *whole file* since `text` was a required
@@ -139,7 +139,7 @@ shape, different encoding) and fields we intentionally don't import (`timeZone`,
 
 Comprehensive fixture grounded in real Day One JSON exports and independent
 third-party parsers (see the format reference below), covering the field noise a
-real export carries alongside `creationDate`/`text` — none of which Mini Diarium
+real export carries alongside `creationDate`/`text` — none of which Rat Journal
 imports, but all of which must not break parsing:
 
 | Scenario | Entry |
@@ -185,7 +185,7 @@ Key properties:
 - `tags` in each entry are a subset of the root `tags` keys.
 - `time` is always 24-hour `HH:MM` (no seconds).
 - `date` is always `YYYY-MM-DD`.
-- Mini Diarium imports `title`, `body` → `text`, and `date`. `time`, `tags`, and
+- Rat Journal imports `title`, `body` → `text`, and `date`. `time`, `tags`, and
   `starred` are present in the JSON but are not imported.
 
 ## Day One JSON format reference
@@ -211,7 +211,7 @@ one only documents (or defensively handles) the subset of fields it imports:
   `tags` sometimes absent even when set in the app; `weather` present even when
   export settings say otherwise).
 
-Per-entry fields observed across those sources, beyond what Mini Diarium imports
+Per-entry fields observed across those sources, beyond what Rat Journal imports
 (`creationDate`, `text`): `uuid`, `modifiedDate`, `timeZone`, `tags`, `starred`,
 `isPinned`, `isAllDay`, `duration`, `editingTime`, `richText` (a JSON-encoded rich
 body, preferred by some importers over `text` when present), `location` (with a
@@ -228,7 +228,7 @@ Key properties:
   (issue #294).
 - `creationDate` may carry a non-UTC offset (e.g. `+05:00`) instead of `Z`.
 - Media identifiers in `photos`/`videos`/`audios` are referenced from `text` by
-  `dayone-moment://` URLs, not by array position — Mini Diarium doesn't resolve
+  `dayone-moment://` URLs, not by array position — Rat Journal doesn't resolve
   these today, so they pass through as literal Markdown image syntax.
 
 ## Day One TXT format reference

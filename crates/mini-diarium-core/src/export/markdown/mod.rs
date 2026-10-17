@@ -29,7 +29,7 @@ use assets::{extract_and_replace_with_assets, inline_replace_images};
 ///
 /// Format (single entry per day):
 /// ```markdown
-/// # Mini Diarium
+/// # Rat Journal
 ///
 /// ## 2024-01-15
 /// **My Title**
@@ -38,7 +38,7 @@ use assets::{extract_and_replace_with_assets, inline_replace_images};
 ///
 /// Format (multiple entries per day):
 /// ```markdown
-/// # Mini Diarium
+/// # Rat Journal
 ///
 /// ## 2024-01-15
 /// ### Morning Entry

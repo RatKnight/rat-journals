@@ -1,4 +1,4 @@
-//! `mini-diarium-core` — the Tauri-free SQLite business layer of Mini Diarium.
+//! `mini-diarium-core` — the Tauri-free SQLite business layer of Rat Journal.
 //!
 //! This crate holds the framework-independent domain logic built on SQLite: the
 //! encrypted database layer, import/export, the plugin runtime, backup rotation,

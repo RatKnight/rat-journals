@@ -5,10 +5,10 @@ name = "mini-diarium-crypto"
 # irrelevant until distribution is decided (open-core roadmap M4).
 version = "0.1.0"
 edition = "2021"
-description = "Reusable, rusqlite-free cryptographic layer of Mini Diarium (cipher, password hashing, master-key wrapping)"
-authors = ["Francisco J. Revoredo"]
+description = "Reusable, rusqlite-free cryptographic layer of Rat Journal (cipher, password hashing, master-key wrapping)"
+authors = ["Rat Journal"]
 license = "MIT"
-repository = "https://github.com/fjrevoredo/mini-diarium"
+repository = "https://github.com/RatKnight/rat-journal"
 
 [lints]
 workspace = true

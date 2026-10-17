@@ -379,7 +379,7 @@ Both are pure — no I/O, no platform lookup beyond `cfg!(windows)` — so the c
 the directory and deciding what to do when it cannot.
 
 - `default_journal_dir(app_data_dir, documents_dir: Option<&Path>) -> PathBuf` — where a new
-  journal goes when the user has not picked a folder: `<documents>/Mini Diarium`, or
+  journal goes when the user has not picked a folder: `<documents>/Rat Journal`, or
   `<app_data>/journals` when no documents directory is available. A *preference*, not a
   guarantee: it does not check that the result is writable. The app crate probes it and falls
   back to the `None` form when the preferred location cannot be created or written to.
@@ -405,7 +405,7 @@ the directory and deciding what to do when it cannot.
 
 ## `backup` — encrypted-journal snapshots
 
-A snapshot is an ordinary encrypted Mini Diarium database written with `VACUUM INTO`, fsync,
+A snapshot is an ordinary encrypted Rat Journal database written with `VACUUM INTO`, fsync,
 and an atomic rename, then verified before it is reported as created. No plaintext and no key
 material is ever written to the backups directory. Reached at the `backup` root; the
 `policy` / `store` / `manifest` sub-modules are also public, since the policy layer is the

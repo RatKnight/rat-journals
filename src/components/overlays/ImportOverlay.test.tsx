@@ -8,7 +8,7 @@ import ImportOverlay from './ImportOverlay';
 const mockPlugins: tauri.PluginInfo[] = [
   {
     id: 'builtin:json',
-    name: 'Mini Diarium JSON',
+    name: 'Rat Journal JSON',
     file_extensions: ['json'],
     builtin: true,
   },
@@ -26,7 +26,7 @@ function renderOverlay(onClose = vi.fn(), onImportComplete = vi.fn()) {
 }
 
 async function waitForPlugins() {
-  await waitFor(() => expect(screen.getByText('Mini Diarium JSON')).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText('Rat Journal JSON')).toBeInTheDocument());
 }
 
 describe('ImportOverlay', () => {
@@ -50,7 +50,7 @@ describe('ImportOverlay', () => {
     await waitForPlugins();
     const select = screen.getByRole('combobox') as HTMLSelectElement;
     expect(select.options.length).toBe(1);
-    expect(select.options[0].text).toBe('Mini Diarium JSON');
+    expect(select.options[0].text).toBe('Rat Journal JSON');
   });
 
   it('shows "No file selected" text initially', async () => {

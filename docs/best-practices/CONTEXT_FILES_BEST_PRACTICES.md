@@ -94,7 +94,7 @@ Before adding any content, run through this:
 
 ## Anti-Patterns Found in This Codebase
 
-These all occurred in Mini Diarium's CLAUDE.md files and required dedicated cleanup passes. Use them as concrete examples of what to avoid.
+These all occurred in Rat Journal's CLAUDE.md files and required dedicated cleanup passes. Use them as concrete examples of what to avoid.
 
 1. **The copy-of-lib.rs** — a 68-row command registry table that mirrored `generate_handler![]`. Drifted immediately; replaced with a one-paragraph pointer.
 

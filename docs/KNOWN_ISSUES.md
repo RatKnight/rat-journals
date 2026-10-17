@@ -1,6 +1,6 @@
 # Known Issues & Architectural Tradeoffs
 
-This document is the canonical reference for Mini Diarium's known limitations, deliberate tradeoffs, and outstanding technical debt. It is split into two audiences:
+This document is the canonical reference for Rat Journal's known limitations, deliberate tradeoffs, and outstanding technical debt. It is split into two audiences:
 
 - **[For Users](#for-users)** — things that affect day-to-day use
 - **[For Developers](#for-developers)** — architectural decisions, implementation constraints, and open technical debt
@@ -14,7 +14,7 @@ Items marked **By design** are intentional decisions, not bugs. Items marked **O
 ### KI-1 — No concurrent access
 **Status:** By design
 
-Only one instance of Mini Diarium may have a given journal open at a time. Opening the same `diary.db` from a second process (e.g. a second app window, or a sync tool that locks the file) will cause errors. This is a deliberate simplification: a single `Mutex<Option<DatabaseConnection>>` protects the database state, and supporting multi-writer access would require a fundamentally different architecture (WAL mode, connection pooling, distributed locking).
+Only one instance of Rat Journal may have a given journal open at a time. Opening the same `diary.db` from a second process (e.g. a second app window, or a sync tool that locks the file) will cause errors. This is a deliberate simplification: a single `Mutex<Option<DatabaseConnection>>` protects the database state, and supporting multi-writer access would require a fundamentally different architecture (WAL mode, connection pooling, distributed locking).
 
 **Workaround:** Use the journal-switching feature to manage multiple separate journals instead of sharing a single file across sessions.
 
@@ -45,7 +45,7 @@ The `// Search index hook:` comments in `db/queries/entries/{insert,update,delet
 
 When importing from any format (Mini Diary JSON, Day One, jrnl, etc.), the importer always creates new entries. Re-importing the same file will create duplicate entries. There is no date-conflict detection or content-deduplication logic.
 
-**Why:** The merge logic was removed because its heuristics were unreliable and led to silent data loss when the source format's date/time semantics didn't match Mini Diarium's model. Creating duplicates is always recoverable; silent merge failures are not.
+**Why:** The merge logic was removed because its heuristics were unreliable and led to silent data loss when the source format's date/time semantics didn't match Rat Journal's model. Creating duplicates is always recoverable; silent merge failures are not.
 
 ---
 
@@ -77,7 +77,7 @@ JSON and Markdown exports contain decrypted diary content in plain text. This is
 
 The app accepts any non-empty password (minimum 1 character). A visual strength indicator in the password creation UI guides your choice, but no minimum is enforced. The Argon2id key derivation (64 MB memory, 3 iterations) provides strong offline-attack resistance regardless of password length, but a 1-character password remains trivially guessable in an online or physical-access scenario.
 
-**Our position:** Password strength is the user's responsibility. Mini Diarium's threat model is protection of a file at rest, not authentication against an active attacker. A strength minimum without server-side enforcement would be easily circumvented and creates false confidence.
+**Our position:** Password strength is the user's responsibility. Rat Journal's threat model is protection of a file at rest, not authentication against an active attacker. A strength minimum without server-side enforcement would be easily circumvented and creates false confidence.
 
 ---
 
@@ -103,7 +103,7 @@ This affects only journals placed outside the sandbox — the chooser opens on a
 
 **Mitigation (v0.6.6, revised for TODO-0112):** On the Flathub build specifically, **+ Create New Journal** shows a dialog-free form pre-filled with a working location — your Documents folder, or the app's own data folder where Documents is not writable (as on Flathub, where the sandbox holds no filesystem permission) — so the common path never touches the folder chooser at all. Everywhere else, Create opens a native save dialog instead, which carries no portal risk since it is not Flatpak. Since TODO-0112, journals no longer get an auto-allocated folder of their own; several can share one folder as long as their filenames differ, so the Flatpak form includes an editable Filename field. The app also refuses a portal path as a journal location — explaining why instead of failing with a generic permissions error. The refusal covers both ways a journal gets a location: adding one, and **Preferences → Data → Change journal directory**. The move case is refused before the database file is touched, since relocating a journal into a path that later stops resolving is worse than a bad config entry.
 
-**Workaround if you want a journal in a specific host folder:** grant Mini Diarium persistent access to it with Flatseal (or `flatpak override --user --filesystem=/path/to/folder io.github.fjrevoredo.mini-diarium`), then pick the folder. With a real filesystem permission in place the chooser returns the true path rather than a portal handle.
+**Workaround if you want a journal in a specific host folder:** grant Rat Journal persistent access to it with Flatseal (or `flatpak override --user --filesystem=/path/to/folder local.ratjournal.app`), then pick the folder. With a real filesystem permission in place the chooser returns the true path rather than a portal handle.
 
 Resolving an existing stored portal path back to its host location is not implemented; a journal already saved that way must be re-added from its real folder.
 
@@ -112,7 +112,7 @@ Resolving an existing stored portal path back to its host location is not implem
 ### KI-11 — Opening a backup snapshot directly modifies it
 **Status:** Mitigated in v0.6.6
 
-A snapshot is an ordinary encrypted Mini Diarium database, so **+ Open Existing** used to accept one — and opening it as a journal writes to it, destroying the untouched restore point you were reaching for. This affected every platform, not just Flatpak.
+A snapshot is an ordinary encrypted Rat Journal database, so **+ Open Existing** used to accept one — and opening it as a journal writes to it, destroying the untouched restore point you were reaching for. This affected every platform, not just Flatpak.
 
 **Mitigation (v0.6.6):** the app refuses to register a `backup-*.db` file, or any file inside a `backups/` folder, as a journal, and tells you to copy it elsewhere first and open the copy.
 
@@ -131,7 +131,7 @@ Versions before 0.7.4 open a journal that has attachments (schema v14), because 
 
 **Mitigation (v0.7.4, TODO-0123):** the link from an entry to its attachments is `ON DELETE RESTRICT`, so an older version cannot delete an entry that has files. Version 0.7.4 and later refuse a journal from a newer app version (TODO-0122).
 
-**Workaround:** update Mini Diarium to 0.7.4 or later on every computer that shares the journal.
+**Workaround:** update Rat Journal to 0.7.4 or later on every computer that shares the journal.
 
 ---
 
@@ -260,11 +260,11 @@ Any code that resets, exports, or migrates user settings must handle all three i
 ### AT-13 — Dependabot alert #6: `glib` unsoundness (Linux-only transitive dep)
 **Status:** Open (blocked on Tauri upstream)
 
-GitHub Security Advisory [GHSA-c2rh-4qvr-6q6p](https://github.com/advisories/GHSA-c2rh-4qvr-6q6p) flags `glib` versions ≥0.15.0 and <0.20.0 for unsoundness in the `Iterator` and `DoubleEndedIterator` impls of `glib::VariantStrIter`. Mini Diarium resolves `glib 0.18.5` transitively through the Tauri → GTK → webkit2gtk Linux stack.
+GitHub Security Advisory [GHSA-c2rh-4qvr-6q6p](https://github.com/advisories/GHSA-c2rh-4qvr-6q6p) flags `glib` versions ≥0.15.0 and <0.20.0 for unsoundness in the `Iterator` and `DoubleEndedIterator` impls of `glib::VariantStrIter`. Rat Journal resolves `glib 0.18.5` transitively through the Tauri → GTK → webkit2gtk Linux stack.
 
-**Impact:** Zero practical risk for Mini Diarium:
+**Impact:** Zero practical risk for Rat Journal:
 - **Linux-only compilation path** — the GTK/WebKit crates only compile on Linux. Windows (WebView2) and macOS (WKWebView) binaries are unaffected.
-- **Fully transitive** — Mini Diarium code never imports or calls `glib` directly, and never uses `VariantStrIter`.
+- **Fully transitive** — Rat Journal code never imports or calls `glib` directly, and never uses `VariantStrIter`.
 - **API soundness issue, not a C memory corruption** — the unsoundness is in Rust iterator impls, not the underlying C library.
 
 **Resolution path:** Tauri 2.11.1 pins the gtk-rs 0.18.x ecosystem. Upgrading `glib` independently to 0.20.0 is impossible — it would break the semver contract with every other crate in the GTK stack (gtk, gdk, pango, cairo-rs, webkit2gtk, etc.). The fix arrives when Tauri upstream bumps its Linux GTK dependencies to 0.20+ in a future release. No action is possible at this level.

@@ -1,6 +1,6 @@
 //! Encrypted-journal snapshots.
 //!
-//! A *snapshot* is an ordinary, fully encrypted Mini Diarium database: same format, same
+//! A *snapshot* is an ordinary, fully encrypted Rat Journal database: same format, same
 //! master key, openable by the app. Nothing here writes plaintext, and nothing here writes
 //! key material into the backups directory.
 //!
