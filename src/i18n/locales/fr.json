@@ -805,6 +805,7 @@
     "invalidJournalFilename": "Ce nom de fichier ne peut pas être utilisé pour un journal. Utilisez un nom plus court sans caractères spéciaux comme / ou *.",
     "noBackupsYet": "Il n'y a pas encore de sauvegarde. Le dossier apparaît après la première sauvegarde.",
     "backgroundTaskFailed": "Un problème est survenu en arrière-plan, le journal a donc été verrouillé pour le protéger. Déverrouillez-le pour continuer.",
+    "keyUpgradeFailed": "Mini Diarium n'a pas pu mettre à jour le chiffrement de ce journal. D'ici là, toute personne disposant d'une copie du fichier du journal ou d'une sauvegarde peut l'ouvrir sans votre mot de passe. Verrouillez le journal puis déverrouillez-le avec votre mot de passe pour réessayer.",
     "internalError": "Une erreur interne s'est produite.",
     "unexpectedError": "Une erreur inattendue s'est produite."
   }

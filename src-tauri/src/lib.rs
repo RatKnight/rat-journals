@@ -339,6 +339,7 @@ pub fn run() {
             commands::auth::create_diary_auto,
             commands::auth::unlock_diary_auto,
             commands::auth::lock_diary,
+            commands::auth::take_security_notice,
             commands::auth::diary_exists,
             commands::auth::check_diary_path,
             commands::auth::is_diary_unlocked,

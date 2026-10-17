@@ -805,6 +805,7 @@
     "invalidJournalFilename": "Dieser Dateiname kann nicht für ein Tagebuch verwendet werden. Verwende einen kürzeren Namen ohne Sonderzeichen wie / oder *.",
     "noBackupsYet": "Es gibt noch keine Sicherungen. Der Ordner erscheint nach der ersten Sicherung.",
     "backgroundTaskFailed": "Im Hintergrund ist ein Fehler aufgetreten, deshalb wurde das Tagebuch zum Schutz gesperrt. Entsperre es, um fortzufahren.",
+    "keyUpgradeFailed": "Mini Diarium konnte die Verschlüsselung dieses Tagebuchs nicht aktualisieren. Bis dahin kann jeder mit einer Kopie der Tagebuchdatei oder einer Sicherung es ohne dein Passwort öffnen. Sperre das Tagebuch und entsperre es mit deinem Passwort, um es erneut zu versuchen.",
     "internalError": "Ein interner Fehler ist aufgetreten.",
     "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten."
   }

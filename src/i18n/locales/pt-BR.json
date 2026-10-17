@@ -805,6 +805,7 @@
     "invalidJournalFilename": "Esse nome de arquivo não pode ser usado para um diário. Use um nome mais curto sem caracteres especiais como / ou *.",
     "noBackupsYet": "Ainda não há backups. A pasta aparece depois do primeiro backup.",
     "backgroundTaskFailed": "Algo deu errado em segundo plano, então o diário foi bloqueado para mantê-lo seguro. Desbloqueie-o para continuar.",
+    "keyUpgradeFailed": "O Mini Diarium não conseguiu atualizar a criptografia deste diário. Até que isso aconteça, qualquer pessoa com uma cópia do arquivo do diário ou de um backup pode abri-lo sem sua senha. Bloqueie o diário e desbloqueie-o com sua senha para tentar novamente.",
     "internalError": "Ocorreu um erro interno.",
     "unexpectedError": "Ocorreu um erro inesperado."
   }

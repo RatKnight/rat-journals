@@ -13,6 +13,11 @@ export async function lockJournal(): Promise<void> {
   await invoke('lock_diary');
 }
 
+/** Takes the security notice left by the last unlock (e.g. `'key-upgrade-failed'`), or null. */
+export async function takeSecurityNotice(): Promise<string | null> {
+  return (await invoke<string | null>('take_security_notice')) ?? null;
+}
+
 export async function journalExists(): Promise<boolean> {
   return await invoke('diary_exists');
 }

@@ -24,6 +24,7 @@ import {
   setRequireAllAuth,
   createJournalAuto,
   unlockJournalAuto,
+  takeSecurityNotice,
   type AuthMethodInfo,
   type JournalPeek,
   type KeypairFiles,
@@ -42,6 +43,15 @@ describe('auth command wrappers (IPC contract)', () => {
   it('createJournal → create_diary { password }', async () => {
     await createJournal('pw');
     expect(mockInvoke).toHaveBeenCalledWith('create_diary', { password: 'pw' });
+  });
+
+  it('takeSecurityNotice → take_security_notice, null when there is none', async () => {
+    mockInvoke.mockResolvedValueOnce('key-upgrade-failed');
+    await expect(takeSecurityNotice()).resolves.toBe('key-upgrade-failed');
+    expect(mockInvoke).toHaveBeenCalledWith('take_security_notice');
+
+    mockInvoke.mockResolvedValueOnce(null);
+    await expect(takeSecurityNotice()).resolves.toBeNull();
   });
 
   it('unlockJournal → unlock_diary { password }', async () => {

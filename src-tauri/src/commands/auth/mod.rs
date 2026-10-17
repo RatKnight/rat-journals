@@ -4,6 +4,10 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter, State, Wry};
 
+/// [`DiaryState::security_notice`] code: the journal still has a legacy password slot and the
+/// master-key rotation that should have replaced it failed, so the key is still exposed.
+pub const NOTICE_KEY_UPGRADE_FAILED: &str = "key-upgrade-failed";
+
 /// Shared state for the database connection
 pub struct DiaryState {
     pub db: Mutex<Option<DatabaseConnection>>,
@@ -20,6 +24,10 @@ pub struct DiaryState {
     /// an invariant enforced by the call graph does not depend on a future caller
     /// remembering a second teardown.
     pub inspection: Mutex<Option<crate::commands::backup_inspect::InspectedSnapshot>>,
+    /// A security problem from the last unlock that the user must be told about, as a
+    /// stable code the frontend translates (e.g. [`NOTICE_KEY_UPGRADE_FAILED`]). Read and
+    /// cleared once by the `take_security_notice` command.
+    pub security_notice: Mutex<Option<&'static str>>,
     /// Serializes every backups-directory-mutating path — the four IPC-reachable backup
     /// commands (`create_backup_now`, `verify_backup`, `delete_backup`, `restore_backup`) and
     /// the trigger paths in `commands/backup_triggers.rs` (unlock, lock, shutdown, and
@@ -52,6 +60,7 @@ impl DiaryState {
             app_data_dir,
             inspection: Mutex::new(None),
             backup_ops: Arc::new(Mutex::new(())),
+            security_notice: Mutex::new(None),
         }
     }
 

@@ -34,7 +34,8 @@ import {
   isAnyOverlayOpen,
 } from '../../state/ui';
 import { preferences } from '../../state/preferences';
-import { authState, lockJournal } from '../../state/auth';
+import { authState, lockJournal, securityNotice, dismissSecurityNotice } from '../../state/auth';
+import { useI18n } from '../../i18n';
 import { registerKeyboardShortcuts } from '../../lib/keyboard-shortcuts';
 import { isEscapeClaimed } from '../../lib/escape-claim';
 import { onboardingMode, minimizeOnboarding } from '../../state/onboarding';
@@ -42,6 +43,7 @@ import { onboardingMode, minimizeOnboarding } from '../../state/onboarding';
 const log = createLogger('MainLayout');
 
 export default function MainLayout() {
+  const t = useI18n();
   // Store cleanup functions at component level
   const unlisteners: UnlistenFn[] = [];
   let unregisterShortcuts: (() => void) | undefined;
@@ -114,6 +116,27 @@ export default function MainLayout() {
       <div class="flex flex-1 flex-col">
         {/* Header */}
         <Header showMenu onMenuClick={() => setIsSidebarCollapsed(!isSidebarCollapsed())} />
+
+        {/* The encryption upgrade failed: the journal file is still exposed (see SECURITY.md) */}
+        <Show when={securityNotice() === 'key-upgrade-failed'}>
+          <div class="px-6 pt-2">
+            <div
+              role="alert"
+              data-testid="security-notice"
+              class="rounded-md bg-warning p-3 flex items-center justify-between gap-2"
+            >
+              <p class="text-sm text-warning">{t('errors.keyUpgradeFailed')}</p>
+              <button
+                type="button"
+                onClick={() => dismissSecurityNotice()}
+                class="text-sm text-warning hover:opacity-75 flex-shrink-0"
+                aria-label={t('common.close')}
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        </Show>
 
         {/* Main panel: editor or timeline list */}
         <main class="flex-1 overflow-hidden">

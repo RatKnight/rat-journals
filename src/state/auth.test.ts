@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
   unlockJournal: vi.fn(),
   unlockJournalWithKeypair: vi.fn(),
   lockJournal: vi.fn(),
+  takeSecurityNotice: vi.fn(),
   getAllEntryDates: vi.fn(),
   getAllTags: vi.fn(),
   loadJournals: vi.fn(),
@@ -29,6 +30,7 @@ vi.mock('../lib/tauri', () =>
     unlockJournal: mocks.unlockJournal,
     unlockJournalWithKeypair: mocks.unlockJournalWithKeypair,
     lockJournal: mocks.lockJournal,
+    takeSecurityNotice: mocks.takeSecurityNotice,
     getAllEntryDates: mocks.getAllEntryDates,
     getAllTags: mocks.getAllTags,
   }),
@@ -55,6 +57,8 @@ import {
   resetAuthTransientState,
   initializeAuth,
   lockNotice,
+  securityNotice,
+  dismissSecurityNotice,
 } from './auth';
 import { entryDates, registerCleanupCallback } from './entries';
 import { resetSessionState } from './session';
@@ -62,12 +66,46 @@ import { resetSessionState } from './session';
 describe('state/auth', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.takeSecurityNotice.mockResolvedValue(null);
     mocks.getAllEntryDates.mockResolvedValue([]);
     mocks.getAllTags.mockResolvedValue([]);
     mocks.loadJournals.mockResolvedValue(undefined);
     resetSessionState();
     resetAuthTransientState();
     goToJournalPicker(); // known baseline: 'journal-select'
+  });
+
+  it('unlockJournal shows the security notice when the encryption upgrade failed', async () => {
+    mocks.unlockJournal.mockResolvedValue(undefined);
+    mocks.takeSecurityNotice.mockResolvedValue('key-upgrade-failed');
+
+    await unlockJournal('pw');
+
+    await vi.waitFor(() => expect(securityNotice()).toBe('key-upgrade-failed'));
+    expect(authState()).toBe('unlocked');
+
+    dismissSecurityNotice();
+    expect(securityNotice()).toBeNull();
+  });
+
+  it('unlockJournal shows no security notice for an unknown or absent code', async () => {
+    mocks.unlockJournal.mockResolvedValue(undefined);
+    mocks.takeSecurityNotice.mockResolvedValue('something-else');
+
+    await unlockJournal('pw');
+
+    await vi.waitFor(() => expect(mocks.takeSecurityNotice).toHaveBeenCalled());
+    expect(securityNotice()).toBeNull();
+  });
+
+  it('a failing security-notice read never blocks the unlock', async () => {
+    mocks.unlockJournal.mockResolvedValue(undefined);
+    mocks.takeSecurityNotice.mockRejectedValue(new Error('ipc down'));
+
+    await unlockJournal('pw');
+
+    expect(authState()).toBe('unlocked');
+    expect(securityNotice()).toBeNull();
   });
 
   it('createJournal unlocks the session and hydrates dates AFTER the backend call', async () => {

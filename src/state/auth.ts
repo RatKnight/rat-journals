@@ -22,6 +22,24 @@ const [authMethods, setAuthMethods] = createSignal<tauri.AuthMethodInfo[]>([]);
 export type LockNotice = 'background-task-failed';
 const [lockNotice, setLockNotice] = createSignal<LockNotice | null>(null);
 
+/** A security problem from the last unlock that the main screen must show. */
+export type SecurityNotice = 'key-upgrade-failed';
+const [securityNotice, setSecurityNotice] = createSignal<SecurityNotice | null>(null);
+
+/** Reads (and clears) the backend's post-unlock security notice. */
+async function loadSecurityNotice(): Promise<void> {
+  try {
+    const notice = await tauri.takeSecurityNotice();
+    setSecurityNotice(notice === 'key-upgrade-failed' ? notice : null);
+  } catch (err) {
+    log.warn('Failed to read the security notice:', err);
+  }
+}
+
+export function dismissSecurityNotice(): void {
+  setSecurityNotice(null);
+}
+
 interface JournalLockedEventPayload {
   reason?: string;
 }
@@ -34,6 +52,7 @@ export function resetAuthTransientState(): void {
 function resetForLockedSession(): void {
   resetSessionState();
   resetAuthTransientState();
+  setSecurityNotice(null);
   setAuthState('locked');
 }
 
@@ -45,6 +64,8 @@ function prepareUnlockedSession(): void {
   // Populate the locked-entry indicators for the freshly unlocked journal.
   // Fire-and-forget: indicators are cosmetic and the DB is already unlocked here.
   void refreshLockedDates();
+  // Fire-and-forget: a failed encryption upgrade shows a warning banner, never blocks unlock.
+  void loadSecurityNotice();
 }
 
 // Refresh auth state using the current backend journal path without reloading journal metadata.
@@ -302,4 +323,4 @@ export async function setupAuthEventListeners(): Promise<() => void> {
   };
 }
 
-export { authState, error, authMethods, setAuthMethods, lockNotice };
+export { authState, error, authMethods, setAuthMethods, lockNotice, securityNotice };

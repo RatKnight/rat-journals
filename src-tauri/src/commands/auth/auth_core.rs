@@ -304,9 +304,10 @@ fn load_active_auto_key(state: &DiaryState) -> Option<Zeroizing<[u8; 32]>> {
 /// the password that just unlocked the journal; the local key is passed through so a
 /// local-key slot survives. Returns true if the key was rotated.
 ///
-/// A failure is logged and not returned: the journal is open and fully readable under the
-/// old key, so refusing the unlock would only lock the user out. The upgrade is retried on
-/// the next password unlock.
+/// A failure is not returned: the journal is open and fully readable under the old key, so
+/// refusing the unlock would only lock the user out. It is logged and recorded as
+/// [`super::NOTICE_KEY_UPGRADE_FAILED`] so the UI can warn that the journal is still
+/// exposed, and the upgrade is retried on the next password unlock.
 pub(crate) fn upgrade_legacy_password_slot(
     db: &mut crate::db::DatabaseConnection,
     password: &str,
@@ -337,6 +338,9 @@ pub(crate) fn upgrade_legacy_password_slot(
                 "Master key rotation failed; will retry on next unlock: {}",
                 e
             );
+            if let Ok(mut notice) = state.security_notice.lock() {
+                *notice = Some(super::NOTICE_KEY_UPGRADE_FAILED);
+            }
             false
         }
     }
@@ -396,6 +400,22 @@ pub fn unlock_diary(password: String, state: State<DiaryState>) -> Result<(), St
 #[tauri::command]
 pub fn unlock_diary_with_keypair(key_path: String, state: State<DiaryState>) -> Result<(), String> {
     perform_unlock(UnlockMode::Keypair(key_path), &state)
+}
+
+/// Returns and clears the security notice left by the last unlock, if any.
+///
+/// The value is a stable code (e.g. `"key-upgrade-failed"`) the frontend translates.
+#[tauri::command]
+pub fn take_security_notice(state: State<DiaryState>) -> Result<Option<String>, String> {
+    take_security_notice_inner(&state)
+}
+
+pub(crate) fn take_security_notice_inner(state: &DiaryState) -> Result<Option<String>, String> {
+    let mut notice = state
+        .security_notice
+        .lock()
+        .map_err(|_| "State lock poisoned".to_string())?;
+    Ok(notice.take().map(str::to_string))
 }
 
 /// Locks the diary (closes the database connection)
@@ -462,6 +482,15 @@ pub fn change_password(
     new_password: String,
     state: State<DiaryState>,
 ) -> Result<(), String> {
+    change_password_inner(old_password, new_password, &state)
+}
+
+/// The testable core of [`change_password`].
+pub(crate) fn change_password_inner(
+    old_password: String,
+    new_password: String,
+    state: &DiaryState,
+) -> Result<(), String> {
     let mut db_state = state
         .db
         .lock()
@@ -482,9 +511,10 @@ pub fn change_password(
 
     // A legacy slot means the current master key is exposed: rotate it first (this also
     // re-wraps the password slot in the v2 format), then re-wrap for the new password below.
-    if crate::auth::PasswordMethod::is_legacy_blob(&wrapped_key) {
+    let rotated = crate::auth::PasswordMethod::is_legacy_blob(&wrapped_key);
+    if rotated {
         let old_password = Zeroizing::new(old_password);
-        let auto_key = load_active_auto_key(&state);
+        let auto_key = load_active_auto_key(state);
         crate::db::rotate_master_key(db, &old_password, auto_key.as_deref())?;
     }
 
@@ -505,6 +535,12 @@ pub fn change_password(
     crate::db::update_auth_slot_wrapped_key(db, slot_id, &new_wrapped_key)?;
 
     info!("Password changed successfully");
+
+    if rotated {
+        // The snapshot takes `backup_ops` and then `db`; release `db` first to keep that order.
+        drop(db_state);
+        crate::commands::backup_triggers::snapshot_after_key_rotation(state);
+    }
     Ok(())
 }
 
@@ -977,6 +1013,105 @@ mod tests {
         // The upgraded journal opens again with the same password.
         super::super::lock_diary_inner(&state).unwrap();
         super::perform_unlock(super::UnlockMode::Password("password".to_string()), &state).unwrap();
+    }
+
+    #[test]
+    fn test_failed_key_upgrade_unlocks_and_leaves_security_notice() {
+        let (_fixture, state, db_path, _backups_dir) = make_state("key_upgrade_failed");
+
+        let db = create_database(&db_path, "password".to_string()).unwrap();
+        crate::db::downgrade_password_slot_for_tests(&db, "password").unwrap();
+        // A slot type rotation does not know makes it refuse and roll back.
+        crate::db::insert_auth_slot(&db, "mystery", "Unknown", None, b"blob", "2026-01-01")
+            .unwrap();
+        drop(db);
+
+        super::perform_unlock(super::UnlockMode::Password("password".to_string()), &state).unwrap();
+
+        assert!(
+            state.db.lock().unwrap().is_some(),
+            "the unlock itself must succeed"
+        );
+        {
+            let guard = state.db.lock().unwrap();
+            assert!(crate::db::has_legacy_password_material(guard.as_ref().unwrap()).unwrap());
+        }
+        assert_eq!(
+            super::take_security_notice_inner(&state)
+                .unwrap()
+                .as_deref(),
+            Some(crate::commands::auth::NOTICE_KEY_UPGRADE_FAILED)
+        );
+        // Taken once: the banner is not shown again for the same unlock.
+        assert_eq!(super::take_security_notice_inner(&state).unwrap(), None);
+    }
+
+    #[test]
+    fn test_successful_unlock_leaves_no_security_notice() {
+        let (_fixture, state, db_path, _backups_dir) = make_state("no_security_notice");
+        let db = create_database(&db_path, "password".to_string()).unwrap();
+        crate::db::downgrade_password_slot_for_tests(&db, "password").unwrap();
+        drop(db);
+
+        super::perform_unlock(super::UnlockMode::Password("password".to_string()), &state).unwrap();
+
+        assert_eq!(super::take_security_notice_inner(&state).unwrap(), None);
+    }
+
+    #[test]
+    fn test_change_password_upgrades_legacy_slot_and_takes_snapshot() {
+        use crate::backup::SnapshotTrigger;
+
+        let (_fixture, state, db_path, backups_dir) = make_state("change_pw_legacy");
+
+        let db = create_database(&db_path, "old-pw".to_string()).unwrap();
+        crate::db::downgrade_password_slot_for_tests(&db, "old-pw").unwrap();
+        drop(db);
+        // Install a connection without the unlock-time upgrade, as a key-file unlock leaves it.
+        let db = crate::db::open_database(&db_path, "old-pw".to_string(), &backups_dir).unwrap();
+        assert!(crate::db::has_legacy_password_material(&db).unwrap());
+        *state.db.lock().unwrap() = Some(db);
+
+        super::change_password_inner("old-pw".to_string(), "new-pw".to_string(), &state).unwrap();
+
+        {
+            let guard = state.db.lock().unwrap();
+            let db = guard.as_ref().expect("journal stays unlocked");
+            assert!(!crate::db::has_legacy_password_material(db).unwrap());
+            let (_, wrapped) = crate::db::get_password_slot(db).unwrap().unwrap();
+            assert!(!crate::auth::PasswordMethod::is_legacy_blob(&wrapped));
+        }
+
+        // A restorable baseline under the new key was taken right away.
+        let snapshots = crate::backup::list_snapshots(&backups_dir).unwrap();
+        assert!(
+            snapshots
+                .iter()
+                .any(|s| s.trigger == SnapshotTrigger::destructive("key_rotation")),
+            "expected a post-rotation snapshot, got {snapshots:?}"
+        );
+
+        super::super::lock_diary_inner(&state).unwrap();
+        assert!(
+            super::perform_unlock(super::UnlockMode::Password("old-pw".to_string()), &state)
+                .is_err()
+        );
+        super::perform_unlock(super::UnlockMode::Password("new-pw".to_string()), &state).unwrap();
+    }
+
+    #[test]
+    fn test_change_password_on_upgraded_slot_takes_no_extra_snapshot() {
+        let (_fixture, state, db_path, backups_dir) = make_state("change_pw_v2");
+
+        drop(create_database(&db_path, "old-pw".to_string()).unwrap());
+        let db = crate::db::open_database(&db_path, "old-pw".to_string(), &backups_dir).unwrap();
+        *state.db.lock().unwrap() = Some(db);
+
+        super::change_password_inner("old-pw".to_string(), "new-pw".to_string(), &state).unwrap();
+
+        assert!(crate::backup::list_snapshots(&backups_dir)
+            .unwrap()
+            .is_empty());
     }
 
     #[test]

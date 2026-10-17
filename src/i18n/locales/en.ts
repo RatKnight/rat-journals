@@ -971,6 +971,8 @@ const en = {
     noBackupsYet: 'There are no backups to show yet. The folder appears after the first backup.',
     backgroundTaskFailed:
       'Something went wrong in the background, so the journal was locked to keep it safe. Unlock it to continue.',
+    keyUpgradeFailed:
+      "Mini Diarium could not upgrade this journal's encryption. Until it does, anyone with a copy of the journal file or a backup can open it without your password. Lock the journal and unlock it with your password to try again.",
     internalError: 'An internal error occurred.',
     unexpectedError: 'An unexpected error occurred.',
   },

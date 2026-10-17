@@ -49,12 +49,16 @@ vi.mock('@tauri-apps/api/window', () => ({
 const authMocks = vi.hoisted(() => ({
   lockJournal: vi.fn(() => Promise.resolve()),
   state: 'unlocked' as string,
+  securityNotice: null as string | null,
+  dismissSecurityNotice: vi.fn(),
 }));
 
 vi.mock('../../state/auth', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../state/auth')>()),
   authState: () => authMocks.state,
   lockJournal: authMocks.lockJournal,
+  securityNotice: () => authMocks.securityNotice,
+  dismissSecurityNotice: authMocks.dismissSecurityNotice,
 }));
 
 const mockLogError = vi.hoisted(() => vi.fn());
@@ -407,5 +411,29 @@ describe('MainLayout navigation wiring', () => {
     await eventMocks.listeners.get('menu-preferences')!(undefined);
 
     expect(isPreferencesOpen()).toBe(true);
+  });
+});
+
+describe('MainLayout security notice', () => {
+  afterEach(() => {
+    authMocks.securityNotice = null;
+    authMocks.dismissSecurityNotice.mockClear();
+  });
+
+  it('warns when the encryption upgrade failed and can be dismissed', async () => {
+    authMocks.securityNotice = 'key-upgrade-failed';
+    const { findByTestId } = renderWithI18n(() => <MainLayout />);
+
+    const banner = await findByTestId('security-notice');
+    expect(banner.getAttribute('role')).toBe('alert');
+    expect(banner.textContent).toContain('could not upgrade');
+
+    banner.querySelector('button')!.click();
+    expect(authMocks.dismissSecurityNotice).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows no warning without a notice', () => {
+    const { queryByTestId } = renderWithI18n(() => <MainLayout />);
+    expect(queryByTestId('security-notice')).toBeNull();
   });
 });
