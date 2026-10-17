@@ -186,7 +186,7 @@ See [Backend guide](src-tauri/CLAUDE.md) for the full auth architecture and per-
 
 ### Updating the App Logo / Icons
 
-Use `$runbooks update-app-icons` in Codex or `/runbooks update-app-icons` in Claude Code. Source SVG: `public/logo-transparent.svg` (1024×1024).
+Use `$runbooks update-app-icons` in Codex or `/runbooks update-app-icons` in Claude Code. Source SVG: `public/logo-transparent.svg` (1024×1024); regenerate every icon with `bun x tauri icon public/logo-transparent.svg`.
 
 ### Updating Dependencies (npm/bun)
 
