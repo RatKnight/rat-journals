@@ -31,7 +31,7 @@ pub fn build_menu(app: &AppHandle<Wry>) -> tauri::Result<TranslatableMenuItems> 
 
     #[cfg(target_os = "macos")]
     let menu = {
-        let app_menu = SubmenuBuilder::new(app, "Mini Diarium")
+        let app_menu = SubmenuBuilder::new(app, "Rat Journal")
             .item(&preferences)
             .separator()
             .item(&PredefinedMenuItem::services(app, None)?)

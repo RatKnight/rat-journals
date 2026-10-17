@@ -561,7 +561,7 @@ mod tests {
         );
         // The whole point: the pre-filled location must survive add_journal's own checks.
         assert!(check_journal_location(&dir, Some("diary.db")).is_ok());
-        assert_eq!(std::path::Path::new(&dir), documents.join("Mini Diarium"));
+        assert_eq!(std::path::Path::new(&dir), documents.join("Rat Journal"));
     }
 
     #[test]

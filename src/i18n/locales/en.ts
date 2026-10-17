@@ -53,7 +53,7 @@ const en = {
     },
     sidebar: {
       navigation: 'Navigation',
-      title: 'Mini Diarium',
+      title: 'Rat Journal',
       closeMenu: 'Close menu',
       goToToday: 'Go to Today',
     },
@@ -121,7 +121,7 @@ const en = {
   auth: {
     /** JournalPicker */
     picker: {
-      title: 'Mini Diarium',
+      title: 'Rat Journal',
       yourJournals: 'Your Journals',
       yourJournalsAria: 'Your journals',
       empty: 'No journals yet. Create a new journal or open an existing one.',
@@ -156,7 +156,7 @@ const en = {
     },
     /** PasswordPrompt */
     prompt: {
-      title: 'Mini Diarium',
+      title: 'Rat Journal',
       unlockFallback: 'Unlock your journal',
       /** Used as "Unlock <name>" — only the prefix word */
       unlockPrefix: 'Unlock',
@@ -192,7 +192,7 @@ const en = {
     },
     /** PasswordCreation */
     creation: {
-      title: 'Welcome to Mini Diarium',
+      title: 'Welcome to Rat Journal',
       subtitle: 'Create a password to secure your journal',
       passwordLabel: 'Password',
       passwordHint: '(1+ characters, 12+ recommended)',
@@ -414,9 +414,9 @@ const en = {
       spellcheckLabel: 'Enable spellcheck',
       spellcheckHint: 'When enabled, browser spellcheck will highlight misspelled words.',
       spellcheckDictionaryMissing:
-        "Spell check needs the English language pack. Open your computer's Software app and search for “English spell checking.” Install the language support it suggests, then restart Mini Diarium.",
+        "Spell check needs the English language pack. Open your computer's Software app and search for “English spell checking.” Install the language support it suggests, then restart Rat Journal.",
       spellcheckDictionaryMissingFlatpak:
-        "Spell check should be included with Mini Diarium. Open your computer's Software app, update Mini Diarium, then restart it. If this warning remains, reinstall Mini Diarium.",
+        "Spell check should be included with Rat Journal. Open your computer's Software app, update Rat Journal, then restart it. If this warning remains, reinstall Rat Journal.",
       spellcheckDictionaryHelp: 'Open the spell-check setup guide',
       toolbarItemsLabel: 'Toolbar items',
       toolbarItemsHint:
@@ -467,7 +467,7 @@ const en = {
       customFontFamilyLabel: 'Font family name',
       customFontAddButton: 'Add font',
       customFontMissingBold:
-        'Bold weight missing — Mini Diarium will let the browser synthesize bold text, which may look incorrect.',
+        'Bold weight missing — Rat Journal will let the browser synthesize bold text, which may look incorrect.',
       customFontDeleteButton: 'Remove',
       customFontDeleteAriaLabel: 'Remove {{ family }} custom font',
       customFontFamilyRequired: 'Font family name is required.',
@@ -760,16 +760,17 @@ const en = {
   about: {
     title: 'About',
     closeAria: 'Close',
-    appName: 'Mini Diarium',
+    appName: 'Rat Journal',
     version: 'Version {{ version }}',
     description: 'An encrypted, local-first desktop journaling app.',
+    basedOn: 'Based on Mini Diarium by Francisco J. Revoredo',
     license: 'MIT License',
     copyright: 'Copyright © 2026 Francisco J. Revoredo',
     githubLink: 'GitHub',
     docsLink: 'Documentation',
     opensInBrowser: 'opens in system browser',
     showTour: 'Show Welcome Tour',
-    supportLink: 'Support Mini Diarium',
+    supportLink: 'Support Rat Journal',
   },
 
   /** FeedbackOverlay */
@@ -803,22 +804,22 @@ const en = {
   },
 
   /** ProjectSupportOverlay — reached via the streak-triggered Header icon or the
-   * About screen's "Support Mini Diarium" button. */
+   * About screen's "Support Rat Journal" button. */
   support: {
-    title: 'Support Mini Diarium',
+    title: 'Support Rat Journal',
     closeAria: 'Close',
-    headerIconAria: 'Support Mini Diarium',
+    headerIconAria: 'Support Rat Journal',
     openingLineAbout:
-      'Mini Diarium is free, encrypted, and has no ads or tracking. If it has been useful to you, here are a few ways to help it keep going.',
+      'Rat Journal is free, encrypted, and has no ads or tracking. If it has been useful to you, here are a few ways to help it keep going.',
     openingLineMilestone:
-      "You've journaled a {{ streak }}-day streak and written {{ words }} words. If Mini Diarium has helped you keep that habit, here are a few ways to support it.",
+      "You've journaled a {{ streak }}-day streak and written {{ words }} words. If Rat Journal has helped you keep that habit, here are a few ways to support it.",
     footerDefault: 'Any one of these helps more than you might think.',
-    footerThanked: 'Thank you for supporting Mini Diarium!',
+    footerThanked: 'Thank you for supporting Rat Journal!',
     itemStarLabel: 'Star the project on GitHub',
     itemStarButton: 'Star on GitHub',
     itemReviewLabel: 'Leave a review on the Microsoft Store',
     itemReviewButton: 'Leave a review',
-    itemShareLabel: 'Share Mini Diarium with a friend',
+    itemShareLabel: 'Share Rat Journal with a friend',
     itemShareButton: 'Copy share message',
     itemNewsletterLabel: 'Subscribe to the newsletter',
     itemNewsletterButton: 'Subscribe',
@@ -827,7 +828,7 @@ const en = {
     itemDonateLabel: 'Make a donation',
     itemDonateButton: 'Donate',
     shareMessage:
-      "I've been using Mini Diarium, a free encrypted journaling app with no ads or tracking. Worth a look: https://mini-diarium.com/",
+      "I've been using Rat Journal, a free encrypted journaling app with no ads or tracking. Worth a look: https://mini-diarium.com/",
     shareCopyFailed: "Couldn't copy — copy this yourself: {{ message }}",
   },
 
@@ -913,7 +914,7 @@ const en = {
 
   /** Onboarding tour — first-run step-by-step guide */
   onboarding: {
-    title: 'Welcome to Mini Diarium',
+    title: 'Welcome to Rat Journal',
     subtitle: 'A few things to get you started:',
     tip_toolbar_title: 'Customize your toolbar',
     tip_toolbar_body:
@@ -924,7 +925,7 @@ const en = {
     tip_import_action: 'Open Import',
     tip_docs_title: 'Full documentation online',
     tip_docs_body:
-      'The Mini Diarium website has full documentation covering every feature: keyboard shortcuts, toolbar options, import formats, encryption details, and more.',
+      'The Rat Journal website has full documentation covering every feature: keyboard shortcuts, toolbar options, import formats, encryption details, and more.',
     tip_docs_action: 'Open Docs',
     dismiss: 'Dismiss',
     back: 'Back',
@@ -964,7 +965,7 @@ const en = {
     cannotSaveKeyFile: 'Could not save key file. Check folder permissions.',
     fileOperationFailed: 'A file operation failed. Check that you have the necessary permissions.',
     portalPathRejected:
-      'That folder is only shared with Mini Diarium temporarily, so a journal saved there would stop opening later. Use the default location instead.',
+      'That folder is only shared with Rat Journal temporarily, so a journal saved there would stop opening later. Use the default location instead.',
     backupFileRejected:
       'That file is a backup snapshot. Opening it directly would change it. Copy it somewhere else first, then open the copy.',
     journalAlreadyRegistered:
@@ -975,9 +976,9 @@ const en = {
     backgroundTaskFailed:
       'Something went wrong in the background, so the journal was locked to keep it safe. Unlock it to continue.',
     keyUpgradeFailed:
-      "Mini Diarium could not upgrade this journal's encryption. Until it does, anyone with a copy of the journal file or a backup can open it without your password. Lock the journal and unlock it with your password to try again.",
+      "Rat Journal could not upgrade this journal's encryption. Until it does, anyone with a copy of the journal file or a backup can open it without your password. Lock the journal and unlock it with your password to try again.",
     upgradeNeedsAllMethods:
-      "Mini Diarium needs to upgrade this journal's encryption so that a future quantum computer cannot break it, and it needs all of the journal's unlock methods at once to do that. Lock the journal, choose “All methods” on the unlock screen, and enter your password and key files together.",
+      "Rat Journal needs to upgrade this journal's encryption so that a future quantum computer cannot break it, and it needs all of the journal's unlock methods at once to do that. Lock the journal, choose “All methods” on the unlock screen, and enter your password and key files together.",
     internalError: 'An internal error occurred.',
     unexpectedError: 'An unexpected error occurred.',
   },

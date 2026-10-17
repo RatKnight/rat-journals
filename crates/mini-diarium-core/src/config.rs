@@ -164,7 +164,7 @@ pub fn save_journals(
 /// directly testable — the caller supplies the platform lookup.
 pub fn default_journal_dir(app_data_dir: &Path, documents_dir: Option<&Path>) -> PathBuf {
     match documents_dir {
-        Some(docs) => docs.join("Mini Diarium"),
+        Some(docs) => docs.join("Rat Journal"),
         None => app_data_dir.join("journals"),
     }
 }

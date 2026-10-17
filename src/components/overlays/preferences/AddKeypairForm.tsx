@@ -50,7 +50,7 @@ export function AddKeypairForm(props: AddKeypairFormProps) {
       // Step 2: Prompt user to choose a save path
       const savePath = await save({
         title: t('prefs.security.savePrivateKeyTitle'),
-        defaultPath: `mini-diarium-${addKeypairLabel().replace(/\s+/g, '-')}.key`,
+        defaultPath: `rat-journal-${addKeypairLabel().replace(/\s+/g, '-')}.key`,
         filters: [{ name: 'Key Files', extensions: ['key'] }],
       });
       if (!savePath) {

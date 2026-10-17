@@ -1,6 +1,5 @@
 import { createSignal, createEffect, Show, For } from 'solid-js';
 import { save } from '../../../lib/dialog';
-import { openUrl } from '@tauri-apps/plugin-opener';
 import { FEATURE_FLAGS, isFeatureEnabled, setFeatureFlag } from '../../../state/feature-flags';
 import { buildClientState } from '../../../lib/debug-dump-payload';
 import { getActiveTheme } from '../../../lib/theme';
@@ -72,7 +71,7 @@ export default function PreferencesAdvancedTab(props: TabProps) {
     setDumpError('');
     try {
       const filePath = await save({
-        defaultPath: `mini-diarium-debug-${Date.now()}.json`,
+        defaultPath: `rat-journal-debug-${Date.now()}.json`,
         filters: [{ name: 'JSON Files', extensions: ['json'] }],
       });
       if (!filePath) {
@@ -127,14 +126,7 @@ export default function PreferencesAdvancedTab(props: TabProps) {
           {t('prefs.advanced.themeOverridesTitle')}
         </h3>
         <p class="text-xs text-tertiary mb-3 leading-relaxed">
-          {t('prefs.advanced.themeOverridesHint')}{' '}
-          <button
-            type="button"
-            class="underline text-xs text-tertiary hover:text-primary focus:outline-none"
-            onClick={() => openUrl('https://mini-diarium.com/docs/preferences/')}
-          >
-            {t('prefs.advanced.seeUserGuide')}
-          </button>
+          {t('prefs.advanced.themeOverridesHint')}
         </p>
         <textarea
           rows="6"

@@ -156,7 +156,7 @@ export default function ExportOverlay(props: ExportOverlayProps) {
       const printResult = await printEntries(buildPrintLabels(), computedExportOptions());
 
       const filePath = await saveDialog({
-        defaultPath: `mini-diarium-export-${exportTimestamp()}.pdf`,
+        defaultPath: `rat-journal-export-${exportTimestamp()}.pdf`,
         filters: [{ name: 'PDF', extensions: ['pdf'] }],
       });
       if (!filePath) {
@@ -207,7 +207,7 @@ export default function ExportOverlay(props: ExportOverlayProps) {
 
     try {
       const ext = plugin.file_extensions[0] ?? 'txt';
-      const defaultPath = `mini-diarium-export-${exportTimestamp()}.${ext}`;
+      const defaultPath = `rat-journal-export-${exportTimestamp()}.${ext}`;
 
       const filePath = await saveDialog({
         defaultPath,

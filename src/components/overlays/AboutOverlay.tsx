@@ -1,11 +1,9 @@
 import { createSignal, createEffect, Show } from 'solid-js';
 import { Dialog } from '@kobalte/core/dialog';
 import { getVersion } from '@tauri-apps/api/app';
-import { openUrl } from '@tauri-apps/plugin-opener';
 import { useI18n } from '../../i18n';
-import { X, GitFork, BookOpen, Compass, Heart } from 'lucide-solid';
+import { X, Compass } from 'lucide-solid';
 import { replayOnboarding } from '../../state/onboarding';
-import { setIsProjectSupportOpen, setProjectSupportEntry } from '../../state/ui';
 
 interface AboutOverlayProps {
   isOpen: boolean;
@@ -55,7 +53,7 @@ export default function AboutOverlay(props: AboutOverlayProps) {
 
             {/* Logo + name + version */}
             <div class="flex flex-col items-center gap-3 mb-6">
-              <img src="/logo-transparent.svg" alt="Mini Diarium" class="h-16 w-16 rounded-xl" />
+              <img src="/logo-transparent.svg" alt="Rat Journal" class="h-16 w-16 rounded-xl" />
               <div class="text-center">
                 <p class="text-xl font-bold text-primary">{t('about.appName')}</p>
                 <Show when={version()}>
@@ -69,44 +67,9 @@ export default function AboutOverlay(props: AboutOverlayProps) {
 
             {/* Meta */}
             <div class="space-y-1 text-sm text-secondary border-t border-primary pt-4 mb-4">
+              <p>{t('about.basedOn')}</p>
               <p>{t('about.license')}</p>
               <p>{t('about.copyright')}</p>
-            </div>
-
-            {/* GitHub + Documentation links */}
-            <div class="flex flex-col items-center gap-2 mb-6">
-              <div class="flex justify-center gap-3">
-                <button
-                  onClick={() => openUrl('https://github.com/fjrevoredo/mini-diarium')}
-                  class="flex items-center gap-2 rounded-full border border-primary px-4 py-2 text-sm text-secondary hover:bg-hover hover:text-primary transition-colors"
-                >
-                  <GitFork size={15} />
-                  {t('about.githubLink')}
-                </button>
-                <button
-                  onClick={() => openUrl('https://mini-diarium.com/docs/')}
-                  class="flex items-center gap-2 rounded-full border border-primary px-4 py-2 text-sm text-secondary hover:bg-hover hover:text-primary transition-colors"
-                >
-                  <BookOpen size={15} />
-                  {t('about.docsLink')}
-                </button>
-              </div>
-              <p class="text-xs text-tertiary">{t('about.opensInBrowser')}</p>
-            </div>
-
-            {/* Support Mini Diarium */}
-            <div class="flex justify-center mb-6">
-              <button
-                onClick={() => {
-                  setProjectSupportEntry('about');
-                  setIsProjectSupportOpen(true);
-                  props.onClose();
-                }}
-                class="flex items-center gap-2 rounded-full border border-primary px-4 py-2 text-sm text-secondary hover:bg-hover hover:text-primary transition-colors"
-              >
-                <Heart size={15} class="text-pink-500" />
-                {t('about.supportLink')}
-              </button>
             </div>
 
             {/* Footer: tour shortcut + close */}

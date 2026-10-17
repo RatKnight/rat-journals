@@ -33,7 +33,7 @@
     },
     "sidebar": {
       "navigation": "Navigation",
-      "title": "Mini Diarium",
+      "title": "Rat Journal",
       "closeMenu": "Fermer le menu",
       "goToToday": "Aller à aujourd'hui"
     }
@@ -86,7 +86,7 @@
   },
   "auth": {
     "picker": {
-      "title": "Mini Diarium",
+      "title": "Rat Journal",
       "yourJournals": "Vos journaux",
       "yourJournalsAria": "Vos journaux",
       "empty": "Aucun journal pour le moment. Créez un nouveau journal ou ouvrez-en un existant.",
@@ -118,7 +118,7 @@
       "opening": "Ouverture..."
     },
     "prompt": {
-      "title": "Mini Diarium",
+      "title": "Rat Journal",
       "unlockFallback": "Déverrouiller votre journal",
       "unlockPrefix": "Déverrouiller",
       "backToJournals": "← Retour aux journaux",
@@ -150,7 +150,7 @@
       "multiAuthLoadError": "Échec du chargement des méthodes d'authentification."
     },
     "creation": {
-      "title": "Bienvenue dans Mini Diarium",
+      "title": "Bienvenue dans Rat Journal",
       "subtitle": "Créez un mot de passe pour sécuriser votre journal",
       "passwordLabel": "Mot de passe",
       "passwordHint": "(1+ caractères, 12+ recommandés)",
@@ -341,8 +341,8 @@
       "showTimestampsHint": "Affiche l'heure de création et de dernière mise à jour sous le titre de l'entrée actuelle.",
       "spellcheckLabel": "Activer la correction orthographique",
       "spellcheckHint": "Lorsqu'elle est activée, la correction orthographique du navigateur mettra en évidence les mots mal orthographiés.",
-      "spellcheckDictionaryMissing": "La correction orthographique a besoin du pack linguistique français. Ouvrez l'application de logiciels de votre ordinateur et recherchez « correction orthographique française ». Installez la prise en charge linguistique proposée, puis redémarrez Mini Diarium.",
-      "spellcheckDictionaryMissingFlatpak": "La correction orthographique devrait être incluse avec Mini Diarium. Ouvrez l'application de logiciels de votre ordinateur, mettez Mini Diarium à jour, puis redémarrez-le. Si cet avertissement persiste, réinstallez Mini Diarium.",
+      "spellcheckDictionaryMissing": "La correction orthographique a besoin du pack linguistique français. Ouvrez l'application de logiciels de votre ordinateur et recherchez « correction orthographique française ». Installez la prise en charge linguistique proposée, puis redémarrez Rat Journal.",
+      "spellcheckDictionaryMissingFlatpak": "La correction orthographique devrait être incluse avec Rat Journal. Ouvrez l'application de logiciels de votre ordinateur, mettez Rat Journal à jour, puis redémarrez-le. Si cet avertissement persiste, réinstallez Rat Journal.",
       "spellcheckDictionaryHelp": "Ouvrir le guide de configuration de la correction orthographique",
       "toolbarItemsLabel": "Éléments de la barre d'outils",
       "toolbarItemsHint": "Personnalisez les contrôles de formatage qui apparaissent dans la barre d'outils de l'éditeur et leur ordre.",
@@ -388,7 +388,7 @@
       "customFontChooseFile": "Choisir un fichier…",
       "customFontFamilyLabel": "Nom de la famille de polices",
       "customFontAddButton": "Ajouter la police",
-      "customFontMissingBold": "Graisse Gras manquante — Mini Diarium laissera le navigateur synthétiser le texte en gras, ce qui peut sembler incorrect.",
+      "customFontMissingBold": "Graisse Gras manquante — Rat Journal laissera le navigateur synthétiser le texte en gras, ce qui peut sembler incorrect.",
       "customFontDeleteButton": "Supprimer",
       "customFontDeleteAriaLabel": "Supprimer la police personnalisée {{ family }}",
       "customFontFamilyRequired": "Le nom de la famille de polices est requis.",
@@ -634,16 +634,17 @@
   "about": {
     "title": "À propos",
     "closeAria": "Fermer",
-    "appName": "Mini Diarium",
+    "appName": "Rat Journal",
     "version": "Version {{ version }}",
     "description": "Une application de bureau de journalisation chiffrée et locale.",
+    "basedOn": "Based on Mini Diarium by Francisco J. Revoredo",
     "license": "Licence MIT",
     "copyright": "Copyright © 2026 Francisco J. Revoredo",
     "githubLink": "GitHub",
     "docsLink": "Documentation",
     "opensInBrowser": "s'ouvre dans le navigateur système",
     "showTour": "Afficher le tour de bienvenue",
-    "supportLink": "Soutenir Mini Diarium"
+    "supportLink": "Soutenir Rat Journal"
   },
   "feedback": {
     "title": "Envoyer un avis",
@@ -672,18 +673,18 @@
     "detailCloseAria": "Fermer le détail de la notification"
   },
   "support": {
-    "title": "Soutenir Mini Diarium",
+    "title": "Soutenir Rat Journal",
     "closeAria": "Fermer",
-    "headerIconAria": "Soutenir Mini Diarium",
-    "openingLineAbout": "Mini Diarium est gratuit, chiffré et sans publicités ni suivi. Si l’application vous a été utile, voici quelques façons de l’aider à continuer.",
-    "openingLineMilestone": "Vous avez tenu une série de {{ streak }} jours et écrit {{ words }} mots. Si Mini Diarium vous a aidé à garder cette habitude, voici quelques façons de le soutenir.",
+    "headerIconAria": "Soutenir Rat Journal",
+    "openingLineAbout": "Rat Journal est gratuit, chiffré et sans publicités ni suivi. Si l’application vous a été utile, voici quelques façons de l’aider à continuer.",
+    "openingLineMilestone": "Vous avez tenu une série de {{ streak }} jours et écrit {{ words }} mots. Si Rat Journal vous a aidé à garder cette habitude, voici quelques façons de le soutenir.",
     "footerDefault": "Chacune de ces actions aide plus que vous ne l’imaginez.",
-    "footerThanked": "Merci de soutenir Mini Diarium !",
+    "footerThanked": "Merci de soutenir Rat Journal !",
     "itemStarLabel": "Ajouter une étoile au projet sur GitHub",
     "itemStarButton": "Ajouter une étoile sur GitHub",
     "itemReviewLabel": "Laisser un avis sur le Microsoft Store",
     "itemReviewButton": "Laisser un avis",
-    "itemShareLabel": "Partager Mini Diarium avec un ami",
+    "itemShareLabel": "Partager Rat Journal avec un ami",
     "itemShareButton": "Copier le message à partager",
     "itemNewsletterLabel": "S’abonner à la newsletter",
     "itemNewsletterButton": "S’abonner",
@@ -691,7 +692,7 @@
     "itemContributeButton": "Contribuer",
     "itemDonateLabel": "Faire un don",
     "itemDonateButton": "Faire un don",
-    "shareMessage": "J’utilise Mini Diarium, une application de journal gratuite et chiffrée, sans publicités ni suivi. À découvrir : https://mini-diarium.com/",
+    "shareMessage": "J’utilise Rat Journal, une application de journal gratuite et chiffrée, sans publicités ni suivi. À découvrir : https://mini-diarium.com/",
     "shareCopyFailed": "Impossible de copier — copiez ceci vous-même : {{ message }}"
   },
   "timestamp": {
@@ -763,7 +764,7 @@
     "refLoading": "Chargement de la pièce jointe"
   },
   "onboarding": {
-    "title": "Bienvenue dans Mini Diarium",
+    "title": "Bienvenue dans Rat Journal",
     "subtitle": "Quelques choses pour commencer :",
     "tip_toolbar_title": "Personnalisez votre barre d'outils",
     "tip_toolbar_body": "La barre d'outils par défaut n'affiche que Gras et Italique. Ouvrez Préférences → Écriture pour activer plus d'outils — titres, couleurs, listes, alignement — et réorganisez-les selon vos préférences.",
@@ -772,7 +773,7 @@
     "tip_import_body": "Importez des entrées depuis Day One, Obsidian ou des fichiers texte.",
     "tip_import_action": "Ouvrir l'import",
     "tip_docs_title": "Documentation complète en ligne",
-    "tip_docs_body": "Le site web de Mini Diarium contient la documentation complète couvrant toutes les fonctionnalités : raccourcis clavier, options de la barre d'outils, formats d'importation, détails du chiffrement, et plus encore.",
+    "tip_docs_body": "Le site web de Rat Journal contient la documentation complète couvrant toutes les fonctionnalités : raccourcis clavier, options de la barre d'outils, formats d'importation, détails du chiffrement, et plus encore.",
     "tip_docs_action": "Ouvrir les Docs",
     "dismiss": "Ignorer",
     "back": "Retour",
@@ -801,14 +802,14 @@
     "cannotReadKeyFile": "Impossible de lire le fichier clé. Vérifiez que le fichier existe et que vous avez l'autorisation de le lire.",
     "cannotSaveKeyFile": "Impossible d'enregistrer le fichier clé. Vérifiez les permissions du dossier.",
     "fileOperationFailed": "Une opération de fichier a échoué. Vérifiez que vous avez les permissions nécessaires.",
-    "portalPathRejected": "Ce dossier n'est partagé avec Mini Diarium que temporairement : un journal enregistré là cesserait de s'ouvrir plus tard. Utilisez plutôt l'emplacement par défaut.",
+    "portalPathRejected": "Ce dossier n'est partagé avec Rat Journal que temporairement : un journal enregistré là cesserait de s'ouvrir plus tard. Utilisez plutôt l'emplacement par défaut.",
     "backupFileRejected": "Ce fichier est une sauvegarde. L'ouvrir directement le modifierait. Copiez-le d'abord ailleurs, puis ouvrez la copie.",
     "journalAlreadyRegistered": "Ce journal est déjà dans votre liste. Ouvrez-le depuis la liste ci-dessus au lieu de l'ajouter à nouveau.",
     "invalidJournalFilename": "Ce nom de fichier ne peut pas être utilisé pour un journal. Utilisez un nom plus court sans caractères spéciaux comme / ou *.",
     "noBackupsYet": "Il n'y a pas encore de sauvegarde. Le dossier apparaît après la première sauvegarde.",
     "backgroundTaskFailed": "Un problème est survenu en arrière-plan, le journal a donc été verrouillé pour le protéger. Déverrouillez-le pour continuer.",
-    "keyUpgradeFailed": "Mini Diarium n'a pas pu mettre à jour le chiffrement de ce journal. D'ici là, toute personne disposant d'une copie du fichier du journal ou d'une sauvegarde peut l'ouvrir sans votre mot de passe. Verrouillez le journal puis déverrouillez-le avec votre mot de passe pour réessayer.",
-    "upgradeNeedsAllMethods": "Mini Diarium doit mettre à jour le chiffrement de ce journal pour qu'un futur ordinateur quantique ne puisse pas le casser, et il a besoin pour cela de toutes les méthodes de déverrouillage du journal en même temps. Verrouillez le journal, choisissez « Toutes les méthodes » sur l'écran de déverrouillage, puis saisissez votre mot de passe et vos fichiers de clé ensemble.",
+    "keyUpgradeFailed": "Rat Journal n'a pas pu mettre à jour le chiffrement de ce journal. D'ici là, toute personne disposant d'une copie du fichier du journal ou d'une sauvegarde peut l'ouvrir sans votre mot de passe. Verrouillez le journal puis déverrouillez-le avec votre mot de passe pour réessayer.",
+    "upgradeNeedsAllMethods": "Rat Journal doit mettre à jour le chiffrement de ce journal pour qu'un futur ordinateur quantique ne puisse pas le casser, et il a besoin pour cela de toutes les méthodes de déverrouillage du journal en même temps. Verrouillez le journal, choisissez « Toutes les méthodes » sur l'écran de déverrouillage, puis saisissez votre mot de passe et vos fichiers de clé ensemble.",
     "internalError": "Une erreur interne s'est produite.",
     "unexpectedError": "Une erreur inattendue s'est produite."
   }

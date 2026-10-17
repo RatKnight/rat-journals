@@ -1,35 +1,18 @@
 import { Show } from 'solid-js';
-import {
-  Menu,
-  Lock,
-  Info,
-  Bell,
-  List,
-  PenLine,
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  Heart,
-} from 'lucide-solid';
+import { Menu, Lock, Info, List, PenLine, Search, ChevronLeft, ChevronRight } from 'lucide-solid';
 import {
   selectedDate,
   setIsAboutOpen,
   isSidebarCollapsed,
-  setIsNotificationsOpen,
   mainView,
   requestMainViewChange,
   setIsSearchOpen,
   setIsGoToDateOpen,
-  setIsProjectSupportOpen,
-  setProjectSupportEntry,
 } from '../../state/ui';
-import { pendingRung } from '../../state/support-milestone';
 import { goToPreviousDay, goToNextDay } from '../../lib/day-navigation';
 import { authState, lockJournal } from '../../state/auth';
 import { preferences } from '../../state/preferences';
 import { useI18n } from '../../i18n';
-import { hasUnread, unreadCount } from '../../state/notifications';
-import { onboardingMode } from '../../state/onboarding';
 import HeaderMoreMenu from './HeaderMoreMenu';
 
 interface HeaderProps {
@@ -43,7 +26,6 @@ export default function Header(props: HeaderProps) {
   // lock also start a lock, and the lock backdrop that blocks clicks is hidden under
   // prefers-reduced-motion.
   const isLocking = () => authState() === 'locking';
-  const showUnreadBadge = () => hasUnread() && onboardingMode() !== 'tour';
 
   // Format date: "Tuesday, January 1, 2019"
   const formattedDate = () => {
@@ -109,22 +91,9 @@ export default function Header(props: HeaderProps) {
         >
           <ChevronRight size={20} />
         </button>
-        <Show when={pendingRung() !== null}>
-          <button
-            onClick={() => {
-              setProjectSupportEntry('milestone');
-              setIsProjectSupportOpen(true);
-            }}
-            data-testid="support-milestone-button"
-            class="rounded p-2 hover:bg-hover text-tertiary transition-colors"
-            aria-label={t('support.headerIconAria')}
-          >
-            <Heart size={20} class="text-pink-500" />
-          </button>
-        </Show>
       </div>
 
-      {/* Right: Timeline toggle + About + Notifications + Lock */}
+      {/* Right: Timeline toggle + About + Lock */}
       <div class="flex items-center gap-1">
         <button
           onClick={() =>
@@ -150,27 +119,6 @@ export default function Header(props: HeaderProps) {
           aria-label={t('layout.header.about')}
         >
           <Info size={20} />
-        </button>
-        <button
-          onClick={() => setIsNotificationsOpen(true)}
-          class="relative rounded p-2 hover:bg-hover text-tertiary transition-colors"
-          aria-label={
-            showUnreadBadge()
-              ? t('layout.header.notificationsUnread', { count: unreadCount() })
-              : t('layout.header.notificationsNone')
-          }
-          data-testid="notifications-button"
-        >
-          <Bell size={20} />
-          <Show when={showUnreadBadge()}>
-            <span
-              class="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-interactive text-xs font-bold leading-none"
-              style={{ color: 'var(--btn-primary-text)' }}
-              aria-hidden="true"
-            >
-              {unreadCount() > 9 ? '9+' : unreadCount()}
-            </span>
-          </Show>
         </button>
         <button
           onClick={() => handleLock()}

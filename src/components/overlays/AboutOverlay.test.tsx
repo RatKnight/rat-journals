@@ -1,27 +1,23 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { screen, fireEvent } from '@solidjs/testing-library';
+import { describe, it, expect } from 'vitest';
+import { screen } from '@solidjs/testing-library';
 import { renderWithI18n } from '../../test/i18n-test-utils';
 
-import * as uiState from '../../state/ui';
 import AboutOverlay from './AboutOverlay';
 
 describe('AboutOverlay', () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-    uiState.setIsProjectSupportOpen(false);
-    uiState.setProjectSupportEntry('about');
+  it('shows the app name and credits Mini Diarium as plain text', () => {
+    renderWithI18n(() => <AboutOverlay isOpen={true} onClose={() => {}} />);
+
+    expect(screen.getAllByText('Rat Journal').length).toBeGreaterThan(0);
+    expect(screen.getByText('Based on Mini Diarium by Francisco J. Revoredo')).toBeInTheDocument();
+    expect(screen.getByText('MIT License')).toBeInTheDocument();
   });
 
-  it('clicking "Support Mini Diarium" sets projectSupportEntry to about, opens the overlay, and closes About', () => {
-    const onClose = vi.fn();
-    renderWithI18n(() => <AboutOverlay isOpen={true} onClose={onClose} />);
+  it('has no links to external sites or support prompts', () => {
+    renderWithI18n(() => <AboutOverlay isOpen={true} onClose={() => {}} />);
 
-    const supportButton = screen.getByRole('button', { name: 'Support Mini Diarium' });
-    expect(supportButton.querySelector('svg')).toHaveClass('text-pink-500');
-    fireEvent.click(supportButton);
-
-    expect(uiState.projectSupportEntry()).toBe('about');
-    expect(uiState.isProjectSupportOpen()).toBe(true);
-    expect(onClose).toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: /github/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /documentation/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /support/i })).not.toBeInTheDocument();
   });
 });

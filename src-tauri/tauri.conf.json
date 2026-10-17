@@ -1,8 +1,9 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Mini Diarium",
+  "productName": "Rat Journal",
+  "mainBinaryName": "rat-journal",
   "version": "0.7.5",
-  "identifier": "com.minidiarium",
+  "identifier": "local.ratjournal.app",
   "build": {
     "beforeDevCommand": "bun run dev",
     "devUrl": "http://localhost:1420",
@@ -29,7 +30,7 @@
     "copyright": "Copyright (c) 2026 Francisco J. Revoredo",
     "category": "Utility",
     "shortDescription": "An encrypted, local-first desktop journaling app",
-    "longDescription": "Mini Diarium is a privacy-focused desktop journaling application. All diary entries are encrypted with AES-256-GCM at rest. Features include rich text editing, full-text search, calendar navigation, import/export, and automatic backups. No network access, no telemetry. Your journal stays on your device.",
+    "longDescription": "Rat Journal (based on Mini Diarium) is a privacy-focused desktop journaling application. All diary entries are encrypted with AES-256-GCM at rest. Features include rich text editing, full-text search, calendar navigation, import/export, and automatic backups. No network access, no telemetry. Your journal stays on your device.",
     "resources": ["../fonts/*.ttf"],
     "licenseFile": "../LICENSE",
     "macOS": {

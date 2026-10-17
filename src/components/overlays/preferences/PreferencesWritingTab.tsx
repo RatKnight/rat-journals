@@ -7,9 +7,6 @@ import type { TabProps } from './shared';
 import PreferencesFontFamilyField from './PreferencesFontFamilyField';
 import { formatDateWithStyle, getTodayString } from '../../../lib/dates';
 import { getSpellcheckStatus } from '../../../lib/tauri';
-import { openUrl } from '@tauri-apps/plugin-opener';
-
-const SPELLCHECK_SETUP_GUIDE = 'https://mini-diarium.com/docs/preferences/#spell-check-on-linux';
 
 export default function PreferencesWritingTab(_props: TabProps) {
   const t = useI18n();
@@ -218,13 +215,6 @@ export default function PreferencesWritingTab(_props: TabProps) {
                 : 'prefs.writing.spellcheckDictionaryMissing',
             )}
           </p>
-          <button
-            type="button"
-            class="ml-7 text-xs text-blue-500 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onClick={() => void openUrl(SPELLCHECK_SETUP_GUIDE)}
-          >
-            {t('prefs.writing.spellcheckDictionaryHelp')}
-          </button>
         </Show>
       </div>
 

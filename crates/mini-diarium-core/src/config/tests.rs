@@ -290,7 +290,7 @@ fn test_default_journal_dir_prefers_documents() {
 
     let dir = default_journal_dir(&app_data, Some(&documents));
 
-    assert_eq!(dir, documents.join("Mini Diarium"));
+    assert_eq!(dir, documents.join("Rat Journal"));
 }
 
 #[test]

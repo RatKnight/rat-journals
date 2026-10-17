@@ -6,16 +6,12 @@ import { createFocusLossAutoLock } from './lib/focus-lock';
 import { preferences } from './state/preferences';
 import { setLocale, useI18n } from './i18n';
 import { setSpellcheckEnabled, updateMenuLocale } from './lib/tauri';
-import { isAboutOpen, setIsAboutOpen, isFeedbackOpen, setIsFeedbackOpen } from './state/ui';
-import { loadNotifications } from './state/notifications';
-import { activeJournalId } from './state/journals';
-import { recordFirstSeenIfAbsent, checkSupportMilestone } from './state/support-milestone';
+import { isAboutOpen, setIsAboutOpen } from './state/ui';
 import JournalPicker from './components/auth/JournalPicker';
 import PasswordCreation from './components/auth/PasswordCreation';
 import PasswordPrompt from './components/auth/PasswordPrompt';
 import MainLayout from './components/layout/MainLayout';
 import AboutOverlay from './components/overlays/AboutOverlay';
-import FeedbackOverlay from './components/overlays/FeedbackOverlay';
 
 const log = createLogger('App');
 
@@ -65,18 +61,6 @@ function App() {
     });
   });
 
-  // Records the journal's first-seen timestamp once, then recomputes whether a
-  // support-milestone rung is pending. Runs once per unlock (not per keystroke) —
-  // see docs/archive/project-support-overlay-plan.md Assumptions.
-  createEffect(() => {
-    if (authState() !== 'unlocked') return;
-    const journalId = activeJournalId();
-    if (journalId === null) return;
-
-    recordFirstSeenIfAbsent(journalId);
-    void checkSupportMilestone();
-  });
-
   createFocusLossAutoLock({
     enabled: () => preferences().autoLockOnFocusLoss,
     isUnlocked: () => authState() === 'unlocked',
@@ -86,7 +70,6 @@ function App() {
   onMount(() => {
     initializeAuth();
     initializeTheme();
-    void loadNotifications();
 
     let cleanupAuthListeners: (() => void) | undefined;
     void setupAuthEventListeners()
@@ -138,7 +121,6 @@ function App() {
       </Show>
 
       <AboutOverlay isOpen={isAboutOpen()} onClose={() => setIsAboutOpen(false)} />
-      <FeedbackOverlay isOpen={isFeedbackOpen()} onClose={() => setIsFeedbackOpen(false)} />
     </>
   );
 }

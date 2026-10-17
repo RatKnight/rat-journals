@@ -1,5 +1,4 @@
 import { createSignal, createEffect, createMemo, onMount, onCleanup, Show, batch } from 'solid-js';
-import { openUrl } from '@tauri-apps/plugin-opener';
 import { Minimize2, HelpCircle } from 'lucide-solid';
 import { useI18n, type T } from '../../i18n';
 import { setIsPreferencesOpen, setIsImportOpen } from '../../state/ui';
@@ -142,13 +141,6 @@ export default function OnboardingTour() {
       // reduced to Preferences + Quit (TODO-0065). It always renders, so no fallback
       // hint is needed for a native menu bar that no longer holds this action.
       targetSelector: '[data-tour-target="import"]',
-    },
-    {
-      titleKey: 'onboarding.tip_docs_title',
-      bodyKey: 'onboarding.tip_docs_body',
-      actionKey: 'onboarding.tip_docs_action',
-      onAction: () => openUrl('https://mini-diarium.com/docs/'),
-      targetSelector: '[data-tour-target="about"]',
     },
   ];
 

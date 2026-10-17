@@ -10,29 +10,9 @@ import {
   isImportOpen,
   isExportOpen,
   isGoToDateOpen,
-  isProjectSupportOpen,
-  projectSupportEntry,
   selectedDate,
   setSelectedDate,
 } from '../../state/ui';
-
-const supportMilestoneState = vi.hoisted(() => ({ pendingRung: null as number | null }));
-vi.mock('../../state/support-milestone', () => ({
-  pendingRung: () => supportMilestoneState.pendingRung,
-}));
-
-const notificationsState = vi.hoisted(() => ({ hasUnread: false, unreadCount: 0 }));
-vi.mock('../../state/notifications', () => ({
-  hasUnread: () => notificationsState.hasUnread,
-  unreadCount: () => notificationsState.unreadCount,
-}));
-
-const onboardingState = vi.hoisted(() => ({
-  mode: 'dismissed' as 'tour' | 'minimized' | 'dismissed',
-}));
-vi.mock('../../state/onboarding', () => ({
-  onboardingMode: () => onboardingState.mode,
-}));
 
 import * as authModule from '../../state/auth';
 import Header from './Header';
@@ -177,60 +157,15 @@ describe('Header more menu', () => {
   });
 });
 
-describe('Header support milestone icon', () => {
+describe('Header has no upstream prompts', () => {
   beforeEach(() => {
     resetUiState();
-    supportMilestoneState.pendingRung = null;
   });
 
-  it('is absent when no milestone is pending', () => {
+  it('shows neither the support-milestone icon nor the release-notes bell', () => {
     renderWithI18n(() => <Header />);
     expect(screen.queryByTestId('support-milestone-button')).not.toBeInTheDocument();
-  });
-
-  it('is present when a milestone is pending and opens the overlay with milestone context', () => {
-    supportMilestoneState.pendingRung = 7;
-    renderWithI18n(() => <Header />);
-
-    const button = screen.getByTestId('support-milestone-button');
-    expect(button).toBeInTheDocument();
-    expect(button.querySelector('svg')).toHaveClass('text-pink-500');
-
-    fireEvent.click(button);
-
-    expect(isProjectSupportOpen()).toBe(true);
-    expect(projectSupportEntry()).toBe('milestone');
-  });
-});
-
-describe('Header notifications badge vs. onboarding tour', () => {
-  beforeEach(() => {
-    resetUiState();
-    notificationsState.hasUnread = false;
-    notificationsState.unreadCount = 0;
-    onboardingState.mode = 'dismissed';
-  });
-
-  it('shows the unread badge when not mid-tour', () => {
-    notificationsState.hasUnread = true;
-    notificationsState.unreadCount = 3;
-    onboardingState.mode = 'dismissed';
-    renderWithI18n(() => <Header />);
-
-    const button = screen.getByTestId('notifications-button');
-    expect(button).toHaveAttribute('aria-label', 'Notifications, 3 unread');
-    expect(button.querySelector('span[aria-hidden="true"]')).toHaveTextContent('3');
-  });
-
-  it('hides the unread badge while onboardingMode is "tour"', () => {
-    notificationsState.hasUnread = true;
-    notificationsState.unreadCount = 3;
-    onboardingState.mode = 'tour';
-    renderWithI18n(() => <Header />);
-
-    const button = screen.getByTestId('notifications-button');
-    expect(button).toHaveAttribute('aria-label', 'Notifications');
-    expect(button.querySelector('span[aria-hidden="true"]')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('notifications-button')).not.toBeInTheDocument();
   });
 });
 

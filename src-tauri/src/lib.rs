@@ -16,7 +16,7 @@ mod window_focus;
 
 use commands::auth::DiaryState;
 use log::{info, warn};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use tauri::Manager;
 
 // NOTE: keep in sync with src/lib/network-isolation-script.ts
@@ -46,27 +46,6 @@ const NETWORK_ISOLATION_SCRIPT: &str = r#"(function() {
     kill(navigator, 'connection');
   }
 })();"#;
-
-const LEGACY_APP_IDENTIFIER_DIR: &str = "com.minidiarium.app";
-
-fn has_legacy_app_state(dir: &Path) -> bool {
-    dir.join("config.json").is_file() || dir.join("diary.db").is_file()
-}
-
-fn resolve_app_data_dir(app_dir: PathBuf) -> PathBuf {
-    if has_legacy_app_state(&app_dir) {
-        return app_dir;
-    }
-
-    if let Some(parent) = app_dir.parent() {
-        let legacy_dir = parent.join(LEGACY_APP_IDENTIFIER_DIR);
-        if has_legacy_app_state(&legacy_dir) {
-            return legacy_dir;
-        }
-    }
-
-    app_dir
-}
 
 fn is_e2e_mode() -> bool {
     matches!(std::env::var("MINI_DIARIUM_E2E").as_deref(), Ok("1"))
@@ -160,7 +139,7 @@ pub fn run() {
         )
         .build(),
     );
-    info!("Mini Diarium starting");
+    info!("Rat Journal starting");
 
     let is_e2e = is_e2e_mode();
     let mut builder = tauri::Builder::default()
@@ -192,14 +171,7 @@ pub fn run() {
                 info!("Using E2E app dir override: {}", e2e_app_dir);
                 PathBuf::from(e2e_app_dir)
             } else {
-                let resolved = resolve_app_data_dir(system_app_dir.clone());
-                if resolved != system_app_dir {
-                    info!(
-                        "Using legacy app data directory for compatibility: {}",
-                        resolved.display()
-                    );
-                }
-                resolved
+                system_app_dir.clone()
             };
             if let Err(e) = std::fs::create_dir_all(&app_dir) {
                 warn!(
@@ -263,7 +235,7 @@ pub fn run() {
                 "main",
                 tauri::WebviewUrl::App("index.html".into()),
             )
-            .title("Mini Diarium")
+            .title("Rat Journal")
             .min_inner_size(600.0, 400.0)
             .visible(false)
             .disable_drag_drop_handler()

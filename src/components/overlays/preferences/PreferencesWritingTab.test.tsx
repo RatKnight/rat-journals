@@ -102,10 +102,9 @@ describe('PreferencesWritingTab', () => {
     expect(
       await screen.findByText(/spell check needs the English language pack/i),
     ).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /open the spell-check setup guide/i }));
-    expect(mockOpenUrl).toHaveBeenCalledWith(
-      'https://mini-diarium.com/docs/preferences/#spell-check-on-linux',
-    );
+    expect(
+      screen.queryByRole('button', { name: /open the spell-check setup guide/i }),
+    ).not.toBeInTheDocument();
   });
 
   it('does not warn when the active Linux dictionary is available', async () => {
@@ -133,10 +132,7 @@ describe('PreferencesWritingTab', () => {
     renderTab();
 
     expect(
-      await screen.findByText(/spell check should be included with Mini Diarium/i),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /open the spell-check setup guide/i }),
+      await screen.findByText(/spell check should be included with Rat Journal/i),
     ).toBeInTheDocument();
   });
 
