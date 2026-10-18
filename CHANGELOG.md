@@ -1,5 +1,14 @@
 # Changelog
 
+## 26.0.4 (2026-10-18)
+
+### Security
+- **Printed and PDF-exported entries are sanitized** before they are placed in the page: scripts, event handlers, `javascript:` links, frames, forms, and embedded objects are removed (entries from imports can carry any HTML). Search snippets may contain only highlighting.
+- **Plugin scripts are thread-safe by construction.** The scripting engine is now built in its thread-safe mode, replacing hand-written `unsafe` claims that its compiled scripts could be shared across threads.
+
+### Changed
+- Removed development tooling inherited from the original project that this one does not use (quality-score and coverage gates, diagram generators, AI-agent definitions, mobile and Microsoft Store icons, unused dependencies).
+
 ## 26.0.3 (2026-10-18)
 
 ### Security
