@@ -8,6 +8,7 @@
 - **Key files are created by the backend.** The secret is generated and written in Rust and never reaches the WebView; key files can only be saved as `.key` files on a local path. The old `generate_keypair`, `write_key_file`, and `register_keypair` commands are gone.
 - **A failed or pending encryption upgrade is shown** as a dismissible warning on the main screen.
 - **Changing the password on an old-format journal** upgrades it and takes a fresh backup.
+- **Stronger password hashing.** New password slots (journals and vaults) use Argon2id with 256 MiB and 4 passes (was 64 MiB, 3 passes): under a second per unlock, and each guess needs 256 MiB of fast memory, which sharply limits GPU cracking. Existing journal password slots are re-wrapped with the new settings on the next password unlock.
 - `chacha20` moved off a yanked release (0.10.1 → 0.10.2).
 
 ### Added

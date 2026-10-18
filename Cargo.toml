@@ -12,3 +12,11 @@ cognitive_complexity = { level = "warn", priority = -1 }
 [profile.release]
 opt-level = 3
 lto = true
+
+# Argon2id runs on every password slot a test creates; unoptimized it is roughly 10x
+# slower, which made the 256 MiB slot parameters crawl in debug test runs. Release builds
+# are unaffected (they are fully optimized anyway).
+[profile.dev.package.argon2]
+opt-level = 3
+[profile.dev.package.blake2]
+opt-level = 3

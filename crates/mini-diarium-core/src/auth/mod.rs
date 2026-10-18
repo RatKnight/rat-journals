@@ -48,6 +48,32 @@ pub fn add_password_slot(
     crate::db::insert_auth_slot(db, "password", label, None, &wrapped_key, &now)
 }
 
+/// Re-wraps the journal's password slot with the current (stronger) Argon2id parameters
+/// when it was written with weaker ones. Returns true if the slot was rewritten.
+///
+/// The master key is unchanged: a weak-parameter v2 slot was never exposed, only cheaper
+/// to guess, so a re-wrap is enough. `password` must open the slot (it was just used to
+/// unlock); a mismatch is an error and nothing is written.
+pub fn strengthen_password_slot(
+    db: &crate::db::DatabaseConnection,
+    password: &str,
+) -> Result<bool, String> {
+    let Some((slot_id, wrapped)) = crate::db::get_password_slot(db)? else {
+        return Ok(false);
+    };
+    if !PasswordMethod::has_weak_params(&wrapped) {
+        return Ok(false);
+    }
+    let method = PasswordMethod::new(password.to_string());
+    let current = method.unwrap_master_key(&wrapped)?;
+    if current[..] != db.key().as_bytes()[..] {
+        return Err("The password slot does not hold this journal's key".to_string());
+    }
+    let rewrapped = method.wrap_master_key(db.key().as_bytes())?;
+    crate::db::update_auth_slot_wrapped_key(db, slot_id, &rewrapped)?;
+    Ok(true)
+}
+
 /// Wraps the current session's master key for a key file (slot format v2, symmetric) and
 /// stores it as a `keypair` auth slot, returning the new slot's row id.
 ///
@@ -92,6 +118,46 @@ pub fn add_keypair_slot(
 #[cfg(test)]
 mod slot_tests {
     use crate::db::schema::create_database;
+
+    #[test]
+    fn test_weak_password_slot_is_strengthened_in_place() {
+        use crate::db::schema::open_database;
+        let tmp = tempfile::Builder::new().suffix(".db").tempfile().unwrap();
+        let db_path = tmp.path().to_str().unwrap().to_string();
+        let backups = tempfile::tempdir().unwrap();
+
+        let db = create_database(&db_path, "pw".to_string()).unwrap();
+        // Rewrite the slot as the earlier 64 MiB / t=3 settings would have.
+        let (slot_id, strong) = crate::db::get_password_slot(&db).unwrap().unwrap();
+        assert!(!super::strengthen_password_slot(&db, "pw").unwrap());
+        let salt = &strong[17..33];
+        let weak_params = crate::crypto::password::KdfParams {
+            m_cost_kib: 65_536,
+            t_cost: 3,
+            p_cost: 4,
+        };
+        let key = crate::crypto::password::derive_wrapping_key(b"pw", salt, weak_params).unwrap();
+        let mut header = strong[..33].to_vec();
+        header[5..9].copy_from_slice(&65_536u32.to_le_bytes());
+        header[9..13].copy_from_slice(&3u32.to_le_bytes());
+        let enc = crate::crypto::cipher::encrypt_with_aad(
+            &crate::crypto::cipher::Key::from_slice(key.as_ref()).unwrap(),
+            db.key().as_bytes(),
+            &header,
+        )
+        .unwrap();
+        let mut weak = header;
+        weak.extend_from_slice(&enc);
+        crate::db::update_auth_slot_wrapped_key(&db, slot_id, &weak).unwrap();
+        assert!(super::PasswordMethod::has_weak_params(&weak));
+
+        assert!(super::strengthen_password_slot(&db, "wrong").is_err());
+        assert!(super::strengthen_password_slot(&db, "pw").unwrap());
+        let (_, now) = crate::db::get_password_slot(&db).unwrap().unwrap();
+        assert!(!super::PasswordMethod::has_weak_params(&now));
+        drop(db);
+        assert!(open_database(&db_path, "pw".to_string(), backups.path()).is_ok());
+    }
 
     #[test]
     fn test_add_password_slot_wraps_and_unlocks() {

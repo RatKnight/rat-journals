@@ -269,6 +269,16 @@ pub(crate) fn perform_unlock(mode: UnlockMode, state: &DiaryState) -> Result<(),
         &key_files,
         state,
     );
+    if !rotated {
+        // A rotation already wrote the password slot with the current parameters.
+        if let Some(password) = rotation_password.as_deref() {
+            match crate::auth::strengthen_password_slot(&db_conn, password) {
+                Ok(true) => info!("Password slot re-wrapped with stronger Argon2id settings"),
+                Ok(false) => {}
+                Err(e) => warn!("Could not strengthen the password slot: {}", e),
+            }
+        }
+    }
 
     let mut db_state = state
         .db

@@ -4,10 +4,18 @@ use argon2::{
 };
 use zeroize::Zeroize;
 
-/// Argon2id parameters: m=64MB (65536 KiB), t=3, p=4
+/// Argon2id parameters of the legacy PHC-string hashes (`hash_password`): m=64 MiB, t=3,
+/// p=4. Only used to read and upgrade pre-v2 journals.
 const MEMORY_SIZE_KIB: u32 = 65536; // 64 MB
 const ITERATIONS: u32 = 3;
 const PARALLELISM: u32 = 4;
+
+/// Argon2id parameters for every new password slot: m=256 MiB, t=4, p=4. Under one
+/// second per unlock on a desktop (about 0.5 s measured), and each guess needs 256 MiB of fast memory, which
+/// sharply limits how many guesses a GPU can run in parallel.
+const SLOT_MEMORY_KIB: u32 = 262_144; // 256 MB
+const SLOT_ITERATIONS: u32 = 4;
+const SLOT_PARALLELISM: u32 = 4;
 
 /// Error type for password operations
 #[derive(Debug)]
@@ -73,10 +81,15 @@ pub struct KdfParams {
 impl KdfParams {
     /// The parameters used for every newly written password slot.
     pub const DEFAULT: KdfParams = KdfParams {
-        m_cost_kib: MEMORY_SIZE_KIB,
-        t_cost: ITERATIONS,
-        p_cost: PARALLELISM,
+        m_cost_kib: SLOT_MEMORY_KIB,
+        t_cost: SLOT_ITERATIONS,
+        p_cost: SLOT_PARALLELISM,
     };
+
+    /// True when these parameters cost less per guess than [`KdfParams::DEFAULT`].
+    pub fn weaker_than_default(&self) -> bool {
+        self.m_cost_kib < Self::DEFAULT.m_cost_kib || self.t_cost < Self::DEFAULT.t_cost
+    }
 
     /// Rejects parameters read from disk that are weaker than the OWASP minimum
     /// (m=19 MiB, t=2) or large enough to exhaust memory (m > 1 GiB) when a crafted

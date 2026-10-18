@@ -85,7 +85,7 @@ Reached at `crypto::cipher` / `crypto::password` (re-exported by core; also used
 
 The cipher is AES-256-GCM (12-byte random nonce prepended to the ciphertext). The fingerprint
 helpers are keyed HKDF-SHA256 outputs (hex-encoded), used by core for tag/image dedup without
-leaking plaintext to an offline attacker. Password hashing is Argon2id (m=64 MiB, t=3, p=4).
+leaking plaintext to an offline attacker. Password slots use Argon2id (m=256 MiB, t=4, p=4; `KdfParams::DEFAULT`); legacy PHC hashes used m=64 MiB, t=3.
 
 ---
 

@@ -15,7 +15,7 @@ Rat Journal keeps your journal in a single encrypted file on your own computer. 
 ## Security
 
 - **Encryption at rest**: every entry title, body, tag, image, and attachment is encrypted with AES-256-GCM under a random 256-bit master key. A copy of the journal file shows only ciphertext.
-- **Password**: the key that unlocks the master key is derived from your password with Argon2id (64 MiB, 3 passes) each time you unlock. It is never written to disk; the journal stores only a random salt and the Argon2 settings.
+- **Password**: the key that unlocks the master key is derived from your password with Argon2id (256 MiB, 4 passes, under a second) each time you unlock. It is never written to disk; the journal stores only a random salt and the Argon2 settings.
 - **Key files (optional)**: a key file holds 32 random bytes. Its slot locks the master key with AES-256 under an HKDF-SHA256 key derived from the file, and stores no public key.
 - **Quantum-resistant**: everything that protects a journal at rest is symmetric or a hash (AES-256, Argon2id, HKDF/HMAC-SHA256), so a future quantum computer gains only a modest speed-up. A password is still only as strong as you make it.
 - **Older journals upgrade themselves**: a journal written in an older key format is moved to the current one on its next unlock, and its master key is replaced. Delete backups made before that upgrade; they still use the old key.

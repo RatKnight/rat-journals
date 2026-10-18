@@ -44,6 +44,29 @@ impl PasswordMethod {
         !wrapped.starts_with(V2_MAGIC)
     }
 
+    /// The Argon2id parameters stored in a v2 blob, or `None` for a legacy or damaged blob.
+    pub fn slot_params(wrapped: &[u8]) -> Option<pwd::KdfParams> {
+        if Self::is_legacy_blob(wrapped)
+            || wrapped.len() < V2_HEADER_LEN
+            || wrapped[4] != V2_VERSION
+        {
+            return None;
+        }
+        let read_u32 = |at: usize| u32::from_le_bytes(wrapped[at..at + 4].try_into().unwrap());
+        Some(pwd::KdfParams {
+            m_cost_kib: read_u32(5),
+            t_cost: read_u32(9),
+            p_cost: read_u32(13),
+        })
+    }
+
+    /// True for a v2 blob whose Argon2id parameters are cheaper per guess than the
+    /// current default. Such a slot is not exposed, only weaker, so re-wrapping the same
+    /// master key with the new parameters is enough (no rotation needed).
+    pub fn has_weak_params(wrapped: &[u8]) -> bool {
+        Self::slot_params(wrapped).is_some_and(|p| p.weaker_than_default())
+    }
+
     /// Wraps the master key for storage. Returns a v2 `wrapped_key` blob.
     pub fn wrap_master_key(&self, master_key: &[u8]) -> Result<Vec<u8>, String> {
         let params = pwd::KdfParams::DEFAULT;
@@ -89,12 +112,7 @@ impl PasswordMethod {
         if wrapped[4] != V2_VERSION {
             return Err("Unsupported password slot version".to_string());
         }
-        let read_u32 = |at: usize| u32::from_le_bytes(wrapped[at..at + 4].try_into().unwrap());
-        let params = pwd::KdfParams {
-            m_cost_kib: read_u32(5),
-            t_cost: read_u32(9),
-            p_cost: read_u32(13),
-        };
+        let params = Self::slot_params(wrapped).ok_or("Unsupported password slot version")?;
         let (header, encrypted) = wrapped.split_at(V2_HEADER_LEN);
         let salt = &header[17..];
 
@@ -237,9 +255,9 @@ mod tests {
         bad_salt[20] ^= 0x01;
         assert!(method.unwrap_master_key(&bad_salt).is_err());
 
-        // Raise t_cost: still within bounds, but authenticated as AAD, so it must fail.
+        // Change t_cost (4 -> 5): still within bounds, but authenticated as AAD, so it must fail.
         let mut bad_params = wrapped.clone();
-        bad_params[9] = 4;
+        bad_params[9] = 5;
         assert!(method.unwrap_master_key(&bad_params).is_err());
     }
 
@@ -288,6 +306,30 @@ mod tests {
 
         let legacy = legacy_wrap("password", &master_key);
         assert!(PasswordMethod::is_legacy_blob(&legacy));
+    }
+
+    #[test]
+    fn test_new_slots_use_strong_params_and_weak_ones_are_detected() {
+        let master_key = random_master_key();
+        let method = PasswordMethod::new("password".to_string());
+        let strong = method.wrap_master_key(&master_key).unwrap();
+        assert_eq!(
+            PasswordMethod::slot_params(&strong),
+            Some(pwd::KdfParams::DEFAULT)
+        );
+        assert!(!PasswordMethod::has_weak_params(&strong));
+        assert_eq!(pwd::KdfParams::DEFAULT.m_cost_kib, 262_144);
+        assert_eq!(pwd::KdfParams::DEFAULT.t_cost, 4);
+
+        // A slot written with the earlier 64 MiB / t=3 settings.
+        let mut weak = strong.clone();
+        weak[5..9].copy_from_slice(&65_536u32.to_le_bytes());
+        weak[9..13].copy_from_slice(&3u32.to_le_bytes());
+        assert!(PasswordMethod::has_weak_params(&weak));
+        assert!(!PasswordMethod::has_weak_params(&legacy_wrap(
+            "password",
+            &master_key
+        )));
     }
 
     #[test]
