@@ -16,10 +16,6 @@ Rat Journal uses a wrapped master key design.
 
 ## Unlock Flow
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./diagrams/unlock-dark.svg">
-  <img alt="Unlock Flow Diagram" src="./diagrams/unlock.svg">
-</picture>
 
 ### Password Unlock
 
@@ -40,10 +36,6 @@ The master key is never stored in plaintext.
 
 Everything runs locally on the user's machine.
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./diagrams/context-dark.svg">
-  <img alt="System Context Diagram" src="./diagrams/context.svg">
-</picture>
 
 ### Properties
 
@@ -63,14 +55,7 @@ When saving an entry:
 2. The encrypted content is stored in the `entries` table.
 
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./diagrams/save-entry-dark.svg">
-    <img 
-      alt="Save Entry Flow Diagram" 
-      src="./diagrams/save-entry.svg"
-      width="600"
-    >
-  </picture>
+  
 </p>
 
 ---
@@ -79,8 +64,4 @@ When saving an entry:
 
 Rat Journal follows a layered structure.
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./diagrams/architecture-dark.svg">
-  <img alt="Layered Architecture Diagram" src="./diagrams/architecture.svg">
-</picture>
 

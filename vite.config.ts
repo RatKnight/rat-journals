@@ -76,21 +76,7 @@ export default defineConfig(async () => ({
       : undefined,
     watch: {
       // 3. tell Vite to ignore watching `src-tauri`
-      // `.agent-dev/**`: the tauri-agent-dev skill's sandbox WebView profile lives under the
-      // repo root (`.agent-dev/sandbox/webview/`), and WebView2 holds an exclusive lock on its
-      // `Cookies` file. Vite's fs watcher crashes the whole dev server with EBUSY the moment it
-      // tries to watch that file, so this directory must stay excluded the same way `src-tauri`
-      // is.
-      // `target/**`: the Cargo workspace build output sits at the repo root since the M1
-      // workspace split, and Vite hands chokidar the repo root — its built-in ignore list
-      // covers `.git`/`node_modules`/`dist` but not `target`. Left in, the dev server
-      // registers ~61k watch handles over ~40 GB of build output (91% of everything it
-      // watches), and a concurrent `cargo build` both floods it with thousands of events
-      // and can kill it outright with the same EBUSY crash as above, on the `.dll` the
-      // linker is mid-write. This starves the dependency scan and module transforms and
-      // is the root cause of the multi-minute `bun tauri dev` startup stalls.
-      // Full RCA: docs/archive/2026-08-21-tauri-dev-startup-slowness-rca.md
-      ignored: ['**/src-tauri/**', '**/.agent-dev/**', '**/target/**'],
+      ignored: ['**/src-tauri/**', '**/target/**'],
     },
   },
 }));

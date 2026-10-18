@@ -136,7 +136,6 @@ The backend emits via `app.emit("menu-preferences", ())` in `menu.rs`. See root 
 
 ## Verification Commands
 
-For the canonical post-task checklist (tests + formatting + CHANGELOG + TODO), see [Post-Task Completion Best Practices](../docs/best-practices/POST_TASK_BEST_PRACTICES.md).
 
 Frontend-specific:
 

@@ -359,5 +359,5 @@ test('discoverScriptTests includes this suite in the real scripts folder', () =>
   const names = discoverScriptTests().map((file) => basename(file));
 
   assert.ok(names.includes('check-test-runners.test.mjs'));
-  assert.ok(names.includes('check-crap-gate.test.mjs'));
+  assert.ok(names.includes('install-hooks.test.js'));
 });

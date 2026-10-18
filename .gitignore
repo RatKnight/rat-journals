@@ -35,10 +35,6 @@ Thumbs.db
 # Coverage
 coverage/
 lcov.info
-/crap-report.json
-/crap-delta.json
-/crap-baseline-input.json
-/crap-report.provenance.txt
 
 # Test artifacts
 *.db
@@ -79,8 +75,6 @@ flatpak/node-sources.json
 
 .reference/
 
-# tauri-agent-dev runtime state + sandbox
-.agent-dev/
 
 *.stackdump
 

@@ -119,7 +119,6 @@ For **user-scriptable** formats, users drop a `.rhai` file in `{app_data_dir}/pl
 
 ## Verification Commands
 
-For the canonical post-task checklist (tests + formatting + CHANGELOG + TODO), see [Post-Task Completion Best Practices](../docs/best-practices/POST_TASK_BEST_PRACTICES.md).
 
 Backend-specific:
 

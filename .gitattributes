@@ -1,7 +1,4 @@
 # Generated SVGs must use LF so regenerated output matches committed bytes on all platforms
-docs/diagrams/*.svg  text eol=lf
-docs/diagrams/*.mmd  text eol=lf
-docs/diagrams/*.d2   text eol=lf
 
 # Linux packaging files must use LF so sed/shell scripts can edit them on Windows
 data/linux/*.xml     text eol=lf

@@ -45,7 +45,7 @@ export default defineConfig({
       // so CI is unaffected, but `bun run test` (watch mode) would otherwise register
       // ~61k watch handles over build output. See
       // docs/archive/2026-08-21-tauri-dev-startup-slowness-rca.md.
-      ignored: ['**/src-tauri/**', '**/target/**', '**/.agent-dev/**'],
+      ignored: ['**/src-tauri/**', '**/target/**'],
     },
   },
   resolve: {
