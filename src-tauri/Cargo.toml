@@ -1,6 +1,6 @@
 [package]
 name = "mini-diarium"
-version = "26.0.0"
+version = "26.0.1"
 description = "A modern, encrypted, local-first desktop journaling application"
 authors = ["Rat Journal"]
 license = "MIT"

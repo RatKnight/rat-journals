@@ -12,7 +12,7 @@ import { refreshAuthState, error as authError } from '../../state/auth';
 import { isFlatpak, loadPlatformInfo } from '../../state/platform';
 import { checkJournalPath, getDefaultJournalDir } from '../../lib/tauri';
 import { mapTauriError } from '../../lib/errors';
-import { Lock } from 'lucide-solid';
+import { Vault } from 'lucide-solid';
 import { setIsVaultDialogOpen } from '../../state/vault';
 import { joinDialogPath, splitDialogPath } from '../../lib/native-path';
 import { useI18n } from '../../i18n';
@@ -541,9 +541,9 @@ export default function JournalPicker() {
               type="button"
               data-testid="open-vault-button"
               onClick={() => setIsVaultDialogOpen(true)}
-              class="inline-flex items-center gap-2 rounded-md border border-primary px-4 py-2 text-sm text-secondary hover:bg-hover focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="inline-flex w-full items-center justify-center gap-2 rounded-md interactive-primary px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <Lock size={16} />
+              <Vault size={18} />
               {t('auth.picker.openVault')}
             </button>
           </div>

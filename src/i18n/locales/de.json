@@ -30,7 +30,8 @@
       "menuImport": "Importieren",
       "menuExport": "Exportieren",
       "menuFeedback": "Feedback senden",
-      "menuVault": "Vault"
+      "menuVault": "Vault",
+      "openVault": "Open or create an encrypted file vault"
     },
     "sidebar": {
       "navigation": "Navigation",

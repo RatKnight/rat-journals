@@ -16,6 +16,7 @@ import {
 
 import * as authModule from '../../state/auth';
 import Header from './Header';
+import { isVaultDialogOpen } from '../../state/vault';
 
 const { mockNavigatePreviousDay, mockNavigateNextDay } = vi.hoisted(() => ({
   mockNavigatePreviousDay: vi.fn<(currentDate: string) => Promise<string>>(),
@@ -199,5 +200,13 @@ describe('Header lock button', () => {
     fireEvent.click(button);
 
     expect(lock).not.toHaveBeenCalled();
+  });
+});
+
+describe('Header vault button', () => {
+  it('opens the vault dialog', () => {
+    renderWithI18n(() => <Header />);
+    fireEvent.click(screen.getByTestId('header-vault-button'));
+    expect(isVaultDialogOpen()).toBe(true);
   });
 });

@@ -50,6 +50,7 @@ const en = {
       menuImport: 'Import',
       menuExport: 'Export',
       menuVault: 'Vault',
+      openVault: 'Open or create an encrypted file vault',
       menuFeedback: 'Send feedback',
     },
     sidebar: {

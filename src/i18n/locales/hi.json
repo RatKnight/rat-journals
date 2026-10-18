@@ -30,7 +30,8 @@
       "menuImport": "आयात",
       "menuExport": "निर्यात",
       "menuFeedback": "प्रतिक्रिया भेजें",
-      "menuVault": "Vault"
+      "menuVault": "Vault",
+      "openVault": "Open or create an encrypted file vault"
     },
     "sidebar": {
       "navigation": "नेविगेशन",

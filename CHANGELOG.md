@@ -1,5 +1,9 @@
 # Changelog
 
+## 26.0.1 (2026-10-18)
+
+- A labeled **Vault** button in the header, and a full-width **Open a vault** button on the start screen, make the vault easy to find.
+
 ## 26.0.0 (2026-10-18)
 
 Year-based version numbers start here (year.feature.patch). Headline: the encrypted file vault.
