@@ -209,6 +209,27 @@ pub(crate) fn perform_unlock(mode: UnlockMode, state: &DiaryState) -> Result<(),
             key_files.push(read_key_file(&key_path)?);
             (conn, "Journal unlocked with key file", None)
         }
+        UnlockMode::AllMethods(credentials) if crate::db::journal_uses_key_shares(&db_path) => {
+            // The key is split across every method: recombine it from all credentials.
+            let mut password: Option<Zeroizing<String>> = None;
+            for cred in &credentials {
+                match cred {
+                    MultiAuthCredential::Password { value } => {
+                        password = Some(Zeroizing::new(value.clone()))
+                    }
+                    MultiAuthCredential::Keypair { key_path } => {
+                        key_files.push(read_key_file(key_path)?)
+                    }
+                }
+            }
+            let creds = crate::db::SlotCredentials {
+                password: password.as_deref().map(String::as_str),
+                key_files: &key_files,
+            };
+            let conn =
+                crate::db::open_database_with_all_credentials(&db_path, &creds, &backups_dir)?;
+            (conn, "Journal unlocked with all methods", password)
+        }
         UnlockMode::AllMethods(credentials) => {
             let conn = match &credentials[0] {
                 MultiAuthCredential::Password { value } => {
@@ -258,6 +279,18 @@ pub(crate) fn perform_unlock(mode: UnlockMode, state: &DiaryState) -> Result<(),
                     MultiAuthCredential::Keypair { key_path } => {
                         key_files.push(read_key_file(key_path)?)
                     }
+                }
+            }
+            // A journal that requires all methods but predates split keys: split it now,
+            // while every credential is at hand. Best effort; the unlock already succeeded.
+            if crate::db::verify_require_all_auth(&conn) && !crate::db::uses_key_shares(&conn) {
+                let creds = crate::db::SlotCredentials {
+                    password: rotation_password.as_deref().map(String::as_str),
+                    key_files: &key_files,
+                };
+                match crate::db::enable_key_shares(&conn, &creds) {
+                    Ok(()) => info!("Split the journal key across all unlock methods"),
+                    Err(e) => warn!("Could not split the journal key: {}", e),
                 }
             }
             (conn, "Journal unlocked via multi-auth", rotation_password)

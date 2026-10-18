@@ -182,9 +182,13 @@ describe('auth command wrappers (IPC contract)', () => {
     expect(mockInvoke).toHaveBeenCalledWith('unlock_diary_all_methods', { credentials: creds });
   });
 
-  it('setRequireAllAuth → set_require_all_auth { enabled }', async () => {
-    await setRequireAllAuth(true);
-    expect(mockInvoke).toHaveBeenCalledWith('set_require_all_auth', { enabled: true });
+  it('setRequireAllAuth → set_require_all_auth with every credential', async () => {
+    await setRequireAllAuth(true, 'pw', ['/k.key']);
+    expect(mockInvoke).toHaveBeenCalledWith('set_require_all_auth', {
+      enabled: true,
+      password: 'pw',
+      keyFilePaths: ['/k.key'],
+    });
   });
 
   it('createJournalAuto → create_diary_auto with no args', async () => {

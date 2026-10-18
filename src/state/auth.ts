@@ -260,8 +260,12 @@ export async function unlockAllMethods(credentials: tauri.MultiAuthCredential[])
 }
 
 // Enable/disable require-all-auth for the active journal
-export async function setRequireAllAuth(enabled: boolean): Promise<void> {
-  await tauri.setRequireAllAuth(enabled);
+export async function setRequireAllAuth(
+  enabled: boolean,
+  password: string | null = null,
+  keyFilePaths: string[] = [],
+): Promise<void> {
+  await tauri.setRequireAllAuth(enabled, password, keyFilePaths);
   await loadJournals();
 }
 

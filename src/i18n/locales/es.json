@@ -466,9 +466,13 @@
       "addPasswordBothRequired": "Ambos campos son obligatorios",
       "addPasswordMismatch": "Las contraseñas no coinciden",
       "requireAllAuthTitle": "Requerir todos los métodos de autenticación",
-      "requireAllAuthHint": "Cuando está activado, debes proporcionar tanto tu contraseña como tu archivo de clave cada vez que desbloquees este diario. Similar al modo de clave combinada de VeraCrypt.",
+      "requireAllAuthHint": "When enabled, the journal's key is split across all of its unlock methods, so the file can only be opened with every one of them together — even outside this app. While it is on, unlock methods cannot be added or removed (the password can still be changed).",
       "requireAllAuthLabel": "Requerir todos los métodos de autenticación para desbloquear",
-      "requireAllAuthNeedsTwo": "Añade al menos dos métodos de autenticación para habilitar esta opción."
+      "requireAllAuthNeedsTwo": "Añade al menos dos métodos de autenticación para habilitar esta opción.",
+      "requireAllConfirmHint": "Changing this re-splits the journal key, so confirm with your password and each key file (you will be asked to select them).",
+      "requireAllConfirm": "Confirm",
+      "requireAllPasswordNeeded": "Enter your current password",
+      "requireAllSelectKeyFile": "Select the key file “{{label}}”"
     },
     "data": {
       "currentLocationLabel": "Ubicación actual",

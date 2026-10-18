@@ -43,6 +43,10 @@ pub enum SnapshotCredential {
     PrivateKey([u8; 32]),
     /// The device-bound auto key from `config.json` (local-only journals).
     AutoKey([u8; 32]),
+    /// The live journal's master key, for a snapshot of a journal whose key is split across
+    /// all of its methods (no single credential can open it). Accepted only when the
+    /// snapshot's key check confirms it was taken under the same key.
+    LiveKey([u8; 32]),
 }
 
 impl std::fmt::Debug for SnapshotCredential {
@@ -52,6 +56,7 @@ impl std::fmt::Debug for SnapshotCredential {
             SnapshotCredential::Password(_) => "Password",
             SnapshotCredential::PrivateKey(_) => "PrivateKey",
             SnapshotCredential::AutoKey(_) => "AutoKey",
+            SnapshotCredential::LiveKey(_) => "LiveKey",
         };
         write!(f, "SnapshotCredential::{name}(<redacted>)")
     }
@@ -130,7 +135,16 @@ pub fn open_snapshot_readonly(
     // nor per-entry restore (which reuses this handle) may read it.
     ensure_backup_readable(&conn)?;
 
-    let encryption_key = unwrap_master_key(&conn, &credential)?;
+    let encryption_key = if crate::db::shares::is_shared_conn(&conn) {
+        match &credential {
+            SnapshotCredential::LiveKey(key) => {
+                crate::db::shares::snapshot_key_from_live(&conn, key)?
+            }
+            _ => return Err(crate::db::ERR_REQUIRES_ALL_METHODS.to_string()),
+        }
+    } else {
+        unwrap_master_key(&conn, &credential)?
+    };
 
     // Same wrapper the live journal uses, so every existing read query works against a
     // snapshot unchanged. What makes it read-only is the connection inside it, not the type.
@@ -297,6 +311,9 @@ fn unwrap_master_key(
             key_file
                 .unwrap_any(&wrapped)
                 .map_err(|_| "That key file does not open this backup.".to_string())?
+        }
+        SnapshotCredential::LiveKey(_) => {
+            return Err("This backup opens with its own unlock methods.".to_string())
         }
         SnapshotCredential::AutoKey(auto_key) => {
             let wrapped = wrapped_key_for(conn, "auto", None).ok_or_else(|| {

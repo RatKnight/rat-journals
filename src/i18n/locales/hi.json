@@ -466,9 +466,13 @@
       "addPasswordBothRequired": "दोनों फ़ील्ड आवश्यक हैं",
       "addPasswordMismatch": "पासवर्ड मेल नहीं खाते",
       "requireAllAuthTitle": "सभी प्रमाणीकरण विधियाँ आवश्यक",
-      "requireAllAuthHint": "जब सक्षम हो, तो इस जर्नल को अनलॉक करते समय आपको हर बार अपना पासवर्ड और की फ़ाइल दोनों प्रदान करने होंगे। VeraCrypt के संयुक्त-की मोड के समान।",
+      "requireAllAuthHint": "When enabled, the journal's key is split across all of its unlock methods, so the file can only be opened with every one of them together — even outside this app. While it is on, unlock methods cannot be added or removed (the password can still be changed).",
       "requireAllAuthLabel": "अनलॉक के लिए सभी प्रमाणीकरण विधियाँ आवश्यक",
-      "requireAllAuthNeedsTwo": "इस विकल्प को सक्षम करने के लिए कम से कम दो प्रमाणीकरण विधियाँ जोड़ें।"
+      "requireAllAuthNeedsTwo": "इस विकल्प को सक्षम करने के लिए कम से कम दो प्रमाणीकरण विधियाँ जोड़ें।",
+      "requireAllConfirmHint": "Changing this re-splits the journal key, so confirm with your password and each key file (you will be asked to select them).",
+      "requireAllConfirm": "Confirm",
+      "requireAllPasswordNeeded": "Enter your current password",
+      "requireAllSelectKeyFile": "Select the key file “{{label}}”"
     },
     "data": {
       "currentLocationLabel": "वर्तमान स्थान",

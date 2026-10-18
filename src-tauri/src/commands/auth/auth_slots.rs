@@ -140,6 +140,10 @@ pub(crate) fn remove_auth_method_inner(
         .map_err(|_| "State lock poisoned".to_string())?;
     let db = db_state.as_ref().ok_or("Journal must be unlocked")?;
 
+    if crate::db::uses_key_shares(db) {
+        return Err(crate::db::ERR_SHARED_METHODS_FIXED.to_string());
+    }
+
     // Look up the type of the slot being removed (must happen before deletion)
     let slot_type = crate::db::get_auth_slot_type(db, slot_id)?
         .ok_or_else(|| "Auth slot not found".to_string())?;

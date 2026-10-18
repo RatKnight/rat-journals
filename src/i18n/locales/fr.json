@@ -466,9 +466,13 @@
       "addPasswordBothRequired": "Les deux champs sont requis",
       "addPasswordMismatch": "Les mots de passe ne correspondent pas",
       "requireAllAuthTitle": "Exiger toutes les méthodes d'authentification",
-      "requireAllAuthHint": "Lorsqu'elle est activée, vous devez fournir à la fois votre mot de passe et votre fichier clé chaque fois que vous déverrouillez ce journal. Similaire au mode clé combinée de VeraCrypt.",
+      "requireAllAuthHint": "When enabled, the journal's key is split across all of its unlock methods, so the file can only be opened with every one of them together — even outside this app. While it is on, unlock methods cannot be added or removed (the password can still be changed).",
       "requireAllAuthLabel": "Exiger toutes les méthodes d'authentification pour le déverrouillage",
-      "requireAllAuthNeedsTwo": "Ajoutez au moins deux méthodes d'authentification pour activer cette option."
+      "requireAllAuthNeedsTwo": "Ajoutez au moins deux méthodes d'authentification pour activer cette option.",
+      "requireAllConfirmHint": "Changing this re-splits the journal key, so confirm with your password and each key file (you will be asked to select them).",
+      "requireAllConfirm": "Confirm",
+      "requireAllPasswordNeeded": "Enter your current password",
+      "requireAllSelectKeyFile": "Select the key file “{{label}}”"
     },
     "data": {
       "currentLocationLabel": "Emplacement actuel",

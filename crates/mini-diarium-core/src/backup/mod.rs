@@ -368,6 +368,22 @@ pub fn open_snapshot_file(
     inspect::open_snapshot_readonly(&path, credential)
 }
 
+/// Opens a snapshot of a journal whose key is split across all of its unlock methods,
+/// using the live (unlocked) journal's key. Returns `None` when the live journal does not
+/// use split keys or the snapshot was not taken under the same key; the caller then falls
+/// back to [`open_snapshot_file`] with a typed credential.
+pub fn open_snapshot_file_with_live_key(
+    backups_dir: &Path,
+    file_name: &str,
+    live: &DatabaseConnection,
+) -> Option<DatabaseConnection> {
+    if !crate::db::uses_key_shares(live) {
+        return None;
+    }
+    let credential = inspect::SnapshotCredential::LiveKey(*live.key().as_bytes());
+    open_snapshot_file(backups_dir, file_name, credential).ok()
+}
+
 /// Reports whether one snapshot still accepts the live journal's credentials, by file name.
 ///
 /// Needs no key and no unlocked journal: auth-slot rows are plaintext. That is what lets the

@@ -61,23 +61,6 @@ pub(crate) fn configure_connection(conn: &Connection) -> Result<(), String> {
         .map_err(|e| format!("Failed to enable secure_delete: {}", e))
 }
 
-#[cfg(test)]
-mod configure_tests {
-    use super::*;
-
-    #[test]
-    fn connections_enable_foreign_keys_and_secure_delete() {
-        let conn = open_connection_in_memory().unwrap();
-        let fk: i64 = conn
-            .query_row("PRAGMA foreign_keys", [], |r| r.get(0))
-            .unwrap();
-        let sd: i64 = conn
-            .query_row("PRAGMA secure_delete", [], |r| r.get(0))
-            .unwrap();
-        assert_eq!((fk, sd), (1, 1));
-    }
-}
-
 /// Creates a new encrypted diary database (schema v5)
 ///
 /// Generates a random master key, wraps it with the password, and stores the
@@ -283,4 +266,21 @@ fn create_schema(conn: &Connection) -> Result<(), String> {
     .map_err(|e| format!("Failed to set schema version: {}", e))?;
 
     Ok(())
+}
+
+#[cfg(test)]
+mod configure_tests {
+    use super::*;
+
+    #[test]
+    fn connections_enable_foreign_keys_and_secure_delete() {
+        let conn = open_connection_in_memory().unwrap();
+        let fk: i64 = conn
+            .query_row("PRAGMA foreign_keys", [], |r| r.get(0))
+            .unwrap();
+        let sd: i64 = conn
+            .query_row("PRAGMA secure_delete", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!((fk, sd), (1, 1));
+    }
 }

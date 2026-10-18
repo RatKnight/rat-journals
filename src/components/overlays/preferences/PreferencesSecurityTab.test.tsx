@@ -32,6 +32,9 @@ const { mockAuthMethods, mockAuthState, mockLoadAuthMethods, mockSetRequireAllAu
   }),
 );
 
+const { mockOpen } = vi.hoisted(() => ({ mockOpen: vi.fn() }));
+vi.mock('../../../lib/dialog', () => ({ open: mockOpen }));
+
 vi.mock('../../../state/auth', () => ({
   authState: mockAuthState,
   authMethods: mockAuthMethods,
@@ -165,12 +168,35 @@ describe('PreferencesSecurityTab — require-all-auth toggle', () => {
       { id: 1, slot_type: 'password', label: 'Password', last_used: null },
       { id: 2, slot_type: 'keypair', label: 'My Key', last_used: null },
     ]);
+    mockOpen.mockResolvedValueOnce('E:/my.key');
     renderTab();
     const checkbox = screen.getByRole('checkbox', { name: /require all authentication/i });
     fireEvent.click(checkbox);
-    await vi.waitFor(() => {
-      expect(mockSetRequireAllAuth).toHaveBeenCalledWith(true);
+    // Nothing changes until the credentials are confirmed.
+    expect(mockSetRequireAllAuth).not.toHaveBeenCalled();
+    fireEvent.input(screen.getByLabelText('Enter current password'), {
+      target: { value: 'pw' },
     });
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+    await vi.waitFor(() => {
+      expect(mockSetRequireAllAuth).toHaveBeenCalledWith(true, 'pw', ['E:/my.key']);
+    });
+    expect(mockOpen.mock.calls[0][0].title).toContain('My Key');
+  });
+
+  it('asks for the password before collecting key files', async () => {
+    mockJournals.mockReturnValue([]);
+    mockActiveJournalId.mockReturnValue(null);
+    mockAuthMethods.mockReturnValue([
+      { id: 1, slot_type: 'password', label: 'Password', last_used: null },
+      { id: 2, slot_type: 'keypair', label: 'My Key', last_used: null },
+    ]);
+    renderTab();
+    fireEvent.click(screen.getByRole('checkbox', { name: /require all authentication/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+    expect(await screen.findByText('Enter your current password')).toBeInTheDocument();
+    expect(mockOpen).not.toHaveBeenCalled();
+    expect(mockSetRequireAllAuth).not.toHaveBeenCalled();
   });
 
   it('displays a sanitised error when setRequireAllAuth rejects', async () => {
@@ -181,9 +207,14 @@ describe('PreferencesSecurityTab — require-all-auth toggle', () => {
       { id: 1, slot_type: 'password', label: 'Password', last_used: null },
       { id: 2, slot_type: 'keypair', label: 'My Key', last_used: null },
     ]);
+    mockOpen.mockResolvedValueOnce('E:/my.key');
     renderTab();
     const checkbox = screen.getByRole('checkbox', { name: /require all authentication/i });
     fireEvent.click(checkbox);
+    fireEvent.input(screen.getByLabelText('Enter current password'), {
+      target: { value: 'pw' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
     await vi.waitFor(() => {
       expect(screen.getByText('Please unlock your journal first.')).toBeInTheDocument();
     });

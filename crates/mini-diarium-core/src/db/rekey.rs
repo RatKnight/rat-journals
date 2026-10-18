@@ -189,6 +189,12 @@ pub fn rotate_master_key(
     db: &mut DatabaseConnection,
     credentials: &RotationCredentials<'_>,
 ) -> Result<RekeyOutcome, String> {
+    // Rotation writes the full new key into every slot; a split-key journal would lose its
+    // split. Such a journal never has legacy material (splitting requires none), so this
+    // is only a guard.
+    if crate::db::uses_key_shares(db) {
+        return Err(crate::db::ERR_SHARED_METHODS_FIXED.to_string());
+    }
     let mut new_key_bytes = Zeroizing::new([0u8; 32]);
     OsRng.fill_bytes(new_key_bytes.as_mut());
     let new_key = cipher::Key::from_slice(new_key_bytes.as_ref()).ok_or("Invalid key size")?;

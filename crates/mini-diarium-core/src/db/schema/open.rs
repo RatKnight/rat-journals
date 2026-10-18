@@ -75,6 +75,9 @@ pub fn open_database<P1: AsRef<Path>, P2: AsRef<Path>>(
     // Before any write (`update_slot_last_used`) and before the KDF: a journal written by a
     // newer app must stay byte-for-byte untouched.
     ensure_journal_readable(&conn)?;
+    if crate::db::shares::is_shared_conn(&conn) {
+        return Err(crate::db::shares::ERR_REQUIRES_ALL_METHODS.to_string());
+    }
 
     let current_version: i32 = conn
         .query_row("SELECT version FROM schema_version", [], |row| row.get(0))
@@ -122,6 +125,9 @@ pub fn open_database_with_keypair<P1: AsRef<Path>, P2: AsRef<Path>>(
     // Before any write (`update_slot_last_used`) and before the KDF: a journal written by a
     // newer app must stay byte-for-byte untouched.
     ensure_journal_readable(&conn)?;
+    if crate::db::shares::is_shared_conn(&conn) {
+        return Err(crate::db::shares::ERR_REQUIRES_ALL_METHODS.to_string());
+    }
 
     let current_version: i32 = conn
         .query_row("SELECT version FROM schema_version", [], |row| row.get(0))
@@ -178,6 +184,9 @@ pub fn open_database_auto<P1: AsRef<Path>, P2: AsRef<Path>>(
 ) -> Result<DatabaseConnection, String> {
     let conn = open_connection(db_path.as_ref())?;
     ensure_journal_readable(&conn)?;
+    if crate::db::shares::is_shared_conn(&conn) {
+        return Err(crate::db::shares::ERR_REQUIRES_ALL_METHODS.to_string());
+    }
 
     let current_version: i32 = conn
         .query_row("SELECT version FROM schema_version", [], |row| row.get(0))

@@ -115,8 +115,17 @@ export async function unlockJournalAllMethods(credentials: MultiAuthCredential[]
   await invoke('unlock_diary_all_methods', { credentials });
 }
 
-export async function setRequireAllAuth(enabled: boolean): Promise<void> {
-  await invoke('set_require_all_auth', { enabled });
+/**
+ * Turns "require all unlock methods" on or off. Both directions re-split the journal key,
+ * so every credential is needed: the password (if the journal has one) and a path to each
+ * registered key file.
+ */
+export async function setRequireAllAuth(
+  enabled: boolean,
+  password: string | null = null,
+  keyFilePaths: string[] = [],
+): Promise<void> {
+  await invoke('set_require_all_auth', { enabled, password, keyFilePaths });
 }
 
 export async function createJournalAuto(): Promise<void> {

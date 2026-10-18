@@ -139,13 +139,30 @@ pub(crate) fn open_backup_readonly_inner(
 
     require_unlocked(state)?;
     let (db_path, backups_dir) = journal_paths(state)?;
-    let credential = resolve_credential(password, key_path, state)?;
 
     // Close any previous inspection *before* opening the next, so a failed open cannot leave
     // two snapshots' keys in memory at once.
     close_inspection(state);
 
-    let db = backup::open_snapshot_file(&backups_dir, &file_name, credential)?;
+    // A journal whose key is split across all its methods: no single credential opens its
+    // snapshots, but those taken under the same key open with the live key (the snapshot's
+    // key check confirms the match). Older snapshots fall through to the typed credential.
+    let from_live = {
+        let guard = state
+            .db
+            .lock()
+            .map_err(|_| "Journal state lock failed".to_string())?;
+        guard.as_ref().and_then(|live| {
+            backup::open_snapshot_file_with_live_key(&backups_dir, &file_name, live)
+        })
+    };
+    let db = match from_live {
+        Some(db) => db,
+        None => {
+            let credential = resolve_credential(password, key_path, state)?;
+            backup::open_snapshot_file(&backups_dir, &file_name, credential)?
+        }
+    };
     let credential_differs = backup::check_snapshot_credentials(&backups_dir, &file_name, &db_path)
         .map(|report| report.differs_from_live)
         .unwrap_or(false);

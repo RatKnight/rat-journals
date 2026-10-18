@@ -40,6 +40,9 @@ pub fn add_password_slot(
     label: &str,
     password: &str,
 ) -> Result<i64, String> {
+    if crate::db::uses_key_shares(db) {
+        return Err(crate::db::ERR_SHARED_METHODS_FIXED.to_string());
+    }
     let method = password::PasswordMethod::new(password.to_string());
     let wrapped_key = method
         .wrap_master_key(db.key().as_bytes())
@@ -66,6 +69,12 @@ pub fn strengthen_password_slot(
     }
     let method = PasswordMethod::new(password.to_string());
     let current = method.unwrap_master_key(&wrapped)?;
+    if crate::db::uses_key_shares(db) {
+        // The slot holds this method's share of the key, not the key: re-wrap the share.
+        let rewrapped = method.wrap_master_key(&current)?;
+        crate::db::update_auth_slot_wrapped_key(db, slot_id, &rewrapped)?;
+        return Ok(true);
+    }
     if current[..] != db.key().as_bytes()[..] {
         return Err("The password slot does not hold this journal's key".to_string());
     }
@@ -84,6 +93,9 @@ pub fn add_key_file_slot(
     label: &str,
     key_file: &KeyFileMethod,
 ) -> Result<i64, String> {
+    if crate::db::uses_key_shares(db) {
+        return Err(crate::db::ERR_SHARED_METHODS_FIXED.to_string());
+    }
     let wrapped_key = key_file
         .wrap_master_key(db.key().as_bytes())
         .map_err(|e| format!("Failed to wrap master key for key file: {}", e))?;

@@ -2,6 +2,7 @@ pub(crate) mod peek;
 pub(crate) mod queries;
 pub(crate) mod rekey;
 pub(crate) mod schema;
+pub(crate) mod shares;
 
 // ── Curated public façade (the API contract — see crates/mini-diarium-core/API.md) ──
 //
@@ -19,6 +20,13 @@ pub use rekey::downgrade_password_slot_for_tests;
 pub use rekey::{
     has_legacy_password_material, legacy_material, rotate_master_key, LegacyMaterial, RekeyOutcome,
     RotationCredentials, ERR_NEEDS_ALL_METHODS,
+};
+
+// Cryptographic "require all unlock methods" (the master key split across the slots).
+pub use shares::{
+    disable_key_shares, enable_key_shares, journal_uses_key_shares,
+    open_database_with_all_credentials, uses_key_shares, SlotCredentials, ERR_REQUIRES_ALL_METHODS,
+    ERR_SHARED_METHODS_FIXED,
 };
 
 // Locked-journal metadata — the one `db` read that needs no handle and no key.

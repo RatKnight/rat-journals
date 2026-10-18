@@ -555,7 +555,12 @@ const en = {
       addPasswordMismatch: 'Passwords do not match',
       requireAllAuthTitle: 'Require All Authentication Methods',
       requireAllAuthHint:
-        'When enabled, you must provide both your password and key file every time you unlock this journal. Similar to VeraCrypt combined-key mode.',
+        "When enabled, the journal's key is split across all of its unlock methods, so the file can only be opened with every one of them together — even outside this app. While it is on, unlock methods cannot be added or removed (the password can still be changed).",
+      requireAllConfirmHint:
+        'Changing this re-splits the journal key, so confirm with your password and each key file (you will be asked to select them).',
+      requireAllConfirm: 'Confirm',
+      requireAllPasswordNeeded: 'Enter your current password',
+      requireAllSelectKeyFile: 'Select the key file “{{label}}”',
       requireAllAuthLabel: 'Require all authentication methods for unlock',
       requireAllAuthNeedsTwo: 'Add at least two authentication methods to enable this option.',
     },

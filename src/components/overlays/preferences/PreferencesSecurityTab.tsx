@@ -10,6 +10,7 @@ import {
 } from '../../../state/preferences';
 import * as tauri from '../../../lib/tauri';
 import { mapTauriError } from '../../../lib/errors';
+import { open } from '../../../lib/dialog';
 import { useI18n } from '../../../i18n';
 import type { TabProps } from './shared';
 import { AuthMethodsList } from './AuthMethodsList';
@@ -40,11 +41,17 @@ export default function PreferencesSecurityTab(props: PreferencesSecurityTabProp
   // Require-all-auth toggle
   const [requireAllAuth, setRequireAllAuthLocal] = createSignal(false);
   const [requireAllAuthError, setRequireAllAuthError] = createSignal<string | null>(null);
+  /** The value the user asked to switch to, while their credentials are collected. */
+  const [requireAllPending, setRequireAllPending] = createSignal<boolean | null>(null);
+  const [requireAllPassword, setRequireAllPassword] = createSignal('');
+  const [requireAllBusy, setRequireAllBusy] = createSignal(false);
 
   // Reset transient state + reload auth-related data when the overlay opens.
   createEffect(() => {
     if (props.isOpen()) {
       setRequireAllAuthError(null);
+      setRequireAllPending(null);
+      setRequireAllPassword('');
       setAutoLockTimeoutDraft(String(untrack(() => preferences().autoLockTimeout)));
 
       if (authState() === 'unlocked') {
@@ -69,13 +76,47 @@ export default function PreferencesSecurityTab(props: PreferencesSecurityTabProp
     setPreferences({ autoLockTimeout: clamped });
   };
 
-  const handleToggleRequireAllAuth = async (checked: boolean) => {
+  // Switching either way re-splits the journal key, so every credential is collected first.
+  const handleToggleRequireAllAuth = (checked: boolean) => {
     setRequireAllAuthError(null);
+    setRequireAllPassword('');
+    setRequireAllPending(checked);
+  };
+
+  const confirmRequireAllAuth = async (e: Event) => {
+    e.preventDefault();
+    const target = requireAllPending();
+    if (target === null) return;
+    if (hasPasswordSlot() && !requireAllPassword()) {
+      setRequireAllAuthError(t('prefs.security.requireAllPasswordNeeded'));
+      return;
+    }
+    setRequireAllAuthError(null);
+    const keyFilePaths: string[] = [];
+    for (const method of authMethods().filter((m) => m.slot_type === 'keypair')) {
+      const path = await open({
+        title: t('prefs.security.requireAllSelectKeyFile', { label: method.label }),
+        multiple: false,
+        directory: false,
+        filters: [{ name: 'Key Files', extensions: ['key', 'txt', '*'] }],
+      });
+      if (typeof path !== 'string') return;
+      keyFilePaths.push(path);
+    }
+    setRequireAllBusy(true);
     try {
-      await setRequireAllAuth(checked);
-      setRequireAllAuthLocal(checked);
+      await setRequireAllAuth(
+        target,
+        hasPasswordSlot() ? requireAllPassword() : null,
+        keyFilePaths,
+      );
+      setRequireAllAuthLocal(target);
+      setRequireAllPending(null);
     } catch (err) {
       setRequireAllAuthError(mapTauriError(err, t));
+    } finally {
+      setRequireAllPassword('');
+      setRequireAllBusy(false);
     }
   };
 
@@ -125,12 +166,55 @@ export default function PreferencesSecurityTab(props: PreferencesSecurityTabProp
             <label class="flex items-center gap-3">
               <input
                 type="checkbox"
-                checked={requireAllAuth()}
+                checked={requireAllPending() ?? requireAllAuth()}
+                disabled={requireAllBusy()}
                 onChange={(e) => handleToggleRequireAllAuth(e.currentTarget.checked)}
                 class="h-4 w-4 rounded border-primary text-blue-600 focus:ring-blue-500"
               />
               <span class="text-sm text-secondary">{t('prefs.security.requireAllAuthLabel')}</span>
             </label>
+            <Show when={requireAllPending() !== null}>
+              <form
+                class="mt-3 space-y-2 rounded-md border border-primary p-3"
+                onSubmit={(e) => void confirmRequireAllAuth(e)}
+                data-testid="require-all-confirm"
+              >
+                <p class="text-xs text-tertiary">{t('prefs.security.requireAllConfirmHint')}</p>
+                <Show when={hasPasswordSlot()}>
+                  <input
+                    type="password"
+                    class="w-full rounded-md border border-primary bg-primary px-3 py-2 text-sm text-primary"
+                    value={requireAllPassword()}
+                    onInput={(e) => setRequireAllPassword(e.currentTarget.value)}
+                    placeholder={t('prefs.security.currentPasswordPlaceholder2')}
+                    aria-label={t('prefs.security.currentPasswordPlaceholder2')}
+                    autocomplete="current-password"
+                    disabled={requireAllBusy()}
+                  />
+                </Show>
+                <div class="flex gap-2">
+                  <button
+                    type="submit"
+                    class="rounded-md interactive-primary px-3 py-1.5 text-sm font-medium disabled:opacity-50"
+                    disabled={requireAllBusy()}
+                  >
+                    {t('prefs.security.requireAllConfirm')}
+                  </button>
+                  <button
+                    type="button"
+                    class="rounded-md border border-primary px-3 py-1.5 text-sm text-secondary hover:bg-hover"
+                    disabled={requireAllBusy()}
+                    onClick={() => {
+                      setRequireAllPending(null);
+                      setRequireAllPassword('');
+                      setRequireAllAuthError(null);
+                    }}
+                  >
+                    {t('common.cancel')}
+                  </button>
+                </div>
+              </form>
+            </Show>
             <Show when={requireAllAuthError()}>
               <p class="mt-2 text-sm text-error">{requireAllAuthError()}</p>
             </Show>
