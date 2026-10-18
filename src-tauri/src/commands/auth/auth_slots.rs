@@ -56,17 +56,7 @@ pub(crate) fn create_key_file_inner(
     current_password: Option<String>,
     state: &DiaryState,
 ) -> Result<(), String> {
-    let target = std::path::Path::new(path);
-    let is_key = target
-        .extension()
-        .and_then(|e| e.to_str())
-        .is_some_and(|e| e.eq_ignore_ascii_case("key"));
-    if !is_key {
-        return Err("A key file must be saved with the .key extension".to_string());
-    }
-    if path.starts_with("\\\\") || path.starts_with("//") {
-        return Err("A key file cannot be saved to a network location".to_string());
-    }
+    let target = check_key_file_path(path)?;
     if label.trim().is_empty() {
         return Err("A key file needs a label".to_string());
     }
@@ -94,9 +84,30 @@ pub(crate) fn create_key_file_inner(
     })
 }
 
+/// Validates where a new key file may be written: a `.key` file on a local path.
+pub(crate) fn check_key_file_path(path: &str) -> Result<&std::path::Path, String> {
+    let target = std::path::Path::new(path);
+    let is_key = target
+        .extension()
+        .and_then(|e| e.to_str())
+        .is_some_and(|e| e.eq_ignore_ascii_case("key"));
+    if !is_key {
+        return Err("A key file must be saved with the .key extension".to_string());
+    }
+    if is_network_path(path) {
+        return Err("A key file cannot be saved to a network location".to_string());
+    }
+    Ok(target)
+}
+
+/// True for a UNC / network path (`\\server\share`, `//server/share`).
+pub(crate) fn is_network_path(path: &str) -> bool {
+    path.starts_with("\\\\") || path.starts_with("//")
+}
+
 /// Writes `contents` to `path`, readable only by the owner on Unix (also when the file
 /// already existed). On Windows, NTFS ACLs restrict the user profile to its owner.
-fn write_secret_file(path: &std::path::Path, contents: &str) -> Result<(), String> {
+pub(crate) fn write_secret_file(path: &std::path::Path, contents: &str) -> Result<(), String> {
     let err = |e: std::io::Error| format!("Failed to write key file: {}", e);
     #[cfg(unix)]
     {

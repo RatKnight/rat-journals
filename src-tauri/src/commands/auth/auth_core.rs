@@ -465,7 +465,12 @@ pub(crate) fn take_security_notice_inner(state: &DiaryState) -> Result<Option<St
 /// Locks the diary (closes the database connection)
 #[tauri::command]
 pub fn lock_diary(state: State<DiaryState>, app: AppHandle<Wry>) -> Result<(), String> {
-    if !super::lock_diary_inner(&state)? {
+    let vault_was_open = crate::commands::vault::is_vault_open(&state);
+    let did_lock = super::lock_diary_inner(&state)?;
+    if vault_was_open {
+        crate::commands::vault::emit_vault_locked(&app, "manual");
+    }
+    if !did_lock {
         return Err("Journal is not unlocked".to_string());
     }
 

@@ -16,3 +16,4 @@ export * from './tags';
 export * from './images';
 export * from './attachments';
 export * from './platform';
+export * from './vault';

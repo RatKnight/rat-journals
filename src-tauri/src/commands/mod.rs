@@ -18,6 +18,7 @@ pub mod search;
 pub mod spellcheck;
 pub mod stats;
 pub mod tags;
+pub mod vault;
 
 use log::warn;
 use tauri::{AppHandle, Manager};

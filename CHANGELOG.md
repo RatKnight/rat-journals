@@ -12,7 +12,7 @@
 - `chacha20` moved off a yanked release (0.10.1 → 0.10.2).
 
 ### Added
-- **Encrypted file vault (core, no screen yet).** A vault is a folder (for example inside Google Drive) where each file is encrypted on its own with AES-256-GCM in 1 MiB chunks under a per-file key, and names, folders, and dates live in an encrypted index. It unlocks with its own password and/or key file, independent of any journal. Format: `docs/VAULT_FORMAT.md`.
+- **Encrypted file vault (core and backend commands; no screen yet).** A vault is a folder (for example inside Google Drive) where each file is encrypted on its own with AES-256-GCM in 1 MiB chunks under a per-file key, and names, folders, and dates live in an encrypted index. It unlocks with its own password and/or key file, independent of any journal. Format: `docs/VAULT_FORMAT.md`. Every lock (Lock button, idle timer, screen lock, focus loss) also closes an open vault and wipes any decrypted copies made for "Open in app".
 
 ### Changed
 - Renamed to **Rat Journal** (binary `rat-journal.exe`, identifier `local.ratjournal.app`, its own data folder; it never reads another app's data folder).

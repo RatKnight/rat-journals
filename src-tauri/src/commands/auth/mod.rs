@@ -33,6 +33,12 @@ pub struct DiaryState {
     /// stable code the frontend translates (e.g. [`NOTICE_KEY_UPGRADE_FAILED`]). Read and
     /// cleared once by the `take_security_notice` command.
     pub security_notice: Mutex<Option<&'static str>>,
+    /// The unlocked file vault, if any (see `commands::vault`). Closed by every lock path,
+    /// together with the journal.
+    pub vault: Mutex<Option<crate::commands::vault::OpenVault>>,
+    /// Set when a lock happens while a long vault operation holds `vault`; that operation
+    /// closes the vault as soon as it finishes.
+    pub vault_close_requested: std::sync::atomic::AtomicBool,
     /// Serializes every backups-directory-mutating path — the four IPC-reachable backup
     /// commands (`create_backup_now`, `verify_backup`, `delete_backup`, `restore_backup`) and
     /// the trigger paths in `commands/backup_triggers.rs` (unlock, lock, shutdown, and
@@ -66,6 +72,8 @@ impl DiaryState {
             inspection: Mutex::new(None),
             backup_ops: Arc::new(Mutex::new(())),
             security_notice: Mutex::new(None),
+            vault: Mutex::new(None),
+            vault_close_requested: std::sync::atomic::AtomicBool::new(false),
         }
     }
 
@@ -123,6 +131,8 @@ fn lock_diary_inner_with(state: &DiaryState, completion: LockCompletion) -> Resu
     // the app's content readable behind a locked screen. This runs before the early return
     // below, so it covers the already-locked case a journal switch produces.
     crate::commands::backup_inspect::close_inspection(state);
+    // Likewise unconditional: an open vault is closed by every lock, journal or not.
+    crate::commands::vault::close_vault(state);
 
     let Some(done) = crate::commands::backup_triggers::take_connection_and_snapshot(
         state,
@@ -172,7 +182,11 @@ pub(crate) fn auto_lock_diary_if_unlocked(
     reason: &str,
 ) -> Result<bool, String> {
     emit_diary_locking(&app, reason);
+    let vault_was_open = crate::commands::vault::is_vault_open(&state);
     let did_lock = lock_diary_inner(&state)?;
+    if vault_was_open {
+        crate::commands::vault::emit_vault_locked(&app, reason);
+    }
 
     if did_lock {
         info!("Journal auto-locked ({})", reason);

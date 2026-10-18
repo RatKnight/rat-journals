@@ -190,6 +190,8 @@ pub fn run() {
             );
 
             // Set up state
+            // Decrypted vault copies left by a crash or a file still open in another app.
+            commands::vault::wipe_temp_dir(&app_dir);
             app.manage(DiaryState::new(db_path, backups_dir, app_dir.clone()));
 
             // Initialize plugin registry
@@ -312,6 +314,28 @@ pub fn run() {
             commands::auth::unlock_diary_auto,
             commands::auth::lock_diary,
             commands::auth::take_security_notice,
+            // Vault
+            commands::vault::vault_check_folder,
+            commands::vault::vault_create,
+            commands::vault::vault_unlock_password,
+            commands::vault::vault_unlock_key_file,
+            commands::vault::vault_lock,
+            commands::vault::vault_status,
+            commands::vault::vault_list,
+            commands::vault::vault_add_files,
+            commands::vault::vault_preview,
+            commands::vault::vault_save_copy,
+            commands::vault::vault_open_in_app,
+            commands::vault::vault_rename_file,
+            commands::vault::vault_move_file,
+            commands::vault::vault_delete_file,
+            commands::vault::vault_create_folder,
+            commands::vault::vault_rename_folder,
+            commands::vault::vault_delete_folder,
+            commands::vault::vault_change_password,
+            commands::vault::vault_add_key_file,
+            commands::vault::vault_remove_unlock_method,
+            commands::vault::vault_verify,
             commands::auth::diary_exists,
             commands::auth::check_diary_path,
             commands::auth::is_diary_unlocked,
