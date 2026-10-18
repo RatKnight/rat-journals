@@ -16,6 +16,7 @@ import { mapTauriError } from '../../lib/errors';
 import { useI18n } from '../../i18n';
 import { preferences } from '../../state/preferences';
 import { isValidDate, addMonths, addDays } from '../../lib/dates';
+import { sanitizeEntryHtml } from '../../lib/sanitize';
 import { X, FileDown, CheckCircle, AlertCircle, Printer } from 'lucide-solid';
 
 interface ExportOverlayProps {
@@ -173,7 +174,8 @@ export default function ExportOverlay(props: ExportOverlayProps) {
       layer.style.zIndex = '0';
       layer.style.visibility = 'hidden';
       layer.style.pointerEvents = 'none';
-      layer.innerHTML = printResult.html;
+      // Entry HTML may come from imports: strip anything active before it enters the page.
+      layer.innerHTML = sanitizeEntryHtml(printResult.html);
       document.body.appendChild(layer);
 
       try {

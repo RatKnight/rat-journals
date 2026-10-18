@@ -46,7 +46,7 @@ base64 = "0.23"
 # `serde` is required: the backup manifest round-trips `SnapshotMeta.created_at`
 # (`DateTime<Utc>`) through `manifest.json`, and chrono does not derive serde by default.
 chrono = { version = "0.4", features = ["serde"] }
-rhai = { version = "1", features = ["serde"] }
+rhai = { version = "1", features = ["serde", "sync"] }
 log = "0.4"
 image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "webp", "bmp"] }
 unicode-normalization = "0.1"

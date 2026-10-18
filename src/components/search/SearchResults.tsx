@@ -10,6 +10,7 @@ import {
 } from '../../state/search';
 import { setSelectedEntryId, setIsSearchOpen, requestDateAndViewChange } from '../../state/ui';
 import { preferences } from '../../state/preferences';
+import { sanitizeSnippet } from '../../lib/sanitize';
 import { useI18n } from '../../i18n';
 
 // Mirrors MAX_RESULTS in src-tauri/src/commands/search.rs.
@@ -111,12 +112,12 @@ export default function SearchResults() {
                     </div>
                     <div class="mt-1 text-xs text-tertiary">{formatDate(result.date)}</div>
                     <Show when={result.snippet}>
-                      {/* Safe: snippet comes from our own backend search with controlled <mark>
-                          tags and HTML-escaped surrounding text (see escape_html in search.rs). */}
+                      {/* The backend escapes the text and adds only <mark> (search/text.rs);
+                          sanitizing again keeps it that way if that ever changes. */}
                       <div
                         class="mt-2 text-sm text-secondary search-snippet"
                         // eslint-disable-next-line solid/no-innerhtml
-                        innerHTML={result.snippet}
+                        innerHTML={sanitizeSnippet(result.snippet)}
                       />
                     </Show>
                   </div>

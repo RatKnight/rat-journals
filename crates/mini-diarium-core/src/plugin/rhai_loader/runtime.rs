@@ -116,15 +116,18 @@ fn entries_to_rhai_array(entries: Vec<DiaryEntry>) -> Array {
 
 // --- Wrapper structs ---
 
+// Thread safety comes from rhai's `sync` feature (AST and its shared modules use Arc, not
+// Rc), so these are Send + Sync without any unsafe impl; the assertion below keeps it so.
+const _: fn() = || {
+    fn assert_send_sync<T: Send + Sync>() {}
+    assert_send_sync::<RhaiImportPlugin>();
+    assert_send_sync::<RhaiExportPlugin>();
+};
+
 pub(super) struct RhaiImportPlugin {
     pub(super) info: PluginInfo,
     pub(super) script: AST,
 }
-
-// Safety: AST is immutable after compilation. Engine is created fresh per call_fn()
-// invocation, so no shared mutable state exists across threads.
-unsafe impl Send for RhaiImportPlugin {}
-unsafe impl Sync for RhaiImportPlugin {}
 
 impl ImportPlugin for RhaiImportPlugin {
     fn info(&self) -> PluginInfo {
@@ -145,10 +148,6 @@ pub(super) struct RhaiExportPlugin {
     pub(super) info: PluginInfo,
     pub(super) script: AST,
 }
-
-// Safety: Same rationale as RhaiImportPlugin above.
-unsafe impl Send for RhaiExportPlugin {}
-unsafe impl Sync for RhaiExportPlugin {}
 
 impl ExportPlugin for RhaiExportPlugin {
     fn info(&self) -> PluginInfo {
