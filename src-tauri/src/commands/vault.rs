@@ -432,14 +432,60 @@ fn safe_file_name(name: &str) -> String {
     }
 }
 
+/// Reads the key files at `paths` and matches one to every key-file slot that stays
+/// (every slot except `exclude`). Returns `(label, method)` pairs for [`Vault::rekey`],
+/// or an error naming the first slot whose key file is missing.
+fn match_key_files(
+    vault: &Vault,
+    exclude: Option<u32>,
+    paths: &[String],
+) -> Result<Vec<(String, KeyFileMethod)>, String> {
+    let mut methods: Vec<Option<KeyFileMethod>> = paths
+        .iter()
+        .map(|p| read_key_file(p).map(Some))
+        .collect::<Result<_, _>>()?;
+    let mut out = Vec::new();
+    for slot in vault
+        .slots()
+        .into_iter()
+        .filter(|s| s.slot_type == "keyfile" && Some(s.id) != exclude)
+    {
+        let slot_id = slot.slot_id.as_deref().unwrap_or_default();
+        let found = methods.iter_mut().find(|m| {
+            m.as_ref()
+                .is_some_and(|kf| hex::encode(kf.slot_id()) == slot_id)
+        });
+        match found {
+            Some(m) => out.push((slot.label.clone(), m.take().expect("checked above"))),
+            None => {
+                return Err(format!(
+                    "Select the key file “{}” so it can be re-registered",
+                    slot.label
+                ))
+            }
+        }
+    }
+    Ok(out)
+}
+
+/// Changes the password. When a password already existed this **rotates the master key**
+/// (re-encrypting the whole vault), so every remaining key file must be presented via
+/// `key_file_paths`; the old password stops working even against old header copies.
+/// Adding a first password to a key-file-only vault revokes nothing and does not rotate.
 pub(crate) fn change_password_inner(
     state: &DiaryState,
     current: Option<&str>,
     new: &str,
+    key_file_paths: &[String],
 ) -> Result<(), String> {
     with_vault(state, |o| {
         check_identity(&o.vault, current)?;
-        o.vault.set_password(new)
+        let had_password = o.vault.slots().iter().any(|s| s.slot_type == "password");
+        if !had_password {
+            return o.vault.set_password(new);
+        }
+        let key_files = match_key_files(&o.vault, None, key_file_paths)?;
+        o.vault.rekey(Some(new), &key_files)
     })
 }
 
@@ -462,14 +508,35 @@ pub(crate) fn add_key_file_inner(
     })
 }
 
+/// Removes an unlock method by **rotating the master key**: the whole vault is
+/// re-encrypted and only the remaining methods are re-registered, so the removed
+/// credential stops working even against old header copies. Every remaining key file
+/// must be presented via `key_file_paths`.
 pub(crate) fn remove_slot_inner(
     state: &DiaryState,
     slot_id: u32,
     current: Option<&str>,
+    key_file_paths: &[String],
 ) -> Result<(), String> {
     with_vault(state, |o| {
         check_identity(&o.vault, current)?;
-        o.vault.remove_slot(slot_id)
+        let slots = o.vault.slots();
+        let removed = slots
+            .iter()
+            .find(|s| s.id == slot_id)
+            .ok_or("That unlock method does not exist")?;
+        if slots.len() <= 1 {
+            return Err("A vault needs at least one way to unlock it".to_string());
+        }
+        let password_stays =
+            removed.slot_type != "password" && slots.iter().any(|s| s.slot_type == "password");
+        let new_password = if password_stays {
+            Some(current.ok_or("Enter the vault's current password")?)
+        } else {
+            None
+        };
+        let key_files = match_key_files(&o.vault, Some(slot_id), key_file_paths)?;
+        o.vault.rekey(new_password, &key_files)
     })
 }
 
@@ -641,10 +708,13 @@ pub fn vault_delete_folder(name: String, state: State<DiaryState>) -> Result<(),
     with_vault(&state, |o| o.vault.delete_folder(&name))
 }
 
+/// Changes the vault password. When one already existed the master key is rotated, which
+/// needs every remaining key file in `key_file_paths` (see [`change_password_inner`]).
 #[tauri::command]
 pub async fn vault_change_password(
     current_password: Option<String>,
     new_password: String,
+    key_file_paths: Option<Vec<String>>,
     app: AppHandle,
 ) -> Result<(), String> {
     run_blocking(app, move |app| {
@@ -652,6 +722,7 @@ pub async fn vault_change_password(
             &app.state::<DiaryState>(),
             current_password.as_deref(),
             &new_password,
+            key_file_paths.as_deref().unwrap_or_default(),
         )
     })
     .await
@@ -676,10 +747,13 @@ pub async fn vault_add_key_file(
     .await
 }
 
+/// Removes an unlock method by rotating the master key, which needs every remaining key
+/// file in `key_file_paths` (see [`remove_slot_inner`]).
 #[tauri::command]
 pub async fn vault_remove_unlock_method(
     slot_id: u32,
     current_password: Option<String>,
+    key_file_paths: Option<Vec<String>>,
     app: AppHandle,
 ) -> Result<(), String> {
     run_blocking(app, move |app| {
@@ -687,6 +761,7 @@ pub async fn vault_remove_unlock_method(
             &app.state::<DiaryState>(),
             slot_id,
             current_password.as_deref(),
+            key_file_paths.as_deref().unwrap_or_default(),
         )
     })
     .await

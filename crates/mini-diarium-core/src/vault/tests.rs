@@ -346,6 +346,116 @@ fn password_and_key_file_management() {
 }
 
 #[test]
+fn rekey_rotates_everything_and_revokes_old_credentials() {
+    let t = tmp();
+    let dir = vault_dir(&t);
+    let mut v = Vault::create(&dir, Some("old"), None).unwrap();
+    let kf = KeyFileMethod::generate();
+    v.add_key_file("Backup", &kf).unwrap();
+    v.create_folder("Medical").unwrap();
+    let big = random_bytes(stream::CHUNK_SIZE as usize * 2 + 7);
+    let a = add(&mut v, "big.bin", Some("Medical"), &big);
+    let b = add(&mut v, "note.txt", None, b"hello");
+    let old_header = fs::read(dir.join(HEADER_FILE)).unwrap();
+    let old_blob_a = v.blob_path(&a.id);
+
+    v.rekey(Some("new"), &[("Backup".into(), key_file_copy(&kf))])
+        .unwrap();
+
+    // Data intact, metadata preserved, blob ids and files rotated.
+    let files = v.files();
+    assert_eq!(files.len(), 2);
+    let a2 = files.iter().find(|f| f.name == "big.bin").unwrap();
+    assert_eq!(
+        (a2.folder.as_deref(), a2.size, &a2.sha256, &a2.added_at),
+        (Some("Medical"), a.size, &a.sha256, &a.added_at)
+    );
+    assert_ne!(a2.id, a.id);
+    assert!(!old_blob_a.exists(), "old blobs are removed");
+    assert!(!dir.join(INDEX_NEW_FILE).exists());
+    assert_eq!(
+        v.read_bytes(a2.id.as_str(), big.len() as u64 + 1)
+            .unwrap()
+            .as_slice(),
+        &big[..]
+    );
+    drop(v);
+
+    // New password and the presented key file open it; the old password does not —
+    // not even with the pre-rotation header restored (cloud version history).
+    let v = Vault::open_with_password(&dir, "new").unwrap();
+    let b2 = v
+        .files()
+        .into_iter()
+        .find(|f| f.name == "note.txt")
+        .unwrap();
+    assert_eq!(v.read_bytes(&b2.id, 100).unwrap().as_slice(), b"hello");
+    assert_eq!(b2.sha256, b.sha256);
+    drop(v);
+    Vault::open_with_key_file(&dir, &key_file_copy(&kf)).unwrap();
+    assert!(Vault::open_with_password(&dir, "old").is_err());
+    fs::write(dir.join(HEADER_FILE), &old_header).unwrap();
+    assert!(
+        Vault::open_with_password(&dir, "old").is_err(),
+        "an old header copy no longer decrypts anything"
+    );
+}
+
+#[test]
+fn rekey_requires_a_credential_and_drops_unlisted_methods() {
+    let t = tmp();
+    let dir = vault_dir(&t);
+    let kf = KeyFileMethod::generate();
+    let mut v = Vault::create(&dir, Some("pw"), Some(&kf)).unwrap();
+    assert!(v.rekey(None, &[]).is_err());
+    assert!(v.rekey(Some(""), &[]).is_err());
+
+    // Rekeying with only a password drops the key-file slot entirely.
+    v.rekey(Some("pw2"), &[]).unwrap();
+    assert_eq!(v.slots().len(), 1);
+    drop(v);
+    assert!(Vault::open_with_key_file(&dir, &key_file_copy(&kf)).is_err());
+    Vault::open_with_password(&dir, "pw2").unwrap();
+}
+
+#[test]
+fn interrupted_rekey_is_repaired_on_the_next_unlock() {
+    let t = tmp();
+    let dir = vault_dir(&t);
+    let mut v = Vault::create(&dir, Some("pw"), None).unwrap();
+    let f = add(&mut v, "doc.txt", None, b"contents");
+
+    // Crash before the header commit: a staged index the old master cannot read.
+    fs::write(dir.join(INDEX_NEW_FILE), b"garbage from a dead rotation").unwrap();
+    drop(v);
+    let v = Vault::open_with_password(&dir, "pw").unwrap();
+    assert!(
+        !dir.join(INDEX_NEW_FILE).exists(),
+        "stale staging is removed"
+    );
+    assert_eq!(v.read_bytes(&f.id, 100).unwrap().as_slice(), b"contents");
+    drop(v);
+
+    // Crash after the header commit but before the index swap: the primary index is
+    // still the pre-rotation one. Reconstruct that state around a completed rekey.
+    let old_index = fs::read(dir.join(INDEX_FILE)).unwrap();
+    let mut v = Vault::open_with_password(&dir, "pw").unwrap();
+    v.rekey(Some("new"), &[]).unwrap();
+    let new_index = fs::read(dir.join(INDEX_FILE)).unwrap();
+    fs::write(dir.join(INDEX_NEW_FILE), &new_index).unwrap();
+    fs::write(dir.join(INDEX_FILE), &old_index).unwrap();
+    drop(v);
+
+    let v = Vault::open_with_password(&dir, "new").unwrap();
+    assert!(!dir.join(INDEX_NEW_FILE).exists(), "the swap was completed");
+    let f2 = v.files().pop().unwrap();
+    assert_eq!(v.read_bytes(&f2.id, 100).unwrap().as_slice(), b"contents");
+    drop(v);
+    // And the repaired primary index is now readable on a plain open.
+    Vault::open_with_password(&dir, "new").unwrap();
+}
+
+#[test]
 fn orphans_from_an_interrupted_add_are_removed() {
     let t = tmp();
     let dir = vault_dir(&t);

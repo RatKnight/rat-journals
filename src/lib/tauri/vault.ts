@@ -18,6 +18,8 @@ export interface VaultSlotInfo {
   id: number;
   slot_type: 'password' | 'keyfile' | string;
   label: string;
+  /** For key-file slots: identifies which key file opens it (not a secret). */
+  slot_id?: string | null;
 }
 
 export interface VaultStatus {
@@ -143,11 +145,17 @@ export async function vaultDeleteFolder(name: string): Promise<void> {
   await invoke('vault_delete_folder', { name });
 }
 
+/**
+ * Changes the vault password. When a password already exists this rotates the master key
+ * (re-encrypting the whole vault), so every registered key file must be given in
+ * `keyFilePaths`; afterwards the old password opens nothing, not even old header copies.
+ */
 export async function vaultChangePassword(
   currentPassword: string | null,
   newPassword: string,
+  keyFilePaths: string[] = [],
 ): Promise<void> {
-  await invoke('vault_change_password', { currentPassword, newPassword });
+  await invoke('vault_change_password', { currentPassword, newPassword, keyFilePaths });
 }
 
 /** Creates a new key file at `path` (must end in .key) and adds it as an unlock method. */
@@ -159,11 +167,17 @@ export async function vaultAddKeyFile(
   await invoke('vault_add_key_file', { path, label, currentPassword });
 }
 
+/**
+ * Removes an unlock method by rotating the master key, so the removed credential stops
+ * working even against old header copies. Every key file that stays registered must be
+ * given in `keyFilePaths`.
+ */
 export async function vaultRemoveUnlockMethod(
   slotId: number,
   currentPassword: string | null,
+  keyFilePaths: string[] = [],
 ): Promise<void> {
-  await invoke('vault_remove_unlock_method', { slotId, currentPassword });
+  await invoke('vault_remove_unlock_method', { slotId, currentPassword, keyFilePaths });
 }
 
 /** Checks every file decrypts intact; returns the names of damaged files. */

@@ -2,7 +2,7 @@ import { createSignal, For, Show } from 'solid-js';
 import { Dialog } from '@kobalte/core/dialog';
 import { KeyRound, ShieldCheck, Trash2, X } from 'lucide-solid';
 import * as tauri from '../../lib/tauri';
-import { save } from '../../lib/dialog';
+import { open, save } from '../../lib/dialog';
 import { mapTauriError } from '../../lib/errors';
 import { useI18n } from '../../i18n';
 import { refreshVaultStatus, vaultStatus } from '../../state/vault';
@@ -53,12 +53,35 @@ export default function VaultSettings(props: Props) {
     }
   };
 
-  const changePassword = (e: Event) => {
+  /**
+   * Changing the password or removing a method rotates the vault's master key, which
+   * re-registers every remaining key file — so each one has to be picked. Returns their
+   * paths, or null when the user cancels a picker.
+   */
+  const pickKeyFiles = async (excludeSlotId?: number): Promise<string[] | null> => {
+    const paths: string[] = [];
+    for (const slot of slots()) {
+      if (slot.slot_type !== 'keyfile' || slot.id === excludeSlotId) continue;
+      const path = await open({
+        title: t('vault.selectKeyFile', { label: slot.label }),
+        multiple: false,
+        filters: [{ name: 'Key Files', extensions: ['key'] }],
+      });
+      if (typeof path !== 'string') return null;
+      paths.push(path);
+    }
+    return paths;
+  };
+
+  const changePassword = async (e: Event) => {
     e.preventDefault();
     if (!newPassword()) return setError(t('vault.passwordRequired'));
     if (newPassword() !== confirmPassword()) return setError(t('vault.passwordsDontMatch'));
+    // Adding a first password revokes nothing, so no rotation and no key files needed.
+    const keyFiles = hasPassword() ? await pickKeyFiles() : [];
+    if (!keyFiles) return;
     void run(
-      () => tauri.vaultChangePassword(currentOrNull(), newPassword()),
+      () => tauri.vaultChangePassword(currentOrNull(), newPassword(), keyFiles),
       hasPassword() ? t('vault.passwordChanged') : t('vault.passwordAdded'),
     );
   };
@@ -74,11 +97,14 @@ export default function VaultSettings(props: Props) {
     void run(() => tauri.vaultAddKeyFile(path, label, currentOrNull()), t('vault.keyFileAdded'));
   };
 
-  const remove = (slotId: number) =>
+  const remove = async (slotId: number) => {
+    const keyFiles = await pickKeyFiles(slotId);
+    if (!keyFiles) return;
     void run(
-      () => tauri.vaultRemoveUnlockMethod(slotId, currentOrNull()),
+      () => tauri.vaultRemoveUnlockMethod(slotId, currentOrNull(), keyFiles),
       t('vault.methodRemoved'),
     );
+  };
 
   const verify = async () => {
     setError(null);
@@ -136,6 +162,7 @@ export default function VaultSettings(props: Props) {
             </div>
 
             <h3 class="mb-2 text-xs font-medium text-secondary">{t('vault.unlockMethods')}</h3>
+            <p class="mb-2 text-xs text-tertiary">{t('vault.rotateHint')}</p>
             <ul class="mb-4 rounded-md border border-primary">
               <For each={slots()}>
                 {(slot) => (
@@ -151,7 +178,7 @@ export default function VaultSettings(props: Props) {
                         aria-label={t('vault.removeMethod')}
                         title={t('vault.removeMethod')}
                         disabled={busy()}
-                        onClick={() => remove(slot.id)}
+                        onClick={() => void remove(slot.id)}
                       >
                         <Trash2 size={14} />
                       </button>
@@ -176,7 +203,7 @@ export default function VaultSettings(props: Props) {
               <p class="mb-4 text-xs text-tertiary">{t('vault.currentPasswordHint')}</p>
             </Show>
 
-            <form onSubmit={changePassword} class="mb-4 space-y-2">
+            <form onSubmit={(e) => void changePassword(e)} class="mb-4 space-y-2">
               <h3 class="text-xs font-medium text-secondary">
                 {hasPassword() ? t('vault.changePassword') : t('vault.addPassword')}
               </h3>

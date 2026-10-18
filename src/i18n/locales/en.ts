@@ -857,6 +857,9 @@ const en = {
     keyFileDefaultLabel: 'Key file',
     createKeyFile: 'Create key file…',
     keyFileHint: 'A key file opens the vault on its own. Store it away from the vault folder.',
+    rotateHint:
+      'Changing the password or removing a method re-encrypts the vault with a fresh key, so the old credential stops opening it — even an old copy kept by a cloud provider. You will be asked to select any other registered key files.',
+    selectKeyFile: 'Select the key file “{{label}}”',
     keyFileAdded: 'Key file created and added',
     methodRemoved: 'Unlock method removed',
     verify: 'Check every file',

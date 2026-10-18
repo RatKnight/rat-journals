@@ -256,6 +256,101 @@ pub fn decrypt_stream<R: Read, W: Write>(
     Ok(total)
 }
 
+/// Pull-based counterpart of [`decrypt_stream`]: a [`Read`] that yields the plaintext of
+/// an encrypted object chunk by chunk, authenticating each chunk before serving it.
+///
+/// The same caveat applies as for [`decrypt_stream`]: the object is only known to be
+/// complete once EOF (`Ok(0)`) is reached; an error means discard everything read so far.
+pub struct DecryptReader<R: Read> {
+    cipher: Aes256Gcm,
+    header_bytes: [u8; HEADER_LEN],
+    full: usize,
+    src: R,
+    /// Ciphertext of the chunk to decrypt next.
+    current: Vec<u8>,
+    current_len: usize,
+    /// Decrypted chunk being served, and how much of it was consumed.
+    plain: Zeroizing<Vec<u8>>,
+    pos: usize,
+    index: u64,
+    done: bool,
+}
+
+impl<R: Read> DecryptReader<R> {
+    /// Starts reading the chunks that follow `header` (already read with [`read_header`]).
+    pub fn new(key: &cipher::Key, header: &StreamHeader, mut src: R) -> Result<Self, StreamError> {
+        let full = header.chunk_size as usize + TAG_LEN;
+        let mut current = vec![0u8; full];
+        let current_len = read_full(&mut src, &mut current)?;
+        Ok(Self {
+            cipher: Aes256Gcm::new(key.as_bytes().into()),
+            header_bytes: header.to_bytes(),
+            full,
+            src,
+            current,
+            current_len,
+            plain: Zeroizing::new(Vec::new()),
+            pos: 0,
+            index: 0,
+            done: false,
+        })
+    }
+
+    /// Decrypts the staged chunk into `self.plain` (mirrors one `decrypt_stream` step).
+    fn fill(&mut self) -> Result<(), StreamError> {
+        if self.current_len < TAG_LEN {
+            return Err(StreamError::Tampered);
+        }
+        let mut next = vec![0u8; self.full];
+        let next_len = if self.current_len == self.full {
+            read_full(&mut self.src, &mut next)?
+        } else {
+            0
+        };
+        let last = next_len == 0;
+        let nonce = nonce_for(self.index, last);
+        let plain = self
+            .cipher
+            .decrypt(
+                &Nonce::try_from(&nonce[..]).unwrap(),
+                Payload {
+                    msg: &self.current[..self.current_len],
+                    aad: &self.header_bytes,
+                },
+            )
+            .map_err(|_| StreamError::Tampered)?;
+        self.plain = Zeroizing::new(plain);
+        self.pos = 0;
+        if last {
+            self.done = true;
+        } else {
+            self.current = next;
+            self.current_len = next_len;
+            self.index = self.index.checked_add(1).ok_or(StreamError::Tampered)?;
+        }
+        Ok(())
+    }
+}
+
+impl<R: Read> Read for DecryptReader<R> {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        if self.pos == self.plain.len() {
+            if self.done {
+                return Ok(0);
+            }
+            self.fill().map_err(|e| match e {
+                StreamError::Io(e) => e,
+                e => io::Error::other(e),
+            })?;
+        }
+        let n = buf.len().min(self.plain.len() - self.pos);
+        buf[..n].copy_from_slice(&self.plain[self.pos..self.pos + n]);
+        self.pos += n;
+        // An empty final chunk (empty object) serves 0 bytes and is EOF at once.
+        Ok(n)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -389,6 +484,41 @@ mod tests {
         let mut other = header(16).to_bytes().to_vec();
         other.extend_from_slice(&blob[HEADER_LEN..]);
         assert!(dec(&k, &other).is_err());
+    }
+
+    fn dec_via_reader(k: &cipher::Key, blob: &[u8]) -> Result<Vec<u8>, io::Error> {
+        let mut src = blob;
+        let h = read_header(&mut src).map_err(io::Error::other)?;
+        let mut r = DecryptReader::new(k, &h, src).map_err(io::Error::other)?;
+        let mut out = Vec::new();
+        // Tiny reads on purpose, to cross chunk boundaries mid-call.
+        let mut buf = [0u8; 7];
+        loop {
+            let n = r.read(&mut buf)?;
+            if n == 0 {
+                return Ok(out);
+            }
+            out.extend_from_slice(&buf[..n]);
+        }
+    }
+
+    #[test]
+    fn reader_roundtrips_and_detects_tampering() {
+        let k = key();
+        let h = header(16);
+        for len in [0, 1, 15, 16, 17, 33, 160] {
+            let d = data(len);
+            let blob = enc(&k, &h, &d);
+            assert_eq!(dec_via_reader(&k, &blob).unwrap(), d, "len {len}");
+        }
+        let blob = enc(&k, &h, &data(50));
+        for cut in HEADER_LEN..blob.len() {
+            assert!(dec_via_reader(&k, &blob[..cut]).is_err(), "cut {cut}");
+        }
+        let mut bad = blob.clone();
+        bad[HEADER_LEN + 3] ^= 1;
+        assert!(dec_via_reader(&k, &bad).is_err());
+        assert!(dec_via_reader(&key(), &blob).is_err());
     }
 
     #[test]

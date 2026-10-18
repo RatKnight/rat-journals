@@ -91,9 +91,9 @@ describe('vault command wrappers (IPC contract)', () => {
     ['vaultDeleteFolder', () => vaultDeleteFolder('A'), 'vault_delete_folder', { name: 'A' }],
     [
       'vaultChangePassword',
-      () => vaultChangePassword(null, 'new'),
+      () => vaultChangePassword(null, 'new', ['/a.key']),
       'vault_change_password',
-      { currentPassword: null, newPassword: 'new' },
+      { currentPassword: null, newPassword: 'new', keyFilePaths: ['/a.key'] },
     ],
     [
       'vaultAddKeyFile',
@@ -105,7 +105,7 @@ describe('vault command wrappers (IPC contract)', () => {
       'vaultRemoveUnlockMethod',
       () => vaultRemoveUnlockMethod(2, 'pw'),
       'vault_remove_unlock_method',
-      { slotId: 2, currentPassword: 'pw' },
+      { slotId: 2, currentPassword: 'pw', keyFilePaths: [] },
     ],
   ])('%s → %s', async (_name, call, command, args) => {
     await call();

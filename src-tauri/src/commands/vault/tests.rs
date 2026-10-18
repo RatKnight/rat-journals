@@ -140,9 +140,9 @@ fn unlock_method_changes_need_the_current_password() {
     let path = vault_path(&fixture);
     create_inner(&state, &path, Some("old".into()), None).unwrap();
 
-    assert!(change_password_inner(&state, None, "new").is_err());
-    assert!(change_password_inner(&state, Some("wrong"), "new").is_err());
-    change_password_inner(&state, Some("old"), "new").unwrap();
+    assert!(change_password_inner(&state, None, "new", &[]).is_err());
+    assert!(change_password_inner(&state, Some("wrong"), "new", &[]).is_err());
+    change_password_inner(&state, Some("old"), "new", &[]).unwrap();
 
     let key = fixture
         .path()
@@ -160,11 +160,64 @@ fn unlock_method_changes_need_the_current_password() {
         .into_iter()
         .find(|s| s.slot_type == "password")
         .unwrap();
-    remove_slot_inner(&state, password_slot.id, Some("new")).unwrap();
+    // Removing the password leaves only the key file, which must be presented.
+    assert!(
+        remove_slot_inner(&state, password_slot.id, Some("new"), &[])
+            .unwrap_err()
+            .contains("Backup")
+    );
+    remove_slot_inner(
+        &state,
+        password_slot.id,
+        Some("new"),
+        std::slice::from_ref(&key),
+    )
+    .unwrap();
     close_vault(&state);
 
     assert!(unlock_password_inner(&state, &path, "new").is_err());
     unlock_key_file_inner(&state, &path, &key).unwrap();
+}
+
+#[test]
+fn password_change_rotates_and_revokes_old_header_copies() {
+    let (fixture, state, _, _) = make_state("vault_rotation");
+    let path = vault_path(&fixture);
+    create_inner(&state, &path, Some("old".into()), None).unwrap();
+    with_vault(&state, |o| {
+        o.vault
+            .add_reader("doc.txt", None, &b"secret contents"[..])?;
+        Ok(())
+    })
+    .unwrap();
+    let header = std::path::Path::new(&path).join("rat-vault.json");
+    let old_header = std::fs::read(&header).unwrap();
+
+    // Changing the password with a key file registered requires presenting it.
+    let key = fixture.path().join("kf.key").to_string_lossy().to_string();
+    add_key_file_inner(&state, &key, "Backup", Some("old")).unwrap();
+    assert!(change_password_inner(&state, Some("old"), "new", &[])
+        .unwrap_err()
+        .contains("Backup"));
+    change_password_inner(&state, Some("old"), "new", std::slice::from_ref(&key)).unwrap();
+    close_vault(&state);
+
+    // New password and the key file still open the vault; the data survived rotation.
+    let listing = {
+        unlock_password_inner(&state, &path, "new").unwrap();
+        list_inner(&state).unwrap()
+    };
+    assert_eq!(listing.files.len(), 1);
+    let bytes = with_vault(&state, |o| o.vault.read_bytes(&listing.files[0].id, 1000)).unwrap();
+    assert_eq!(bytes.as_slice(), b"secret contents");
+    close_vault(&state);
+    unlock_key_file_inner(&state, &path, &key).unwrap();
+    close_vault(&state);
+
+    // Old password is revoked even against the pre-rotation header (cloud history).
+    assert!(unlock_password_inner(&state, &path, "old").is_err());
+    std::fs::write(&header, &old_header).unwrap();
+    assert!(unlock_password_inner(&state, &path, "old").is_err());
 }
 
 #[test]

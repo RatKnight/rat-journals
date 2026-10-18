@@ -19,6 +19,8 @@ use zeroize::Zeroizing;
 
 const HEADER_FILE: &str = "rat-vault.json";
 const INDEX_FILE: &str = "index.rjv";
+/// Staging name used while rotating the master key (see [`Vault::rekey`]).
+const INDEX_NEW_FILE: &str = "index.rjv.new";
 const DATA_DIR: &str = "data";
 const BLOB_EXT: &str = "rjf";
 const FORMAT_NAME: &str = "rat-journal-vault";
@@ -51,6 +53,9 @@ pub struct VaultSlotInfo {
     pub id: u32,
     pub slot_type: String,
     pub label: String,
+    /// For key-file slots: the hex slot id that identifies which key file opens it (a
+    /// one-way function of the file's secret; already public in the header on disk).
+    pub slot_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -219,6 +224,7 @@ pub fn peek_slots(dir: &Path) -> Result<Vec<VaultSlotInfo>, String> {
             id: s.id,
             slot_type: s.slot_type.clone(),
             label: s.label.clone(),
+            slot_id: s.slot_id.clone(),
         })
         .collect())
 }
@@ -341,7 +347,26 @@ impl Vault {
             header,
             index: IndexDoc::default(),
         };
-        vault.index = vault.load_index()?;
+        let staged = dir.join(INDEX_NEW_FILE);
+        vault.index = match vault.load_index() {
+            Ok(index) => {
+                // A leftover staged index from a rotation that never committed (the old
+                // header still unlocked us) is dead; its blobs are removed as orphans.
+                let _ = fs::remove_file(&staged);
+                index
+            }
+            // The primary index does not decrypt: a rotation crashed after its header
+            // committed but before the index swap. Finish the swap from the staged copy.
+            Err(primary_err) => match vault.load_index_from(INDEX_NEW_FILE) {
+                Ok(index) => {
+                    vault.index = index;
+                    vault.save_index()?;
+                    let _ = fs::remove_file(&staged);
+                    vault.index.clone()
+                }
+                Err(_) => return Err(primary_err),
+            },
+        };
         Ok(vault)
     }
 
@@ -373,12 +398,22 @@ impl Vault {
                 id: s.id,
                 slot_type: s.slot_type.clone(),
                 label: s.label.clone(),
+                slot_id: s.slot_id.clone(),
             })
             .collect()
     }
 
     fn object_key(&self, kind: ObjectKind, id: &[u8; 16]) -> Result<cipher::Key, String> {
-        let hk = Hkdf::<Sha256>::new(Some(&self.vault_id), self.master.as_ref());
+        Self::object_key_for(&self.vault_id, self.master.as_ref(), kind, id)
+    }
+
+    fn object_key_for(
+        vault_id: &[u8; 16],
+        master: &[u8],
+        kind: ObjectKind,
+        id: &[u8; 16],
+    ) -> Result<cipher::Key, String> {
+        let hk = Hkdf::<Sha256>::new(Some(vault_id), master);
         let mut info = Vec::with_capacity(OBJECT_KEY_INFO.len() + 17);
         info.extend_from_slice(OBJECT_KEY_INFO);
         info.push(kind as u8);
@@ -406,15 +441,31 @@ impl Vault {
     }
 
     fn save_index(&self) -> Result<(), String> {
+        Self::write_index(
+            &self.dir,
+            &self.vault_id,
+            self.master.as_ref(),
+            &self.index,
+            INDEX_FILE,
+        )
+    }
+
+    fn write_index(
+        dir: &Path,
+        vault_id: &[u8; 16],
+        master: &[u8],
+        index: &IndexDoc,
+        file: &str,
+    ) -> Result<(), String> {
         let json = Zeroizing::new(
-            serde_json::to_vec(&self.index)
+            serde_json::to_vec(index)
                 .map_err(|e| format!("Failed to save the vault index: {}", e))?,
         );
         // A fresh id (and so a fresh key) for every write of the index.
         let id = random_id();
-        let key = self.object_key(ObjectKind::Index, &id)?;
+        let key = Self::object_key_for(vault_id, master, ObjectKind::Index, &id)?;
         let header = StreamHeader::new(ObjectKind::Index, id);
-        write_atomic(&self.dir.join(INDEX_FILE), |w| {
+        write_atomic(&dir.join(file), |w| {
             stream::encrypt_stream(&key, &header, json.as_slice(), w)
                 .map(|_| ())
                 .map_err(|e| format!("Failed to save the vault index: {}", e))
@@ -422,7 +473,11 @@ impl Vault {
     }
 
     fn load_index(&self) -> Result<IndexDoc, String> {
-        let file = fs::File::open(self.dir.join(INDEX_FILE))
+        self.load_index_from(INDEX_FILE)
+    }
+
+    fn load_index_from(&self, name: &str) -> Result<IndexDoc, String> {
+        let file = fs::File::open(self.dir.join(name))
             .map_err(|_| "The vault index is missing".to_string())?;
         let mut src = BufReader::new(file);
         let header = stream::read_header(&mut src).map_err(|e| e.to_string())?;
@@ -690,7 +745,9 @@ impl Vault {
         Ok(())
     }
 
-    /// Replaces the password (or adds one if the vault has none).
+    /// Replaces the password (or adds one if the vault has none) **without rotating the
+    /// master key**: an old copy of the header still opens with the old password. Use
+    /// [`Vault::rekey`] when the change must revoke; this is for adding a first password.
     pub fn set_password(&mut self, password: &str) -> Result<(), String> {
         if password.is_empty() {
             return Err("Password cannot be empty".to_string());
@@ -730,7 +787,9 @@ impl Vault {
         Ok(())
     }
 
-    /// Removes an unlock method; the last one cannot be removed.
+    /// Removes an unlock method **without rotating the master key**; the last one cannot
+    /// be removed. An old copy of the header still opens with the removed credential, so
+    /// the app removes methods through [`Vault::rekey`] instead.
     pub fn remove_slot(&mut self, slot_id: u32) -> Result<(), String> {
         if self.header.slots.len() <= 1 {
             return Err("A vault needs at least one way to unlock it".to_string());
@@ -750,6 +809,117 @@ impl Vault {
 
     fn next_slot_id(&self) -> u32 {
         self.header.slots.iter().map(|s| s.id).max().unwrap_or(0) + 1
+    }
+
+    /// Replaces **every** unlock method and rotates the master key: a fresh master key is
+    /// generated, every blob and the index are re-encrypted under it, and only the given
+    /// credentials are wrapped in the new header. Credentials not in the new set stop
+    /// opening the vault even for someone holding an old copy of the header (for example
+    /// a cloud provider's version history).
+    ///
+    /// Crash safety: new blobs are written first (invisible until referenced), then the
+    /// new index is staged as `index.rjv.new`, then the new header commits the rotation,
+    /// then the index is swapped and old blobs are removed. A crash anywhere is repaired
+    /// on the next unlock: before the header commit the old state is intact (the staged
+    /// index and new blobs are cleaned as orphans), after it the staged index completes
+    /// the swap in `finish_open`.
+    pub fn rekey(
+        &mut self,
+        new_password: Option<&str>,
+        key_files: &[(String, KeyFileMethod)],
+    ) -> Result<(), String> {
+        if new_password.is_none() && key_files.is_empty() {
+            return Err("A vault needs a password or a key file".to_string());
+        }
+        if matches!(new_password, Some(p) if p.is_empty()) {
+            return Err("Password cannot be empty".to_string());
+        }
+        let mut new_master = Zeroizing::new([0u8; 32]);
+        OsRng.fill_bytes(new_master.as_mut());
+
+        // 1. Re-encrypt every blob under the new master with a fresh id.
+        let mut new_index = self.index.clone();
+        for entry in &mut new_index.files {
+            entry.id = self.reencrypt_blob(entry, new_master.as_ref())?;
+        }
+
+        // 2. Stage the new index.
+        Self::write_index(
+            &self.dir,
+            &self.vault_id,
+            new_master.as_ref(),
+            &new_index,
+            INDEX_NEW_FILE,
+        )?;
+
+        // 3. Build and write the new header: the commit point of the rotation.
+        let mut new_header = HeaderDoc {
+            slots: Vec::new(),
+            ..self.header.clone()
+        };
+        if let Some(p) = new_password {
+            new_header
+                .slots
+                .push(password_slot(1, "Password", p, &new_master)?);
+        }
+        for (label, kf) in key_files {
+            let id = new_header.slots.len() as u32 + 1;
+            let label = validate_name(label, "key file")?;
+            new_header
+                .slots
+                .push(key_file_slot(id, &label, kf, &new_master)?);
+        }
+        let json = serde_json::to_string_pretty(&new_header)
+            .map_err(|e| format!("Failed to save the vault header: {}", e))?;
+        write_atomic(&self.dir.join(HEADER_FILE), |w| {
+            w.write_all(json.as_bytes())
+                .map_err(|e| format!("Failed to save the vault header: {}", e))
+        })?;
+
+        // Committed: from here the vault is the new one, whatever else fails.
+        self.master = new_master;
+        self.header = new_header;
+        self.index = new_index;
+
+        // 4. Swap the index in place and clean up. If any of this fails, the staged
+        //    index repairs the vault on the next unlock.
+        self.save_index()?;
+        let _ = fs::remove_file(self.dir.join(INDEX_NEW_FILE));
+        let _ = self.remove_orphans();
+        Ok(())
+    }
+
+    /// Writes `entry`'s plaintext as a new blob under `new_master` with a fresh id,
+    /// streaming (the plaintext never lands on disk or fully in memory). Returns the new
+    /// id; the old blob is left in place.
+    fn reencrypt_blob(&self, entry: &VaultFile, new_master: &[u8]) -> Result<String, String> {
+        let old_id = parse_id(&entry.id)?;
+        let file = fs::File::open(self.blob_path(&entry.id))
+            .map_err(|_| format!("The data for “{}” is missing", entry.name))?;
+        let mut src = BufReader::new(file);
+        let old_header = stream::read_header(&mut src).map_err(|e| e.to_string())?;
+        if old_header.kind != ObjectKind::File || old_header.object_id != old_id {
+            return Err(format!("The data for “{}” is damaged", entry.name));
+        }
+        let old_key = self.object_key(ObjectKind::File, &old_id)?;
+        let mut plain =
+            stream::DecryptReader::new(&old_key, &old_header, src).map_err(|e| e.to_string())?;
+
+        let new_id = random_id();
+        let new_hex = hex::encode(new_id);
+        let new_key = Self::object_key_for(&self.vault_id, new_master, ObjectKind::File, &new_id)?;
+        let new_header = StreamHeader::new(ObjectKind::File, new_id);
+        let mut written = 0u64;
+        write_atomic(&self.blob_path(&new_hex), |w| {
+            written = stream::encrypt_stream(&new_key, &new_header, &mut plain, w)
+                .map_err(|_| format!("The data for “{}” is damaged or was modified", entry.name))?;
+            Ok(())
+        })?;
+        if written != entry.size {
+            let _ = fs::remove_file(self.blob_path(&new_hex));
+            return Err(format!("The data for “{}” is damaged", entry.name));
+        }
+        Ok(new_hex)
     }
 
     /// Checks every stored file decrypts intact. Returns the names of damaged files.

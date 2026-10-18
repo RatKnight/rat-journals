@@ -63,8 +63,21 @@ The index object (kind 2) decrypts to UTF-8 JSON:
 
 Every write goes to a temporary file in the same folder and is renamed into place. A file is added by writing its blob first and the index second, so a crash leaves at worst an unreferenced blob (removed by orphan cleanup), never an index entry without its data. Deleting a file rewrites the index first and removes the blob second.
 
+## Master-key rotation
+
+Changing the password (when one already exists) or removing an unlock method **rotates the VMK**: a fresh VMK is generated, every blob is re-encrypted under it with a fresh object id, the index follows, and only the methods that stay are wrapped in the new header. This is what makes the change a real revocation: without rotation, an old copy of `rat-vault.json` (for example in a cloud provider's version history) would keep unwrapping the unchanged VMK with the old credential. Because wrapping a slot needs its credential, every key file that stays registered must be presented during the rotation.
+
+Order, and what a crash leaves:
+
+1. New blobs are written (unreferenced until the new index lands — cleaned as orphans if abandoned).
+2. The new index is staged as `index.rjv.new`, encrypted under the new VMK.
+3. The new header is written: **the commit point**.
+4. `index.rjv` is rewritten under the new VMK, the staged copy is removed, and the old blobs are deleted as orphans.
+
+On unlock, if `index.rjv` does not decrypt but `index.rjv.new` does, the rotation committed and the swap is completed; a stale `index.rjv.new` that does not decrypt is removed. Adding a method (a key file, or a first password to a key-file-only vault) revokes nothing and does not rotate.
+
 ## Known limitations
 
-- **Rollback:** a sync provider could serve an older, still-valid `index.rjv` or blob. The vault cannot detect this without a trusted counter stored elsewhere.
+- **Rollback:** a sync provider could serve an older, still-valid `index.rjv` or blob (from the same VMK generation). The vault cannot detect this without a trusted counter stored elsewhere. Rotation limits this: anything served from before the last rotation no longer decrypts.
 - **Concurrent edits** from two computers at once can produce sync-conflict copies of `index.rjv`; use one computer at a time.
 - Size and count metadata are visible, as described above.

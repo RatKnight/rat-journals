@@ -1,5 +1,10 @@
 # Changelog
 
+## 26.0.2 (2026-10-18)
+
+### Security
+- **Changing the vault password, or removing an unlock method, now rotates the vault's master key**: every file and the index are re-encrypted under a fresh key, and only the remaining methods are re-registered. Before this, those changes only rewrote the small header file — so a cloud provider's version history (or anyone keeping an old copy of `rat-vault.json`) could combine an old header with the revoked password or key file and still decrypt everything. Any other registered key files must be selected during the change, since re-registering them needs the file. The rotation is crash-safe: interrupted at any point, the vault repairs itself on the next unlock. Adding a method revokes nothing and is unchanged.
+
 ## 26.0.1 (2026-10-18)
 
 - A labeled **Vault** button in the header, and a full-width **Open a vault** button on the start screen, make the vault easy to find.
