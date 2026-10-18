@@ -1,6 +1,14 @@
 # Changelog
 
-## Unreleased
+## 26.0.3 (2026-10-18)
+
+### Security
+- **"Require all unlock methods" is now enforced by the encryption.** Before, every unlock method still held a full copy of the journal key and the setting was only a check in the app, so the journal file plus one credential could be opened with another tool. Now the key is split into shares, one per method, and only all of them together rebuild it. Turning the setting on or off asks for your password and every key file. While it is on, methods cannot be added or removed (the password can still be changed). Journals that already had it on are split on their next combined unlock.
+- **Release builds no longer include developer tools**, and no longer allow loading pages from `localhost`. The check of which addresses the window may load now compares the host exactly (a prefix check let addresses such as `http://localhost.example.com` through).
+- **Every file path the window sends to the backend is checked**: no network shares, device paths, relative paths, or `..`. Exports and saved files must use their expected extension. Decrypted copies cannot be saved with a program or script extension, or into a Startup folder.
+- **Deleted journal content is overwritten** (SQLite `secure_delete`) instead of lingering in free space until the file is compacted.
+- **The settings file is written safely** (temporary file, flushed, then renamed), so a crash cannot leave it empty and lose your journal list.
+- **The "no password" journal option now says plainly what it is**: the key is stored unencrypted in the settings file, so the journal is only as private as the computer account.
 
 ### Changed
 - **The vault dialog remembers your vault.** After a vault has been created or unlocked once, the Vault button goes straight to its unlock screen (password field ready, key-file button if it has one). "Choose a different folder" still opens the folder picker. Only the folder location is remembered (in the app's settings file), never a password or key; if the folder is gone or not mounted, the picker is shown as before.

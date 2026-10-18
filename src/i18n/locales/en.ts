@@ -210,13 +210,13 @@ const en = {
       passwordsMismatch: 'Passwords do not match',
       modeGroupAria: 'Journal protection mode',
       passwordMode: 'Password',
-      localOnlyMode: 'Local-only',
-      localOnlyTitle: 'This journal is protected by your OS account, not a password.',
-      localOnlyPoint1: 'Opens automatically on this device, no password to remember.',
+      localOnlyMode: 'No password (this device only)',
+      localOnlyTitle: 'No password: this journal is only as private as this computer account.',
+      localOnlyPoint1: 'Opens automatically on this device, with no password to remember.',
       localOnlyPoint2:
-        'The encryption key is stored in your current OS user account. Copying the journal file to another device will not allow it to be opened.',
+        "The unlock key is saved unencrypted in this app's settings file in your user profile. The journal file on its own cannot be opened elsewhere, but anyone who copies both the journal and the settings file can open it anywhere.",
       localOnlyPoint3:
-        'Anyone who can log in to this OS account can open the journal without a password.',
+        'Anyone who can sign in to this account, and any program running as you, can open the journal. Use a password if the journal holds anything sensitive.',
       localOnlyPoint4:
         'If you lose access to this OS account (forgotten system password, account deletion, or OS reinstall), the encryption key will be lost and the journal cannot be recovered.',
       localOnlyAck:
@@ -525,7 +525,7 @@ const en = {
       addKeySuccess: 'Key file registered successfully!',
       generateRegister: 'Generate & Register Key File',
       generateHint:
-        'Generates a new keypair and saves the private key file locally. Register the public key with your journal so you can unlock without a password.',
+        'Creates a new key file and saves it where you choose. Keep it somewhere safe and separate from the journal: the key file can unlock the journal on its own.',
       savePrivateKeyTitle: 'Save Private Key File',
       keypairFileCancelled: 'Key file save cancelled',
       changePasswordTitle: 'Change Password',
