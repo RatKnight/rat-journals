@@ -23,7 +23,12 @@ export type LockNotice = 'background-task-failed';
 const [lockNotice, setLockNotice] = createSignal<LockNotice | null>(null);
 
 /** A security problem from the last unlock that the main screen must show. */
-export type SecurityNotice = 'key-upgrade-failed' | 'upgrade-needs-all-methods';
+export type SecurityNotice = 'key-upgrade-failed' | 'upgrade-needs-all-methods' | 'clock-set-back';
+const SECURITY_NOTICES: readonly string[] = [
+  'key-upgrade-failed',
+  'upgrade-needs-all-methods',
+  'clock-set-back',
+];
 const [securityNotice, setSecurityNotice] = createSignal<SecurityNotice | null>(null);
 
 /** Reads (and clears) the backend's post-unlock security notice. */
@@ -31,7 +36,7 @@ async function loadSecurityNotice(): Promise<void> {
   try {
     const notice = await tauri.takeSecurityNotice();
     setSecurityNotice(
-      notice === 'key-upgrade-failed' || notice === 'upgrade-needs-all-methods' ? notice : null,
+      notice && SECURITY_NOTICES.includes(notice) ? (notice as SecurityNotice) : null,
     );
   } catch (err) {
     log.warn('Failed to read the security notice:', err);

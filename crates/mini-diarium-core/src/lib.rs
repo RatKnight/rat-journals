@@ -13,6 +13,7 @@
 
 pub mod auth;
 pub mod backup;
+pub mod clock;
 pub mod config;
 // The cryptographic layer lives in the rusqlite-free `mini-diarium-crypto` crate
 // (open-core M3a / TODO-0082). Re-export it so `mini_diarium_core::crypto::…` and every

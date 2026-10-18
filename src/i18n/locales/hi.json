@@ -780,6 +780,7 @@
     "backgroundTaskFailed": "पृष्ठभूमि में कुछ गलत हो गया, इसलिए डायरी को सुरक्षित रखने के लिए लॉक कर दिया गया। जारी रखने के लिए इसे अनलॉक करें।",
     "keyUpgradeFailed": "Rat Journal इस डायरी का एन्क्रिप्शन अपग्रेड नहीं कर सका। जब तक ऐसा नहीं होता, डायरी फ़ाइल या बैकअप की कॉपी रखने वाला कोई भी व्यक्ति इसे आपके पासवर्ड के बिना खोल सकता है। फिर से कोशिश करने के लिए डायरी लॉक करें और अपने पासवर्ड से अनलॉक करें।",
     "upgradeNeedsAllMethods": "Rat Journal को इस डायरी का एन्क्रिप्शन अपग्रेड करना है ताकि भविष्य का कोई क्वांटम कंप्यूटर इसे तोड़ न सके, और इसके लिए उसे डायरी के सभी अनलॉक तरीके एक साथ चाहिए। डायरी लॉक करें, अनलॉक स्क्रीन पर “सभी तरीके” चुनें, और अपना पासवर्ड और कुंजी फ़ाइलें एक साथ दर्ज करें।",
+    "clockSetBack": "This computer's clock is earlier than the last time this journal was open, or the journal's record of that time was changed. If you didn't change the clock, someone may have, for example to get around a time limit. Check the date and time settings.",
     "internalError": "एक आंतरिक त्रुटि हुई।",
     "unexpectedError": "एक अप्रत्याशित त्रुटि हुई।"
   },

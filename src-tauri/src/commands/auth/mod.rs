@@ -13,6 +13,38 @@ pub const NOTICE_KEY_UPGRADE_FAILED: &str = "key-upgrade-failed";
 /// screen's "All methods" option).
 pub const NOTICE_UPGRADE_NEEDS_ALL_METHODS: &str = "upgrade-needs-all-methods";
 
+/// [`DiaryState::security_notice`] code: the system clock is behind the latest time this
+/// journal has seen, or the journal's record of that time was edited (see `core::clock`).
+pub const NOTICE_CLOCK_SET_BACK: &str = "clock-set-back";
+
+/// Compares the clock with the journal's high-water mark and stores the new mark. When the
+/// clock was set back or the mark was tampered with, logs it and, if `state` is given and
+/// no other notice is pending, leaves [`NOTICE_CLOCK_SET_BACK`] for the frontend.
+pub(crate) fn update_clock_mark(db: &DatabaseConnection, state: Option<&DiaryState>) {
+    let check = match crate::clock::update_journal_mark(db) {
+        Ok(check) => check,
+        Err(e) => {
+            warn!("Could not record the clock high-water mark: {}", e);
+            return;
+        }
+    };
+    if !check.suspicious() {
+        return;
+    }
+    match check.set_back_by {
+        Some(secs) => warn!(
+            "System clock is {} s behind the latest time this journal has seen",
+            secs
+        ),
+        None => warn!("The journal's clock record failed verification"),
+    }
+    if let Some(state) = state {
+        if let Ok(mut notice) = state.security_notice.lock() {
+            notice.get_or_insert(NOTICE_CLOCK_SET_BACK);
+        }
+    }
+}
+
 /// Shared state for the database connection
 pub struct DiaryState {
     pub db: Mutex<Option<DatabaseConnection>>,
@@ -133,6 +165,12 @@ fn lock_diary_inner_with(state: &DiaryState, completion: LockCompletion) -> Resu
     crate::commands::backup_inspect::close_inspection(state);
     // Likewise unconditional: an open vault is closed by every lock, journal or not.
     crate::commands::vault::close_vault(state);
+
+    if let Ok(db) = state.db.lock() {
+        if let Some(db) = db.as_ref() {
+            update_clock_mark(db, None);
+        }
+    }
 
     let Some(done) = crate::commands::backup_triggers::take_connection_and_snapshot(
         state,

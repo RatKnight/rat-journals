@@ -441,6 +441,14 @@ describe('MainLayout security notice', () => {
     expect(banner.textContent).toContain('quantum');
   });
 
+  it('warns when the clock was set back', async () => {
+    authMocks.securityNotice = 'clock-set-back';
+    const { findByTestId } = renderWithI18n(() => <MainLayout />);
+
+    const banner = await findByTestId('security-notice');
+    expect(banner.textContent).toContain('clock');
+  });
+
   it('shows no warning without a notice', () => {
     const { queryByTestId } = renderWithI18n(() => <MainLayout />);
     expect(queryByTestId('security-notice')).toBeNull();

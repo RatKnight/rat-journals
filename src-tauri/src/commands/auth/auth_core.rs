@@ -314,6 +314,8 @@ pub(crate) fn perform_unlock(mode: UnlockMode, state: &DiaryState) -> Result<(),
         }
     }
 
+    super::update_clock_mark(&db_conn, Some(state));
+
     let mut db_state = state
         .db
         .lock()
@@ -1371,6 +1373,36 @@ mod tests {
         super::perform_unlock(super::UnlockMode::Keypair(key_path), &state).unwrap();
         super::super::lock_diary_inner(&state).unwrap();
         super::perform_unlock(super::UnlockMode::Password("password".to_string()), &state).unwrap();
+    }
+
+    #[test]
+    fn test_unlock_records_clock_mark_and_flags_tampering() {
+        let (_fixture, state, db_path, backups_dir) = make_state("clock_mark");
+        let db = crate::db::create_database(&db_path, "password".to_string()).unwrap();
+        drop(db);
+
+        // First unlock records a mark without a warning.
+        super::perform_unlock(super::UnlockMode::Password("password".to_string()), &state).unwrap();
+        assert_eq!(super::take_security_notice_inner(&state).unwrap(), None);
+        {
+            let guard = state.db.lock().unwrap();
+            let db = guard.as_ref().unwrap();
+            assert!(crate::db::get_db_setting(db, crate::clock::HIGH_WATER_SETTING).is_some());
+            // An edited mark is reported at the next unlock.
+            crate::db::set_db_setting(db, crate::clock::HIGH_WATER_SETTING, "99999999999:00")
+                .unwrap();
+        }
+        super::super::lock_diary_inner(&state).unwrap();
+        // Locking re-recorded a valid mark over the edit; edit it again on disk.
+        let db = crate::db::open_database(&db_path, "password".to_string(), &backups_dir).unwrap();
+        crate::db::set_db_setting(&db, crate::clock::HIGH_WATER_SETTING, "99999999999:00").unwrap();
+        drop(db);
+
+        super::perform_unlock(super::UnlockMode::Password("password".to_string()), &state).unwrap();
+        assert_eq!(
+            super::take_security_notice_inner(&state).unwrap(),
+            Some(super::super::NOTICE_CLOCK_SET_BACK.to_string())
+        );
     }
 
     #[test]

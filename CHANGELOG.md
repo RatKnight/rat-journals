@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- **Clock-change protection**: each journal remembers the latest time it has been open, sealed with the journal's key. If the computer's clock is set earlier than that, or the record is edited, a warning appears after unlocking. Upcoming time-based features use a time that never goes backwards, so setting the clock back can't stretch a time limit.
+
 ## 26.0.7 (2026-10-18)
 
 ### Added

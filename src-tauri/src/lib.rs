@@ -3,7 +3,9 @@
 // in commands/*, menu.rs, lib.rs, and the benches resolve. As of M2 (TODO-0077) the app
 // reaches core only through its curated façade — the module roots re-export the stable
 // API and seal their internals (see crates/mini-diarium-core/API.md).
-pub use mini_diarium_core::{auth, backup, config, crypto, db, export, import, plugin, search};
+pub use mini_diarium_core::{
+    auth, backup, clock, config, crypto, db, export, import, plugin, search,
+};
 
 mod clipboard_files;
 pub mod commands;

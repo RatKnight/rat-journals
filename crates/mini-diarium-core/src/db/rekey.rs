@@ -228,6 +228,19 @@ pub fn rotate_master_key(
             )?;
         }
 
+        // Re-MAC the clock high-water mark for the new key (an invalid one stays invalid).
+        use crate::clock::{decode_mark, encode_mark, HIGH_WATER_SETTING};
+        use crate::db::queries::db_settings::{get_db_setting_conn, set_db_setting_conn};
+        if let Some(stored) = get_db_setting_conn(conn, HIGH_WATER_SETTING) {
+            if let Some(secs) = decode_mark(old_key.as_bytes(), &stored) {
+                set_db_setting_conn(
+                    conn,
+                    HIGH_WATER_SETTING,
+                    &encode_mark(new_key.as_bytes(), secs),
+                )?;
+            }
+        }
+
         if table_exists(conn, "metadata")? {
             conn.execute(
                 "DELETE FROM metadata WHERE key IN ('password_hash', 'salt')",
@@ -655,6 +668,21 @@ mod tests {
         drop(db);
         let db = open_database_with_keypair(&path, private_key, backups.path()).unwrap();
         assert_content_intact(&db, &fixture);
+    }
+
+    #[test]
+    fn rotation_re_macs_the_clock_mark() {
+        let tmp = tempfile::Builder::new().suffix(".db").tempfile().unwrap();
+        let mut db = create_database(tmp.path(), "pw".to_string()).unwrap();
+        downgrade_password_slot(&db, "pw");
+        let mark = crate::clock::update_journal_mark(&db)
+            .unwrap()
+            .effective_now;
+        rotate_master_key(&mut db, &creds(Some("pw"), &[], None)).unwrap();
+
+        let check = crate::clock::update_journal_mark(&db).unwrap();
+        assert!(!check.suspicious());
+        assert!(check.effective_now >= mark);
     }
 
     #[test]

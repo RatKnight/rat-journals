@@ -97,6 +97,15 @@ describe('state/auth', () => {
     await vi.waitFor(() => expect(securityNotice()).toBe('upgrade-needs-all-methods'));
   });
 
+  it('unlockJournal shows the clock notice', async () => {
+    mocks.unlockJournal.mockResolvedValue(undefined);
+    mocks.takeSecurityNotice.mockResolvedValue('clock-set-back');
+
+    await unlockJournal('pw');
+
+    await vi.waitFor(() => expect(securityNotice()).toBe('clock-set-back'));
+  });
+
   it('unlockJournal shows no security notice for an unknown or absent code', async () => {
     mocks.unlockJournal.mockResolvedValue(undefined);
     mocks.takeSecurityNotice.mockResolvedValue('something-else');

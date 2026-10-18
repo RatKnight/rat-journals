@@ -1042,6 +1042,8 @@ const en = {
       "Rat Journal could not upgrade this journal's encryption. Until it does, anyone with a copy of the journal file or a backup can open it without your password. Lock the journal and unlock it with your password to try again.",
     upgradeNeedsAllMethods:
       "Rat Journal needs to upgrade this journal's encryption so that a future quantum computer cannot break it, and it needs all of the journal's unlock methods at once to do that. Lock the journal, choose “All methods” on the unlock screen, and enter your password and key files together.",
+    clockSetBack:
+      "This computer's clock is earlier than the last time this journal was open, or the journal's record of that time was changed. If you didn't change the clock, someone may have, for example to get around a time limit. Check the date and time settings.",
     internalError: 'An internal error occurred.',
     unexpectedError: 'An unexpected error occurred.',
   },

@@ -126,7 +126,9 @@ export default function MainLayout() {
               <p class="text-sm text-warning">
                 {securityNotice() === 'upgrade-needs-all-methods'
                   ? t('errors.upgradeNeedsAllMethods')
-                  : t('errors.keyUpgradeFailed')}
+                  : securityNotice() === 'clock-set-back'
+                    ? t('errors.clockSetBack')
+                    : t('errors.keyUpgradeFailed')}
               </p>
               <button
                 type="button"
