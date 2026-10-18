@@ -14,6 +14,14 @@ const [vaultListing, setVaultListing] = createSignal<VaultListing>(EMPTY);
 const [isVaultDialogOpen, setIsVaultDialogOpen] = createSignal(false);
 /** Whether the vault (rather than the journal) is the view in front, while one is open. */
 const [vaultInFront, setVaultInFront] = createSignal(true);
+const [vaultClockWarning, setVaultClockWarning] = createSignal(false);
+
+/** Whether to warn that the clock was set back since the vault was last open. */
+export { vaultClockWarning };
+
+export function dismissVaultClockWarning(): void {
+  setVaultClockWarning(false);
+}
 
 export { vaultStatus, vaultListing, isVaultDialogOpen, setIsVaultDialogOpen };
 
@@ -38,6 +46,7 @@ export function showVaultView(): void {
 export function resetVaultState(): void {
   setVaultStatus(null);
   setVaultListing(EMPTY);
+  setVaultClockWarning(false);
 }
 
 /** Reloads the file list from the backend. */
@@ -55,6 +64,7 @@ export async function refreshVault(): Promise<void> {
 /** Called after a successful create or unlock. */
 export async function showOpenedVault(status: VaultStatus): Promise<void> {
   setVaultStatus(status);
+  setVaultClockWarning(status.clock_set_back === true);
   setVaultInFront(true);
   setIsVaultDialogOpen(false);
   await refreshVault();

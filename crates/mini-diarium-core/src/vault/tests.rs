@@ -549,3 +549,60 @@ fn bulk_delete_move_and_save_copies() {
     let v = Vault::open_with_password(&dir, "pw").unwrap();
     assert_eq!(v.files()[0].id, b.id);
 }
+
+#[test]
+fn vault_clock_mark_survives_reopen() {
+    let t = tmp();
+    let dir = vault_dir(&t);
+    let mut v = Vault::create(&dir, Some("password"), None).unwrap();
+    v.update_clock_mark_at(1_000_000).unwrap();
+    drop(v);
+
+    let mut v = Vault::open_with_password(&dir, "password").unwrap();
+    let check = v.update_clock_mark_at(1_000_000 + 60).unwrap();
+    assert!(!check.suspicious());
+    assert_eq!(check.effective_now, 1_000_060);
+}
+
+#[test]
+fn vault_clock_set_back_is_flagged() {
+    let t = tmp();
+    let dir = vault_dir(&t);
+    let mut v = Vault::create(&dir, Some("password"), None).unwrap();
+    v.update_clock_mark_at(1_000_000).unwrap();
+    drop(v);
+
+    let mut v = Vault::open_with_password(&dir, "password").unwrap();
+    let check = v.update_clock_mark_at(1_000_000 - 3600).unwrap();
+    assert_eq!(check.set_back_by, Some(3600));
+    assert_eq!(check.effective_now, 1_000_000);
+    assert_eq!(v.index.clock_high_water, Some(1_000_000));
+
+    // A further call at the same time should still report the set_back
+    let check = v.update_clock_mark_at(1_000_000 - 3600).unwrap();
+    assert_eq!(check.set_back_by, Some(3600));
+}
+
+#[test]
+fn vault_clock_within_tolerance() {
+    let t = tmp();
+    let dir = vault_dir(&t);
+    let mut v = Vault::create(&dir, Some("password"), None).unwrap();
+    v.update_clock_mark_at(1_000_000).unwrap();
+    let check = v.update_clock_mark_at(1_000_000 - 60).unwrap();
+    assert!(!check.suspicious());
+}
+
+#[test]
+fn vault_clock_mark_survives_rekey() {
+    let t = tmp();
+    let dir = vault_dir(&t);
+    let mut v = Vault::create(&dir, Some("password"), None).unwrap();
+    v.update_clock_mark_at(1_000_000).unwrap();
+    v.rekey(Some("new"), &[]).unwrap();
+    drop(v);
+
+    let mut v = Vault::open_with_password(&dir, "new").unwrap();
+    let check = v.update_clock_mark_at(1_000_000 - 3600).unwrap();
+    assert_eq!(check.set_back_by, Some(3600));
+}

@@ -16,6 +16,8 @@ const mocks = vi.hoisted(() => ({
   open: vi.fn(),
   save: vi.fn(),
   confirm: vi.fn(() => Promise.resolve(true)),
+  clockWarning: false,
+  dismissVaultClockWarning: vi.fn(),
 }));
 
 vi.mock('../../state/vault', () => ({
@@ -24,6 +26,8 @@ vi.mock('../../state/vault', () => ({
   lockVault: mocks.lockVault,
   refreshVault: mocks.refreshVault,
   refreshVaultStatus: vi.fn(),
+  vaultClockWarning: () => mocks.clockWarning,
+  dismissVaultClockWarning: mocks.dismissVaultClockWarning,
 }));
 
 vi.mock('../../lib/dialog', () => ({ open: mocks.open, save: mocks.save, confirm: mocks.confirm }));
@@ -203,5 +207,17 @@ describe('VaultWindow', () => {
     await vi.waitFor(() =>
       expect(screen.getByTestId('vault-status').textContent).toBe('Files added: 1'),
     );
+  });
+});
+
+describe('VaultWindow clock warning', () => {
+  it('shows the warning when the clock was set back, and dismisses it', async () => {
+    mocks.clockWarning = true;
+    renderWithI18n(() => <VaultWindow />);
+    const banner = await screen.findByTestId('vault-clock-warning');
+    expect(banner.textContent).toContain('clock');
+    fireEvent.click(within(banner).getByRole('button'));
+    expect(mocks.dismissVaultClockWarning).toHaveBeenCalledTimes(1);
+    mocks.clockWarning = false;
   });
 });

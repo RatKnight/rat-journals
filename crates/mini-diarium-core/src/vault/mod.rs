@@ -83,6 +83,10 @@ struct IndexDoc {
     version: u32,
     folders: Vec<String>,
     files: Vec<VaultFile>,
+    /// Latest time this vault has seen (see `crate::clock`). The index is authenticated
+    /// encryption under the master key, so it needs no MAC of its own.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    clock_high_water: Option<i64>,
 }
 
 /// An unlocked vault. Dropping it wipes the master key from memory.
@@ -371,6 +375,24 @@ impl Vault {
     }
 
     /// The vault folder.
+    /// Compares the clock with the vault's high-water mark and stores the new mark.
+    pub fn update_clock_mark(&mut self) -> Result<crate::clock::ClockCheck, String> {
+        self.update_clock_mark_at(crate::clock::unix_now())
+    }
+
+    /// [`Self::update_clock_mark`] at a given time (for tests).
+    pub fn update_clock_mark_at(&mut self, now: i64) -> Result<crate::clock::ClockCheck, String> {
+        let check = crate::clock::compare(self.index.clock_high_water, false, now);
+        if self.index.clock_high_water != Some(check.effective_now) {
+            let previous = self.index.clock_high_water.replace(check.effective_now);
+            if let Err(e) = self.save_index() {
+                self.index.clock_high_water = previous;
+                return Err(e);
+            }
+        }
+        Ok(check)
+    }
+
     pub fn dir(&self) -> &Path {
         &self.dir
     }

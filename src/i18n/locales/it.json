@@ -781,6 +781,7 @@
     "keyUpgradeFailed": "Rat Journal non è riuscito ad aggiornare la crittografia di questo diario. Finché non ci riesce, chiunque abbia una copia del file del diario o di un backup può aprirlo senza la tua password. Blocca il diario e sbloccalo con la tua password per riprovare.",
     "upgradeNeedsAllMethods": "Rat Journal deve aggiornare la crittografia di questo diario perché un futuro computer quantistico non possa violarla, e per farlo ha bisogno di tutti i metodi di sblocco del diario insieme. Blocca il diario, scegli «Tutti i metodi» nella schermata di sblocco e inserisci insieme la password e i file chiave.",
     "clockSetBack": "This computer's clock is earlier than the last time this journal was open, or the journal's record of that time was changed. If you didn't change the clock, someone may have, for example to get around a time limit. Check the date and time settings.",
+    "vaultClockSetBack": "This computer's clock is earlier than the last time this vault was open. If you didn't change the clock, someone may have, for example to get around a time limit. Check the date and time settings.",
     "internalError": "Si è verificato un errore interno.",
     "unexpectedError": "Si è verificato un errore imprevisto."
   },

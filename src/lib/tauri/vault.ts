@@ -26,6 +26,8 @@ export interface VaultStatus {
   path: string;
   name: string;
   slots: VaultSlotInfo[];
+  /** The clock is behind the latest time this vault was open (set on unlock only). */
+  clock_set_back?: boolean;
 }
 
 export interface VaultListing {

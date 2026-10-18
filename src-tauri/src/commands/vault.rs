@@ -38,6 +38,8 @@ pub struct VaultStatus {
     pub path: String,
     pub name: String,
     pub slots: Vec<VaultSlotInfo>,
+    /// The clock is behind the latest time this vault was open (see `core::clock`).
+    pub clock_set_back: bool,
 }
 
 /// Files and folders of the open vault; files newest first.
@@ -108,7 +110,10 @@ pub(crate) fn close_vault(state: &DiaryState) {
     }
 }
 
-fn shutdown(open: OpenVault) {
+fn shutdown(mut open: OpenVault) {
+    if let Err(e) = open.vault.update_clock_mark() {
+        warn!("Could not record the vault's clock mark: {}", e);
+    }
     for path in &open.temp_files {
         wipe_file(path);
     }
@@ -185,14 +190,32 @@ fn with_vault<T>(
     result
 }
 
-fn install(state: &DiaryState, vault: Vault) -> Result<VaultStatus, String> {
+fn install(state: &DiaryState, mut vault: Vault) -> Result<VaultStatus, String> {
+    let clock_set_back = match vault.update_clock_mark() {
+        Ok(check) => {
+            if let Some(secs) = check.set_back_by {
+                warn!(
+                    "System clock is {} s behind the latest time this vault has seen",
+                    secs
+                );
+            }
+            check.suspicious()
+        }
+        Err(e) => {
+            warn!("Could not record the vault's clock mark: {}", e);
+            false
+        }
+    };
     // Removes leftovers from an interrupted add; never fatal.
     match vault.remove_orphans() {
         Ok(0) => {}
         Ok(n) => info!("Removed {} unreferenced vault object(s)", n),
         Err(e) => warn!("Could not clean the vault folder: {}", e),
     }
-    let status = status_of(&vault);
+    let status = VaultStatus {
+        clock_set_back,
+        ..status_of(&vault)
+    };
     let mut guard = state
         .vault
         .lock()
@@ -224,6 +247,7 @@ fn status_of(vault: &Vault) -> VaultStatus {
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_default(),
         slots: vault.slots(),
+        clock_set_back: false,
     }
 }
 

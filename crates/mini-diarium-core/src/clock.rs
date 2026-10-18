@@ -77,16 +77,21 @@ pub fn check(master_key: &[u8; 32], stored: Option<&str>, now: i64) -> (ClockChe
         Some(Some(m)) => (Some(m), false),
         Some(None) => (None, true),
     };
+    let result = compare(mark, tampered, now);
+    (result, encode_mark(master_key, result.effective_now))
+}
+
+/// Compares `now` with an already-verified mark (`None` = no mark yet).
+pub fn compare(mark: Option<i64>, tampered: bool, now: i64) -> ClockCheck {
     let set_back_by = mark
         .map(|m| m - now)
         .filter(|behind| *behind > TOLERANCE_SECS);
     let effective_now = mark.map_or(now, |m| m.max(now));
-    let result = ClockCheck {
+    ClockCheck {
         effective_now,
         set_back_by,
         tampered,
-    };
-    (result, encode_mark(master_key, effective_now))
+    }
 }
 
 /// Checks the clock against an open journal's mark and stores the new mark.

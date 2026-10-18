@@ -781,6 +781,7 @@
     "keyUpgradeFailed": "Rat Journal n'a pas pu mettre à jour le chiffrement de ce journal. D'ici là, toute personne disposant d'une copie du fichier du journal ou d'une sauvegarde peut l'ouvrir sans votre mot de passe. Verrouillez le journal puis déverrouillez-le avec votre mot de passe pour réessayer.",
     "upgradeNeedsAllMethods": "Rat Journal doit mettre à jour le chiffrement de ce journal pour qu'un futur ordinateur quantique ne puisse pas le casser, et il a besoin pour cela de toutes les méthodes de déverrouillage du journal en même temps. Verrouillez le journal, choisissez « Toutes les méthodes » sur l'écran de déverrouillage, puis saisissez votre mot de passe et vos fichiers de clé ensemble.",
     "clockSetBack": "This computer's clock is earlier than the last time this journal was open, or the journal's record of that time was changed. If you didn't change the clock, someone may have, for example to get around a time limit. Check the date and time settings.",
+    "vaultClockSetBack": "This computer's clock is earlier than the last time this vault was open. If you didn't change the clock, someone may have, for example to get around a time limit. Check the date and time settings.",
     "internalError": "Une erreur interne s'est produite.",
     "unexpectedError": "Une erreur inattendue s'est produite."
   },

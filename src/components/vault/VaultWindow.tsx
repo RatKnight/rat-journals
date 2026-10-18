@@ -36,7 +36,14 @@ import {
   type VaultSortKey,
 } from '../../lib/vault-files';
 import { useI18n } from '../../i18n';
-import { lockVault, refreshVault, vaultListing, vaultStatus } from '../../state/vault';
+import {
+  dismissVaultClockWarning,
+  lockVault,
+  refreshVault,
+  vaultClockWarning,
+  vaultListing,
+  vaultStatus,
+} from '../../state/vault';
 import { VaultMoveDialog, VaultTextPrompt } from './VaultDialogs';
 import VaultPreview from './VaultPreview';
 import VaultSettings from './VaultSettings';
@@ -740,6 +747,23 @@ export default function VaultWindow() {
               <span data-testid="vault-status">{status()}</span>
             </Show>
           </div>
+          <Show when={vaultClockWarning()}>
+            <div
+              role="alert"
+              data-testid="vault-clock-warning"
+              class="flex items-start gap-2 border-t border-primary bg-warning px-4 py-2"
+            >
+              <p class="flex-1 text-sm text-warning">{t('errors.vaultClockSetBack')}</p>
+              <button
+                type="button"
+                class="text-sm text-warning hover:opacity-75"
+                aria-label={t('common.close')}
+                onClick={() => dismissVaultClockWarning()}
+              >
+                ×
+              </button>
+            </div>
+          </Show>
           <Show when={error()}>
             <div
               role="alert"
