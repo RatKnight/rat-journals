@@ -77,8 +77,8 @@ flatpak-builder --user --install-deps-from=flathub --install --force-clean build
 ### Build
 
 ```bash
-git clone https://github.com/RatKnight/rat-journal.git
-cd rat-journal
+git clone https://github.com/RatKnight/rat-journals.git
+cd rat-journals
 bun install
 bun run tauri build
 ```
