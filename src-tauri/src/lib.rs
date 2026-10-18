@@ -323,6 +323,7 @@ pub fn run() {
             commands::vault::vault_status,
             commands::vault::vault_list,
             commands::vault::vault_add_files,
+            commands::vault::vault_add_bytes,
             commands::vault::vault_preview,
             commands::vault::vault_save_copy,
             commands::vault::vault_open_in_app,

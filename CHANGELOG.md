@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 26.0.0 (2026-10-18)
+
+Year-based version numbers start here (year.feature.patch). Headline: the encrypted file vault.
 
 ### Security
 - **Password-protected journals could be decrypted without the password.** The inherited password slot stored the Argon2id hash string and derived the unlock key from the hash inside it. Password slots now use format v2: a raw Argon2id key derived from the password and a random salt each time, never written to disk. Existing journals are upgraded on their next password unlock, with a full master-key rotation (every entry, tag, image, and attachment re-encrypted, every unlock method re-wrapped, the file compacted, and a fresh backup taken). Backups made before the upgrade still use the old key and should be deleted.

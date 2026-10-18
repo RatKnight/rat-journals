@@ -12,8 +12,17 @@ import PasswordCreation from './components/auth/PasswordCreation';
 import PasswordPrompt from './components/auth/PasswordPrompt';
 import MainLayout from './components/layout/MainLayout';
 import AboutOverlay from './components/overlays/AboutOverlay';
+import VaultOpenDialog from './components/vault/VaultOpenDialog';
+import VaultWindow from './components/vault/VaultWindow';
+import { isVaultOpen, lockVault, setupVaultEventListeners } from './state/vault';
 
 const log = createLogger('App');
+
+/** Locks whatever is open: the journal lock also closes a vault in the backend. */
+function lockEverything(): void {
+  if (authState() === 'unlocked') void lockJournal();
+  else if (isVaultOpen()) void lockVault();
+}
 
 function App() {
   const t = useI18n();
@@ -42,11 +51,11 @@ function App() {
     const { autoLockEnabled, autoLockTimeout } = preferences();
     const state = authState();
 
-    if (!autoLockEnabled || state !== 'unlocked') return;
+    if (!autoLockEnabled || (state !== 'unlocked' && !isVaultOpen())) return;
 
     function handleActivity() {
       if (idleTimer !== null) clearTimeout(idleTimer);
-      idleTimer = setTimeout(() => void lockJournal(), autoLockTimeout * 1000);
+      idleTimer = setTimeout(lockEverything, autoLockTimeout * 1000);
     }
 
     handleActivity(); // start initial timer
@@ -63,8 +72,8 @@ function App() {
 
   createFocusLossAutoLock({
     enabled: () => preferences().autoLockOnFocusLoss,
-    isUnlocked: () => authState() === 'unlocked',
-    lock: () => void lockJournal(),
+    isUnlocked: () => authState() === 'unlocked' || isVaultOpen(),
+    lock: lockEverything,
   });
 
   onMount(() => {
@@ -81,8 +90,16 @@ function App() {
         log.error('Failed to setup auth event listeners:', error);
       });
 
+    let cleanupVaultListeners: (() => void) | undefined;
+    void setupVaultEventListeners()
+      .then((cleanup) => {
+        cleanupVaultListeners = cleanup;
+      })
+      .catch((error) => log.error('Failed to setup vault event listeners:', error));
+
     onCleanup(() => {
       cleanupAuthListeners?.();
+      cleanupVaultListeners?.();
     });
   });
 
@@ -121,6 +138,12 @@ function App() {
       </Show>
 
       <AboutOverlay isOpen={isAboutOpen()} onClose={() => setIsAboutOpen(false)} />
+
+      {/* The vault is independent of the journal: it opens over whatever screen is showing. */}
+      <VaultOpenDialog />
+      <Show when={isVaultOpen()}>
+        <VaultWindow />
+      </Show>
     </>
   );
 }

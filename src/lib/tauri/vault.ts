@@ -84,6 +84,27 @@ export async function vaultAddFiles(
   return await invoke('vault_add_files', { paths, folder });
 }
 
+/** Largest file accepted by drag and drop (matches the backend's MAX_DROP_BYTES). */
+export const VAULT_MAX_DROP_BYTES = 200 * 1024 * 1024;
+
+/** UTF-8 text as base64, for request headers (which must be ASCII). */
+function base64Utf8(text: string): string {
+  let binary = '';
+  for (const byte of new TextEncoder().encode(text)) binary += String.fromCharCode(byte);
+  return btoa(binary);
+}
+
+/** Encrypts a dropped file's bytes into the vault. */
+export async function vaultAddBytes(
+  name: string,
+  folder: string | null,
+  bytes: ArrayBuffer,
+): Promise<VaultFile> {
+  const headers: Record<string, string> = { 'x-vault-name': base64Utf8(name) };
+  if (folder) headers['x-vault-folder'] = base64Utf8(folder);
+  return await invoke('vault_add_bytes', new Uint8Array(bytes), { headers });
+}
+
 /** Decrypted bytes for in-app preview (binary response). */
 export async function vaultPreview(id: string): Promise<ArrayBuffer> {
   return await invoke('vault_preview', { id });

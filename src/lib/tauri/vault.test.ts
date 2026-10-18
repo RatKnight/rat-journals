@@ -22,6 +22,7 @@ import {
   vaultAddKeyFile,
   vaultRemoveUnlockMethod,
   vaultVerify,
+  vaultAddBytes,
 } from './vault';
 
 vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn() }));
@@ -118,6 +119,25 @@ describe('vault command wrappers (IPC contract)', () => {
   ])('%s → %s (no arguments)', async (_name, call, command) => {
     await call();
     expect(mockInvoke).toHaveBeenCalledWith(command);
+  });
+
+  it('vaultAddBytes sends raw bytes with base64 UTF-8 name and folder headers', async () => {
+    const bytes = new Uint8Array([1, 2, 3]).buffer;
+    await vaultAddBytes('Résumé.pdf', 'Médical', bytes);
+    const [command, body, options] = mockInvoke.mock.calls[0];
+    expect(command).toBe('vault_add_bytes');
+    expect(Array.from(body as Uint8Array)).toEqual([1, 2, 3]);
+    const headers = (options as { headers: Record<string, string> }).headers;
+    const decode = (b64: string) =>
+      new TextDecoder().decode(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)));
+    expect(decode(headers['x-vault-name'])).toBe('Résumé.pdf');
+    expect(decode(headers['x-vault-folder'])).toBe('Médical');
+  });
+
+  it('vaultAddBytes omits the folder header for unfiled files', async () => {
+    await vaultAddBytes('a.txt', null, new ArrayBuffer(0));
+    const options = mockInvoke.mock.calls[0][2] as { headers: Record<string, string> };
+    expect(options.headers['x-vault-folder']).toBeUndefined();
   });
 
   it('vaultStatus returns null when no vault is open', async () => {

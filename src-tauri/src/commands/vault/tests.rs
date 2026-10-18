@@ -173,3 +173,14 @@ fn safe_file_names() {
     assert_eq!(safe_file_name(" ... "), "file");
     assert_eq!(safe_file_name("Report."), "Report");
 }
+
+#[test]
+fn dropped_bytes_are_added_and_capped() {
+    let (fixture, state, _, _) = make_state("vault_add_bytes");
+    create_inner(&state, &vault_path(&fixture), Some("pw".into()), None).unwrap();
+    let f = add_bytes_inner(&state, "photo.jpg", None, b"jpegdata").unwrap();
+    assert_eq!(f.mime.as_deref(), Some("image/jpeg"));
+    assert_eq!(preview_inner(&state, &f.id).unwrap(), b"jpegdata");
+    let too_big = vec![0u8; MAX_DROP_BYTES + 1];
+    assert!(add_bytes_inner(&state, "big.bin", None, &too_big).is_err());
+}

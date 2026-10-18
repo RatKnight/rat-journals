@@ -340,6 +340,38 @@ pub(crate) fn add_files_inner(
     })
 }
 
+/// Largest file accepted by drag and drop (its bytes cross the IPC bridge in memory);
+/// bigger files go through "Add files", which streams from disk.
+pub const MAX_DROP_BYTES: usize = 200 * 1024 * 1024;
+
+pub(crate) fn add_bytes_inner(
+    state: &DiaryState,
+    name: &str,
+    folder: Option<&str>,
+    bytes: &[u8],
+) -> Result<VaultFile, String> {
+    if bytes.len() > MAX_DROP_BYTES {
+        return Err("That file is too large to drop. Use Add files instead".to_string());
+    }
+    with_vault(state, |o| o.vault.add_reader(name, folder, bytes))
+}
+
+/// Decodes a base64 (UTF-8) request header; names travel in headers so the body can be
+/// the raw file bytes.
+fn header_text(request: &tauri::ipc::Request<'_>, key: &str) -> Result<Option<String>, String> {
+    use base64::Engine;
+    let Some(value) = request.headers().get(key) else {
+        return Ok(None);
+    };
+    let raw = value.to_str().map_err(|_| "Invalid request".to_string())?;
+    let bytes = base64::engine::general_purpose::STANDARD
+        .decode(raw)
+        .map_err(|_| "Invalid request".to_string())?;
+    String::from_utf8(bytes)
+        .map(Some)
+        .map_err(|_| "Invalid request".to_string())
+}
+
 pub(crate) fn preview_inner(state: &DiaryState, id: &str) -> Result<Vec<u8>, String> {
     with_vault(state, |o| {
         let mut bytes = o.vault.read_bytes(id, MAX_PREVIEW_BYTES)?;
@@ -515,6 +547,25 @@ pub async fn vault_add_files(
 ) -> Result<VaultAddResult, String> {
     run_blocking(app, move |app| {
         add_files_inner(&app.state::<DiaryState>(), &paths, folder.as_deref())
+    })
+    .await
+}
+
+/// Encrypts a dropped file. The body is the raw file bytes; the base64 headers
+/// `x-vault-name` and optional `x-vault-folder` carry its name and folder.
+#[tauri::command]
+pub async fn vault_add_bytes(
+    request: tauri::ipc::Request<'_>,
+    app: AppHandle,
+) -> Result<VaultFile, String> {
+    let tauri::ipc::InvokeBody::Raw(bytes) = request.body() else {
+        return Err("Invalid request".to_string());
+    };
+    let name = header_text(&request, "x-vault-name")?.ok_or("Invalid request")?;
+    let folder = header_text(&request, "x-vault-folder")?;
+    let bytes = bytes.clone();
+    run_blocking(app, move |app| {
+        add_bytes_inner(&app.state::<DiaryState>(), &name, folder.as_deref(), &bytes)
     })
     .await
 }

@@ -37,6 +37,24 @@ const { mockPreferences } = vi.hoisted(() => ({
   mockPreferences: vi.fn<() => MinimalPreferences>(),
 }));
 
+const mockVault = vi.hoisted(() => ({
+  open: false,
+  lockVault: vi.fn(() => Promise.resolve()),
+}));
+
+vi.mock('./state/vault', () => ({
+  isVaultOpen: () => mockVault.open,
+  lockVault: mockVault.lockVault,
+  setupVaultEventListeners: vi.fn(() => Promise.resolve(() => {})),
+  isVaultDialogOpen: () => false,
+  setIsVaultDialogOpen: vi.fn(),
+  showOpenedVault: vi.fn(),
+  vaultStatus: () => null,
+  vaultListing: () => ({ files: [], folders: [] }),
+  refreshVault: vi.fn(),
+  refreshVaultStatus: vi.fn(),
+}));
+
 vi.mock('./state/preferences', () => ({
   preferences: mockPreferences,
 }));
@@ -110,8 +128,23 @@ describe('App — focus-loss auto-lock wiring (TODO-0068)', () => {
     mockAuthState.mockReturnValue('locked');
     expect(options.isUnlocked()).toBe(false);
 
+    // With the journal unlocked, the journal lock (which also closes a vault) is used.
+    mockAuthState.mockReturnValue('unlocked');
     options.lock();
     expect(mockLockJournal).toHaveBeenCalledTimes(1);
+  });
+
+  it('locks an open vault when no journal is unlocked', async () => {
+    renderWithI18n(() => <App />);
+    const options = mockCreateFocusLossAutoLock.mock.calls[0][0];
+    mockAuthState.mockReturnValue('journal-select');
+    mockVault.open = true;
+
+    expect(options.isUnlocked()).toBe(true);
+    options.lock();
+    expect(mockVault.lockVault).toHaveBeenCalledTimes(1);
+    expect(mockLockJournal).not.toHaveBeenCalled();
+    mockVault.open = false;
   });
 });
 

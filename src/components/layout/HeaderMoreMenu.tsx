@@ -1,5 +1,5 @@
 import { DropdownMenu } from '@kobalte/core/dropdown-menu';
-import { EllipsisVertical, Settings, ChartColumn, FileUp, FileDown } from 'lucide-solid';
+import { EllipsisVertical, Settings, ChartColumn, FileUp, FileDown, Lock } from 'lucide-solid';
 import {
   setIsPreferencesOpen,
   setIsStatsOpen,
@@ -8,6 +8,7 @@ import {
   isMoreMenuOpen,
   setIsMoreMenuOpen,
 } from '../../state/ui';
+import { setIsVaultDialogOpen } from '../../state/vault';
 import { useI18n } from '../../i18n';
 
 export default function HeaderMoreMenu() {
@@ -59,6 +60,14 @@ export default function HeaderMoreMenu() {
           >
             <FileDown size={16} />
             {t('layout.header.menuExport')}
+          </DropdownMenu.Item>
+          <DropdownMenu.Item
+            data-testid="header-more-menu-vault-item"
+            class="flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm text-primary hover:bg-hover cursor-pointer outline-none"
+            onSelect={() => setIsVaultDialogOpen(true)}
+          >
+            <Lock size={16} />
+            {t('layout.header.menuVault')}
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
