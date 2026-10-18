@@ -185,7 +185,12 @@ pub(crate) fn perform_unlock(mode: UnlockMode, state: &DiaryState) -> Result<(),
     let (mut db_conn, label, rotation_password) = match mode {
         UnlockMode::Password(password) => {
             let rotation_password = Zeroizing::new(password.clone());
-            let conn = open_database(&db_path, password, &backups_dir)?;
+            let conn = match open_database(&db_path, password.clone(), &backups_dir) {
+                Err(e) if e == mini_diarium_core::duress::ERR_DURESS => {
+                    return crate::commands::duress::handle(state, password);
+                }
+                other => other?,
+            };
             migrate_require_all_auth_to_db(&conn, state);
             if crate::db::verify_require_all_auth(&conn) {
                 return Err(
@@ -841,6 +846,7 @@ mod tests {
         std::fs::create_dir_all(&state.app_data_dir).unwrap();
         let db_path = state.db_path.lock().unwrap().clone();
         let journal = crate::config::JournalConfig {
+            duress: None,
             dead_man: None,
             id: "auto-test".to_string(),
             name: "Auto test".to_string(),

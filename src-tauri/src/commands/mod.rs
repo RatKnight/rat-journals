@@ -5,6 +5,7 @@ pub mod backup_inspect;
 pub mod backup_triggers;
 pub mod deadman;
 pub mod debug;
+pub mod duress;
 pub mod entries;
 pub mod export;
 pub mod files;

@@ -23,6 +23,7 @@ Rat Journal keeps your journal in a single encrypted file on your own computer. 
 - **Quantum-resistant**: everything that protects a journal at rest is symmetric or a hash (AES-256, Argon2id, HKDF/HMAC-SHA256), so a future quantum computer gains only a modest speed-up. A password is still only as strong as you make it.
 - **Older journals upgrade themselves**: a journal written in an older key format is moved to the current one on its next unlock, and its master key is replaced. Delete backups made before that upgrade; they still use the old key.
 - **Dead man's switch (optional)**: a journal or the vault can be set to erase itself permanently if it isn't unlocked within a number of days. It acts only when Rat Journal runs, and can't reach copies elsewhere (cloud version history, trash).
+- **Panic password (optional)**: typing it at the unlock screen erases the journal (and optionally the vault) and opens a decoy journal instead.
 - **Clock-change detection**: each journal and vault remembers the latest time it was open, sealed with its key, and warns after unlocking if the computer's clock has been set earlier.
 - **No network access**: a strict content security policy and WebView-level blocking keep the app offline.
 

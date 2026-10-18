@@ -19,6 +19,7 @@ import { AddPasswordForm } from './AddPasswordForm';
 import { AddKeypairForm } from './AddKeypairForm';
 import { ChangePasswordForm } from './ChangePasswordForm';
 import DeadManField from '../../common/DeadManField';
+import DuressSection from './DuressSection';
 
 const log = createLogger('Preferences');
 
@@ -324,6 +325,7 @@ export default function PreferencesSecurityTab(props: PreferencesSecurityTabProp
                 setJournalDeadManDays(days);
               }}
             />
+            <DuressSection />
           </Show>
         </div>
       </div>

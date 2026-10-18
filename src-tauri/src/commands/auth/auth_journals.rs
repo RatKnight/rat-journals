@@ -220,6 +220,7 @@ fn add_journal_inner(
 
     let id = config::generate_journal_id();
     let journal = JournalConfig {
+        duress: None,
         dead_man: None,
         id: id.clone(),
         name,
@@ -409,7 +410,7 @@ pub fn rename_journal(id: String, name: String, state: State<DiaryState>) -> Res
     rename_journal_inner(id, name, &state.app_data_dir)
 }
 
-fn switch_journal_inner(id: String, state: &DiaryState) -> Result<(), String> {
+pub(crate) fn switch_journal_inner(id: String, state: &DiaryState) -> Result<(), String> {
     let journals = config::load_journals(&state.app_data_dir);
     let journal = journals
         .iter()
@@ -857,6 +858,7 @@ mod tests {
     /// Writes a config whose only journal carries `db_filename`, as if copied from another OS.
     fn save_foreign_journal(env: &TestEnv, dir: &Path, db_filename: &str, active: bool) -> String {
         let journal = JournalConfig {
+            duress: None,
             dead_man: None,
             id: "foreignjournal01".to_string(),
             name: "Foreign".to_string(),
@@ -996,6 +998,7 @@ mod tests {
         .unwrap();
         let mut journals = config::load_journals(&env.app_dir);
         journals.push(JournalConfig {
+            duress: None,
             dead_man: None,
             id: "foreignjournal01".to_string(),
             name: "Foreign".to_string(),
@@ -1032,6 +1035,7 @@ mod tests {
         .unwrap();
         let mut journals = config::load_journals(&env.app_dir);
         journals.push(JournalConfig {
+            duress: None,
             dead_man: None,
             id: "foreignjournal01".to_string(),
             name: "Foreign".to_string(),

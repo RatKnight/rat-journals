@@ -19,6 +19,19 @@ pub struct JournalConfig {
     /// erased at startup before anyone unlocks it (see `crate::deadman`).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub dead_man: Option<crate::deadman::DeadMan>,
+    /// Panic password settings for this journal (see `crate::duress`); the check value
+    /// itself lives in the journal file.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub duress: Option<DuressConfig>,
+}
+
+/// What a panic password does besides erasing its journal.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DuressConfig {
+    /// The journal opened instead (it must open with the panic password).
+    pub decoy_id: String,
+    /// Also erase the remembered vault.
+    pub erase_vault: bool,
 }
 
 /// Frontend-facing DTO — safe to send over IPC (raw key never included)
@@ -148,6 +161,7 @@ pub fn load_journals(app_data_dir: &Path) -> Vec<JournalConfig> {
         if path.is_absolute() {
             let id = generate_journal_id();
             let journal = JournalConfig {
+                duress: None,
                 dead_man: None,
                 id: id.clone(),
                 name: "My Journal".to_string(),

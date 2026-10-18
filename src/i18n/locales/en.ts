@@ -794,6 +794,24 @@ const en = {
   },
 
   /** Encrypted file vault */
+  duress: {
+    title: 'Panic password',
+    explain:
+      "Typing this password at the unlock screen permanently erases this journal (and, if chosen, the vault) and opens the decoy journal instead, as if it were a normal unlock. The decoy must be another journal whose password is the panic password, with believable entries. Copies elsewhere, such as cloud version history, are not erased, and destroying data you've been ordered to hand over can itself be illegal.",
+    isOn: 'A panic password is set.',
+    remove: 'Remove',
+    password: 'Panic password',
+    repeat: 'Repeat panic password',
+    decoy: 'Decoy journal',
+    eraseVault: 'Also erase the vault',
+    set: 'Set panic password',
+    change: 'Change panic password',
+    mismatch: "The two passwords don't match.",
+    needDecoy:
+      'Add a second journal to use as the decoy first. Its password must be the panic password.',
+    confirm:
+      'Typing the panic password will permanently erase this journal with no way to recover it. Set it?',
+  },
   deadMan: {
     journalLabel: "Erase this journal if it isn't unlocked for",
     vaultLabel: "Erase this vault if it isn't unlocked for",

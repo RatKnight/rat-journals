@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- **Panic password** (opt-in, Preferences → Security): a second password that, typed at the unlock screen, permanently erases the journal (and, if chosen, the vault), removes it from the journal list, and opens a decoy journal as if it were a normal unlock. The decoy is another journal whose password is the panic password. The journal stores only a check value for it, and every password unlock checks it, so a panic unlock takes as long as a normal one until the decoy opens.
+
 ## 26.0.9 (2026-10-19)
 
 ### Added

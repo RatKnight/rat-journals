@@ -34,6 +34,30 @@ export async function deadManWarnings(): Promise<DeadManWarning[]> {
   return await invoke<DeadManWarning[]>('dead_man_warnings');
 }
 
+export interface DuressStatus {
+  enabled: boolean;
+  decoy_id: string | null;
+  erase_vault: boolean;
+}
+
+/** The open journal's panic password settings. */
+export async function duressStatus(): Promise<DuressStatus> {
+  return await invoke<DuressStatus>('duress_status');
+}
+
+/** Sets the open journal's panic password; the decoy must open with the same password. */
+export async function setDuress(
+  password: string,
+  decoyId: string,
+  eraseVault: boolean,
+): Promise<void> {
+  await invoke('set_duress', { password, decoyId, eraseVault });
+}
+
+export async function clearDuress(): Promise<void> {
+  await invoke('clear_duress');
+}
+
 /** Takes the security notice left by the last unlock (e.g. `'key-upgrade-failed'`), or null. */
 export async function takeSecurityNotice(): Promise<string | null> {
   return (await invoke<string | null>('take_security_notice')) ?? null;

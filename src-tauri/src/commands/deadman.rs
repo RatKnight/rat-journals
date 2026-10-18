@@ -157,6 +157,7 @@ mod tests {
         std::fs::write(path.join("diary.db"), b"x").unwrap();
         std::fs::create_dir_all(path.join("backups").join("diary")).unwrap();
         JournalConfig {
+            duress: None,
             id: id.to_string(),
             name: id.to_string(),
             path: path.to_string_lossy().to_string(),

@@ -232,6 +232,9 @@ export async function unlockJournal(password: string): Promise<void> {
     setError(null);
     await tauri.unlockJournal(password);
     prepareUnlockedSession();
+    // The open journal may not be the one that was selected (a panic password opens its
+    // decoy), so refresh the journal list and the active journal.
+    await loadJournals();
     log.info('Journal unlocked');
 
     // Fetch entry dates after unlocking diary

@@ -320,6 +320,9 @@ pub fn run() {
             commands::deadman::journal_dead_man_days,
             commands::deadman::set_journal_dead_man,
             commands::deadman::dead_man_warnings,
+            commands::duress::duress_status,
+            commands::duress::set_duress,
+            commands::duress::clear_duress,
             commands::vault::vault_set_dead_man,
             // Vault
             commands::vault::vault_check_folder,

@@ -118,6 +118,7 @@ fn test_save_and_load_journals_roundtrip() {
     let dir = temp_dir("journals_roundtrip");
     let journals = vec![
         JournalConfig {
+            duress: None,
             dead_man: None,
             id: "aabbccdd11223344".to_string(),
             name: "Personal".to_string(),
@@ -131,6 +132,7 @@ fn test_save_and_load_journals_roundtrip() {
             require_all_auth: None,
         },
         JournalConfig {
+            duress: None,
             dead_man: None,
             id: "eeff00112233aabb".to_string(),
             name: "Work".to_string(),
@@ -166,6 +168,7 @@ fn test_save_active_journal_id_syncs_diary_dir() {
     let dir = temp_dir("journals_active_sync");
     let journals = vec![
         JournalConfig {
+            duress: None,
             dead_man: None,
             id: "aaaa".to_string(),
             name: "A".to_string(),
@@ -179,6 +182,7 @@ fn test_save_active_journal_id_syncs_diary_dir() {
             require_all_auth: None,
         },
         JournalConfig {
+            duress: None,
             dead_man: None,
             id: "bbbb".to_string(),
             name: "B".to_string(),
@@ -213,6 +217,7 @@ fn test_generate_journal_id_format() {
 fn test_save_journal_auto_key_roundtrip() {
     let dir = temp_dir("auto_key_roundtrip");
     let journals = vec![JournalConfig {
+        duress: None,
         dead_man: None,
         id: "testid1234567890".to_string(),
         name: "Auto Journal".to_string(),
@@ -238,6 +243,7 @@ fn test_save_journal_auto_key_roundtrip() {
 fn test_set_journal_require_all_auth_roundtrip() {
     let dir = temp_dir("require_all_auth_rt");
     let journals = vec![JournalConfig {
+        duress: None,
         dead_man: None,
         id: "testid1234567890".to_string(),
         name: "Test Journal".to_string(),
@@ -269,6 +275,7 @@ fn test_set_journal_require_all_auth_roundtrip() {
 fn test_save_journal_auto_key_clear() {
     let dir = temp_dir("auto_key_clear");
     let journals = vec![JournalConfig {
+        duress: None,
         dead_man: None,
         id: "testid1234567890".to_string(),
         name: "Auto Journal".to_string(),
@@ -613,6 +620,7 @@ fn test_last_vault_dir_roundtrip_and_preserves_journals() {
     assert!(load_last_vault_dir(&dir).is_none());
 
     let journal = JournalConfig {
+        duress: None,
         dead_man: None,
         id: "j1".to_string(),
         name: "Mine".to_string(),
