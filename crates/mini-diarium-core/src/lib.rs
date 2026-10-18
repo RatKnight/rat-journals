@@ -27,3 +27,4 @@ pub mod export;
 pub mod import;
 pub mod plugin;
 pub mod search;
+pub mod vault;

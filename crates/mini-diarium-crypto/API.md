@@ -74,6 +74,9 @@ frontend TypeScript):
 Reached at `crypto::cipher` / `crypto::password` (re-exported by core; also used by benches).
 
 - `cipher::{Key, encrypt, decrypt, encrypt_with_aad, decrypt_with_aad, CipherError, tag_name_fingerprint, image_fingerprint}`
+- `stream::{encrypt_stream, read_header, decrypt_stream, StreamHeader, ObjectKind, StreamError, CHUNK_SIZE, HEADER_LEN}` —
+  chunked AES-256-GCM for vault objects (format in `docs/VAULT_FORMAT.md`); the caller must use a
+  key unique to each object id
 - `password::{hash_password, verify_password, derive_key_from_phc_hash, generate_salt, PasswordError}`
   (`derive_key_from_phc_hash` is **legacy-only**: it reads keys out of a stored hash and must
   never protect new data)
