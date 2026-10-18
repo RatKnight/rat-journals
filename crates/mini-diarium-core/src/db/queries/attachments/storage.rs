@@ -58,6 +58,19 @@ pub(crate) fn upsert_attachment_blob(
 
     // Same keyed fingerprint as images; the separate table keeps the two id spaces apart.
     let fingerprint = cipher::image_fingerprint(db.key(), plaintext_bytes);
+    // Already stored: reuse it without encrypting a second multi-megabyte copy.
+    if let Some(id) = db
+        .conn()
+        .query_row(
+            "SELECT id FROM attachments WHERE fingerprint = ?1",
+            params![&fingerprint],
+            |row| row.get::<_, i64>(0),
+        )
+        .optional()
+        .map_err(|e| format!("Failed to look up attachment: {}", e))?
+    {
+        return Ok(id);
+    }
     let encrypted = super::super::encrypt_for_storage(db.key(), plaintext_bytes, "attachment")?;
     let now = chrono::Utc::now().to_rfc3339();
 

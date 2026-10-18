@@ -1,5 +1,16 @@
 # Changelog
 
+## 26.0.6 (2026-10-18)
+
+### Security and reliability (from an external review)
+- **Journal file names starting with a dot are refused.** A name like `...db` gave the journal a backups folder of `..`, so moving that journal's backups could delete the journal's own folder. Two journals in one folder whose names differ only by extension (`work.db`, `work.sqlite`) are also refused, since they would share one backups folder.
+- **The settings file is owner-only on Linux** (it can hold a no-password journal's key); it was readable by other users under the default permissions.
+- **Backup verification now checks attachments**, so a backup with a damaged attachment is no longer reported as verified.
+- **Backup file names are matched against an allowlist**, which also refuses Windows alternate-data-stream names (`:`).
+- **The backup list is flushed to disk before it replaces the old one**, so a power cut cannot leave it empty.
+- Re-adding an attachment that is already stored no longer encrypts a second copy first.
+- `SECURITY.md` had a stale Argon2 figure (64 MB / 3 passes); it now says 256 MiB / 4 passes.
+
 ## 26.0.5 (2026-10-18)
 
 ### Added

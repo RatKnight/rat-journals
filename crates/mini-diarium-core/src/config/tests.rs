@@ -655,3 +655,33 @@ fn test_save_config_is_atomic_and_leaves_no_temp_files() {
     assert!(save_last_vault_dir(&dir.join("missing"), None).is_err());
     cleanup(&dir);
 }
+
+#[test]
+fn test_dot_prefixed_db_filenames_are_refused() {
+    for windows_rules in [false, true] {
+        for bad in ["..db", "...db", ".hidden.db", "."] {
+            assert!(
+                !is_valid_db_filename(bad, windows_rules, FilenameCheck::Register),
+                "{bad}"
+            );
+        }
+    }
+    // Even a name that got into config.json some other way never yields a `.`/`..` folder.
+    assert!(journal_db_paths(Path::new("/j"), Some("...db")).is_err());
+    assert!(backups_stem("...db").is_err());
+    assert_eq!(backups_stem("work.sqlite").unwrap(), "work");
+}
+
+#[cfg(unix)]
+#[test]
+fn test_config_json_is_owner_only_on_unix() {
+    use std::os::unix::fs::PermissionsExt;
+    let dir = temp_dir("config_mode");
+    save_last_vault_dir(&dir, None).unwrap();
+    let mode = fs::metadata(dir.join(CONFIG_FILE))
+        .unwrap()
+        .permissions()
+        .mode();
+    assert_eq!(mode & 0o777, 0o600);
+    cleanup(&dir);
+}

@@ -102,10 +102,14 @@ pub(crate) fn save(dir: &Path, manifest: &Manifest) -> Result<(), String> {
 
     let temp = dir.join(TEMP_MANIFEST_FILE);
     fs::write(&temp, json).map_err(|e| format!("Failed to write backup manifest: {e}"))?;
+    // Flush before the rename (and the folder after it) like every other atomic write in the
+    // backup engine, so a power cut cannot leave an empty manifest.json behind.
+    super::store::fsync_file(&temp)?;
     fs::rename(&temp, manifest_path(dir)).map_err(|e| {
         let _ = fs::remove_file(&temp);
         format!("Failed to finalize backup manifest: {e}")
     })?;
+    super::store::fsync_dir(dir);
     Ok(())
 }
 

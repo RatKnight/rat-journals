@@ -383,12 +383,17 @@ pub(crate) fn dir_state(dir: &Path) -> DirState {
 /// separator and `..` rejections are what keep `dir.join(name)` inside `dir` — without them
 /// `backup-../../diary.db` satisfies both affixes and escapes.
 pub fn is_snapshot_file_name(name: &str) -> bool {
-    name.starts_with(SNAPSHOT_PREFIX)
-        && name.ends_with(SNAPSHOT_SUFFIX)
-        && !name.contains('/')
-        && !name.contains('\\')
-        && !name.contains("..")
-        && !name.contains('\0')
+    // An allowlist, not a blocklist: besides separators and `..`, this also refuses `:`
+    // (an NTFS alternate data stream) and anything else unexpected in a name that crosses IPC.
+    let Some(stem) = name
+        .strip_prefix(SNAPSHOT_PREFIX)
+        .and_then(|s| s.strip_suffix(SNAPSHOT_SUFFIX))
+    else {
+        return false;
+    };
+    !stem.is_empty()
+        && stem.len() <= 64
+        && stem.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')
 }
 
 /// Builds the snapshot file name for `at`, avoiding collisions with existing files.
@@ -658,6 +663,36 @@ fn verify_key_decrypts(conn: &rusqlite::Connection, key: &cipher::Key) -> Result
                 crate::format::decrypt_bytes(key, enc, "image thumbnail")
                     .map_err(|_| decrypt_failed())?;
             }
+        }
+    }
+
+    // Schema v14: attachment bytes and their per-entry names.
+    if has_table(conn, "attachments")? {
+        let mut stmt = conn
+            .prepare("SELECT data FROM attachments")
+            .map_err(|e| format!("Snapshot verification could not read attachments: {e}"))?;
+        let rows = stmt
+            .query_map([], |row| row.get::<_, Vec<u8>>(0))
+            .map_err(|e| format!("Snapshot verification could not read attachments: {e}"))?;
+        // One blob at a time: attachments can be large.
+        for row in rows {
+            let enc =
+                row.map_err(|e| format!("Snapshot verification could not read attachments: {e}"))?;
+            crate::format::decrypt_bytes(key, &enc, "attachment").map_err(|_| decrypt_failed())?;
+        }
+    }
+    if has_table(conn, "entry_attachments")? {
+        let mut stmt = conn
+            .prepare("SELECT name_encrypted FROM entry_attachments")
+            .map_err(|e| format!("Snapshot verification could not read attachments: {e}"))?;
+        let names: Vec<Vec<u8>> = stmt
+            .query_map([], |row| row.get::<_, Vec<u8>>(0))
+            .map_err(|e| format!("Snapshot verification could not read attachments: {e}"))?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| format!("Snapshot verification could not read attachments: {e}"))?;
+        for enc in &names {
+            crate::format::decrypt_utf8(key, enc, "attachment name")
+                .map_err(|_| decrypt_failed())?;
         }
     }
 
@@ -934,6 +969,46 @@ mod tests {
             result.is_err(),
             "verification passed even though a non-first entry's text is corrupt"
         );
+    }
+
+    #[test]
+    fn test_verification_rejects_a_corrupt_attachment_and_attachment_name() {
+        let (dir, _db_path, db) = seeded_journal("corrupt-attachment");
+        let store = FsSnapshotStore::new(dir.path().join("backups"));
+        store.write(&db, "backup-2026-08-04-12h00m00.db").unwrap();
+        let path = store.read("backup-2026-08-04-12h00m00.db").unwrap();
+        assert!(verify_snapshot(&path, db.key()).is_ok());
+
+        let conn = rusqlite::Connection::open(&path).unwrap();
+        conn.execute(
+            "INSERT INTO attachments (fingerprint, mime_type, byte_size, data, created_at)
+             VALUES (x'01', 'application/pdf', 4, x'ffffffffffffffffffffffffffffffffffffffffffffffff', 'now')",
+            [],
+        )
+        .unwrap();
+        drop(conn);
+        assert!(
+            verify_snapshot(&path, db.key()).is_err(),
+            "a corrupt attachment blob must fail verification"
+        );
+    }
+
+    #[test]
+    fn test_snapshot_names_are_an_allowlist() {
+        assert!(is_snapshot_file_name("backup-2026-08-04-12h00m00.db"));
+        assert!(is_snapshot_file_name("backup-2026-08-04-12h00m00-2.db"));
+        for bad in [
+            "backup-2026-08-04-12h00m00:stream.db",
+            "backup-../x.db",
+            "backup-a/b.db",
+            r"backup-a\b.db",
+            "backup-.db",
+            "backup- x.db",
+            "backup-x.db.exe",
+            "other.db",
+        ] {
+            assert!(!is_snapshot_file_name(bad), "{bad}");
+        }
     }
 
     #[test]

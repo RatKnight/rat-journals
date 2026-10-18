@@ -73,12 +73,23 @@ fn load_config(app_data_dir: &Path) -> AppConfig {
 fn save_config(app_data_dir: &Path, config: &AppConfig) -> Result<(), String> {
     use std::io::Write;
     let config_path = app_data_dir.join(CONFIG_FILE);
-    let json = serde_json::to_string_pretty(config)
-        .map_err(|e| format!("Failed to serialize config: {}", e))?;
+    let json = zeroize::Zeroizing::new(
+        serde_json::to_string_pretty(config)
+            .map_err(|e| format!("Failed to serialize config: {}", e))?,
+    );
     let tmp_path = app_data_dir.join(format!("{}.tmp-{}", CONFIG_FILE, generate_journal_id()));
     let err = |e: std::io::Error| format!("Failed to write config: {}", e);
     let result = (|| {
-        let mut file = std::fs::File::create(&tmp_path).map_err(err)?;
+        let mut options = std::fs::OpenOptions::new();
+        options.write(true).create_new(true);
+        // config.json can hold a no-password journal's key: owner-only on Unix (Windows
+        // profiles are already restricted to their owner by NTFS ACLs).
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::OpenOptionsExt;
+            options.mode(0o600);
+        }
+        let mut file = options.open(&tmp_path).map_err(err)?;
         file.write_all(json.as_bytes()).map_err(err)?;
         file.sync_all().map_err(err)?;
         drop(file);
@@ -257,7 +268,10 @@ fn check_db_filename(name: &str, check: FilenameCheck) -> Result<(), String> {
 /// The rules behind [`validate_db_filename`] and [`journal_db_paths`], with the Windows set as
 /// a parameter so tests cover both rule sets on every platform.
 fn is_valid_db_filename(name: &str, windows_rules: bool, check: FilenameCheck) -> bool {
-    if name.is_empty() || name == "." || name == ".." {
+    // A leading dot is refused outright: `..db` / `...db` have the file stems `.` / `..`,
+    // which would turn the journal's backups folder (`backups/{stem}`) into the journal
+    // folder or its parent.
+    if name.is_empty() || name.starts_with('.') {
         return false;
     }
     let max_bytes = match check {
@@ -307,11 +321,22 @@ pub fn journal_db_paths(
 ) -> Result<(PathBuf, PathBuf), String> {
     let db_filename = db_filename.unwrap_or("diary.db");
     check_db_filename(db_filename, FilenameCheck::Use)?;
+    let stem = backups_stem(db_filename)?;
+    Ok((dir.join(db_filename), dir.join("backups").join(stem)))
+}
+
+/// The name of a journal's own folder under `backups/`: the database file's stem. Refuses a
+/// stem that is empty or a path component (`.`, `..`), which the filename rules already
+/// exclude; this is the second line of defence before anything is joined to a path.
+pub fn backups_stem(db_filename: &str) -> Result<&str, String> {
     let stem = Path::new(db_filename)
         .file_stem()
         .and_then(|s| s.to_str())
         .unwrap_or("diary");
-    Ok((dir.join(db_filename), dir.join("backups").join(stem)))
+    if stem.is_empty() || stem == "." || stem == ".." || stem.starts_with('.') {
+        return Err(ERR_INVALID_DB_FILENAME.to_string());
+    }
+    Ok(stem)
 }
 
 /// Returns the active journal ID from config, if any.

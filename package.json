@@ -1,6 +1,6 @@
 {
   "name": "rat-journal",
-  "version": "26.0.5",
+  "version": "26.0.6",
   "description": "A modern, encrypted, local-first desktop journaling application",
   "type": "module",
   "scripts": {

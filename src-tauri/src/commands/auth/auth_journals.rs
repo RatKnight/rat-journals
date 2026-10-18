@@ -202,6 +202,21 @@ fn add_journal_inner(
     }) {
         return Err("Journal is already in your list".to_string());
     }
+    // Backups live in `backups/{file stem}`, so `work.db` and `work.sqlite` in one folder
+    // would share (and rotate) one backups folder.
+    let new_stem = config::backups_stem(new_db)?.to_lowercase();
+    if journals.iter().any(|j| {
+        same_directory(Path::new(&j.path), &dir)
+            && config::backups_stem(effective_db_filename(j.db_filename.as_deref()))
+                .map(|s| s.to_lowercase() == new_stem)
+                .unwrap_or(false)
+    }) {
+        return Err(
+            "Another journal in this folder already uses that name (before the extension). \
+             Choose a different file name."
+                .to_string(),
+        );
+    }
 
     let id = config::generate_journal_id();
     let journal = JournalConfig {
@@ -651,6 +666,35 @@ mod tests {
 
     /// P1: two config entries pointing at one database would ask for the first journal's
     /// password under the second journal's name.
+    #[test]
+    fn test_add_journal_rejects_a_second_journal_with_the_same_stem_in_a_folder() {
+        let env = make_test_env("add_same_stem");
+        let journal_dir = make_journal_dir(&env, "journal");
+        let path = journal_dir.to_str().unwrap().to_string();
+        add_journal_inner(
+            "Work".to_string(),
+            path.clone(),
+            Some("work.db".into()),
+            &env.app_dir,
+        )
+        .unwrap();
+        let err = add_journal_inner(
+            "Work 2".to_string(),
+            path.clone(),
+            Some("Work.sqlite".into()),
+            &env.app_dir,
+        )
+        .expect_err("two journals sharing backups/work must be refused");
+        assert!(err.contains("already uses that name"), "unexpected: {err}");
+        add_journal_inner(
+            "Home".to_string(),
+            path,
+            Some("home.db".into()),
+            &env.app_dir,
+        )
+        .unwrap();
+    }
+
     #[test]
     fn test_add_journal_rejects_a_duplicate_location() {
         let env = make_test_env("add_duplicate");
