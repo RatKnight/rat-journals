@@ -11,6 +11,7 @@ pub mod menu;
 pub mod screen_lock;
 pub mod spellcheck;
 pub mod sync_detect;
+mod taskbar_icon;
 mod webview_security;
 mod window_focus;
 
@@ -286,6 +287,7 @@ pub fn run() {
             }
 
             let win = win_builder.build()?;
+            taskbar_icon::apply(&win);
 
             if let Err(error) = screen_lock::init(app.handle()) {
                 warn!("Screen-lock listener initialization failed: {}", error);
