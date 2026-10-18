@@ -33,7 +33,8 @@ tauri-build = { version = "2.6.0", features = [] }
 # so the crypto-and-storage deps (argon2, aes-gcm, x25519-dalek, hkdf, sha2,
 # rhai, image, …) live in that crate's manifest, not here.
 mini-diarium-core = { path = "../crates/mini-diarium-core" }
-tauri = { version = "2.11.2", features = ["devtools"] }
+# No "devtools" feature: the inspector is available in debug builds only.
+tauri = { version = "2.11.2", features = [] }
 tauri-plugin-opener = "2.5.4"
 tauri-plugin-dialog = "2.7.1"
 tauri-plugin-window-state = "2"

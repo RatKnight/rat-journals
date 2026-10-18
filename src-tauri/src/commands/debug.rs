@@ -176,6 +176,7 @@ pub fn generate_debug_dump(
     let json = serde_json::to_string_pretty(&content)
         .map_err(|e| format!("Failed to serialize dump: {}", e))?;
 
+    super::paths::check_path(&file_path, super::paths::Access::WriteAs(&["json"]))?;
     std::fs::write(&file_path, json).map_err(|e| format!("Failed to write dump: {}", e))?;
     info!("Debug dump written to: {}", file_path);
 

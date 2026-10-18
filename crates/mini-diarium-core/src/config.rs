@@ -67,12 +67,28 @@ fn load_config(app_data_dir: &Path) -> AppConfig {
         .unwrap_or_default()
 }
 
+/// Writes the config atomically: a temporary file in the same folder, flushed to disk, then
+/// renamed over `config.json`. A crash or power cut mid-write leaves the previous config
+/// intact instead of an empty or truncated file (which would lose the journal list).
 fn save_config(app_data_dir: &Path, config: &AppConfig) -> Result<(), String> {
+    use std::io::Write;
     let config_path = app_data_dir.join(CONFIG_FILE);
     let json = serde_json::to_string_pretty(config)
         .map_err(|e| format!("Failed to serialize config: {}", e))?;
-    std::fs::write(&config_path, json).map_err(|e| format!("Failed to write config: {}", e))?;
-    Ok(())
+    let tmp_path = app_data_dir.join(format!("{}.tmp-{}", CONFIG_FILE, generate_journal_id()));
+    let err = |e: std::io::Error| format!("Failed to write config: {}", e);
+    let result = (|| {
+        let mut file = std::fs::File::create(&tmp_path).map_err(err)?;
+        file.write_all(json.as_bytes()).map_err(err)?;
+        file.sync_all().map_err(err)?;
+        drop(file);
+        // On Windows and Unix, rename replaces an existing destination atomically.
+        std::fs::rename(&tmp_path, &config_path).map_err(err)
+    })();
+    if result.is_err() {
+        let _ = std::fs::remove_file(&tmp_path);
+    }
+    result
 }
 
 /// Reads the saved diary directory from `{app_data_dir}/config.json`.

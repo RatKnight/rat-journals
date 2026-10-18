@@ -92,6 +92,7 @@ pub fn export_json(
     state: State<DiaryState>,
 ) -> Result<ExportResult, String> {
     info!("Starting JSON export to file: {}", file_path);
+    super::paths::check_path(&file_path, super::paths::Access::WriteAs(&["json"]))?;
     with_unlocked_db(&state, |db| {
         let entries = fetch_entries(db, date_from.as_deref(), date_to.as_deref())?;
         let entries = db::resolve_image_refs_in_entries(db, entries)?;
@@ -127,6 +128,10 @@ pub fn export_markdown(
     state: State<DiaryState>,
 ) -> Result<ExportResult, String> {
     info!("Starting Markdown export to file: {}", file_path);
+    super::paths::check_path(
+        &file_path,
+        super::paths::Access::WriteAs(&["md", "markdown"]),
+    )?;
     with_unlocked_db(&state, |db| {
         let entries = fetch_entries(db, date_from.as_deref(), date_to.as_deref())?;
         let entries = db::resolve_image_refs_in_entries(db, entries)?;

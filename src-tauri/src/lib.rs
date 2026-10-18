@@ -243,12 +243,7 @@ pub fn run() {
             .visible(false)
             .disable_drag_drop_handler()
             .on_navigation(|url| {
-                let scheme = url.scheme();
-                let host = url.host_str().unwrap_or("");
-                let allowed = scheme == "tauri"
-                    || scheme == "ipc"
-                    || (matches!(scheme, "http" | "https")
-                        && matches!(host, "localhost" | "127.0.0.1" | "tauri.localhost"));
+                let allowed = webview_security::is_allowed_app_url(url.as_str());
                 if !allowed {
                     warn!("Blocked navigation to external URL: {}", url);
                 }

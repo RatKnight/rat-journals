@@ -146,6 +146,7 @@ pub(crate) fn add_entry_attachment_inner(
     path: &str,
     state: &DiaryState,
 ) -> Result<AttachmentSummary, String> {
+    super::paths::check_path(path, super::paths::Access::Read)?;
     add_entry_attachment_with(entry_id, path, state, read_source_file)
 }
 
@@ -246,6 +247,9 @@ pub(crate) fn save_attachment_copy_inner(
             .ok_or_else(|| ERR_NOT_FOUND.to_string())
     })?;
 
+    // After the extension match above: also refuse network paths, startup folders, and
+    // runnable extensions (an attachment named `x.bat` is not saved back out as one).
+    super::paths::check_path(dest_path, super::paths::Access::WriteUserNamed)?;
     std::fs::write(dest, bytes.as_slice())
         .map_err(|e| format!("Failed to write attachment copy: {}", e))
 }

@@ -13,6 +13,7 @@ pub fn read_file_bytes(path: String) -> Result<Vec<u8>, String> {
     if !allowed.contains(&ext.as_str()) {
         return Err(format!("'{}' is not an allowed image extension", ext));
     }
+    super::paths::check_path(&path, super::paths::Access::Read)?;
     std::fs::read(&path).map_err(|e| format!("Failed to read '{}': {}", path, e))
 }
 
@@ -31,6 +32,7 @@ pub fn write_pdf_file(file_path: String, bytes: Vec<u8>) -> Result<(), String> {
             ext
         ));
     }
+    super::paths::check_path(&file_path, super::paths::Access::WriteAs(&["pdf"]))?;
     std::fs::write(&file_path, bytes).map_err(|e| format!("Failed to write PDF: {}", e))
 }
 
@@ -51,6 +53,7 @@ pub fn read_text_file(path: String) -> Result<String, String> {
     if !allowed.contains(&ext.as_str()) {
         return Err(format!("'{}' is not an allowed text extension", ext));
     }
+    super::paths::check_path(&path, super::paths::Access::Read)?;
     let metadata =
         std::fs::metadata(&path).map_err(|e| format!("Failed to read '{}': {}", path, e))?;
     if metadata.len() > MAX_TEXT_FILE_BYTES {

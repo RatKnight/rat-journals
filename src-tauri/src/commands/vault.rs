@@ -351,6 +351,10 @@ pub(crate) fn add_files_inner(
                 .file_name()
                 .map(|n| n.to_string_lossy().to_string())
                 .unwrap_or_else(|| path.clone());
+            if let Err(error) = super::paths::check_path(path, super::paths::Access::Read) {
+                result.failed.push(VaultAddFailure { name, error });
+                continue;
+            }
             if !p.is_file() {
                 result.failed.push(VaultAddFailure {
                     name,
@@ -411,6 +415,7 @@ pub(crate) fn save_copy_inner(state: &DiaryState, id: &str, dest: &str) -> Resul
     if is_network_path(dest) {
         return Err("A decrypted copy cannot be saved to a network location".to_string());
     }
+    super::paths::check_path(dest, super::paths::Access::WriteUserNamed)?;
     with_vault(state, |o| o.vault.save_copy(id, Path::new(dest)))
 }
 

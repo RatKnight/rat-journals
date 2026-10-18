@@ -193,6 +193,10 @@ fn run_export_plugin_inner(
         let plugin = reg
             .find_exporter(&plugin_id)
             .ok_or_else(|| format!("Export plugin '{}' not found", plugin_id))?;
+        // The file must carry one of the plugin's own extensions.
+        let extensions = plugin.info().file_extensions;
+        let allowed: Vec<&str> = extensions.iter().map(String::as_str).collect();
+        super::paths::check_path(&file_path, super::paths::Access::WriteAs(&allowed))?;
 
         plugin.export(entries, &tags, &attachments).map_err(|e| {
             error!("Plugin export error: {}", e);

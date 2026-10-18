@@ -4,6 +4,7 @@ use log::error;
 const MAX_IMPORT_FILE_SIZE: u64 = 100 * 1024 * 1024; // 100 MB
 
 pub(crate) fn read_import_file(file_path: &str) -> Result<String, String> {
+    super::paths::check_path(file_path, super::paths::Access::Read)?;
     let metadata = std::fs::metadata(file_path).map_err(|e| {
         let err = format!("Cannot access file: {}", e);
         error!("{}", err);

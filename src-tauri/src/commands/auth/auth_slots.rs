@@ -97,13 +97,11 @@ pub(crate) fn check_key_file_path(path: &str) -> Result<&std::path::Path, String
     if is_network_path(path) {
         return Err("A key file cannot be saved to a network location".to_string());
     }
+    crate::commands::paths::check_path(path, crate::commands::paths::Access::WriteAs(&["key"]))?;
     Ok(target)
 }
 
-/// True for a UNC / network path (`\\server\share`, `//server/share`).
-pub(crate) fn is_network_path(path: &str) -> bool {
-    path.starts_with("\\\\") || path.starts_with("//")
-}
+pub(crate) use crate::commands::paths::is_network_path;
 
 /// Writes `contents` to `path`, readable only by the owner on Unix (also when the file
 /// already existed). On Windows, NTFS ACLs restrict the user profile to its owner.

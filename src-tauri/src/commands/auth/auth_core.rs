@@ -27,6 +27,7 @@ pub(crate) enum UnlockMode {
 /// does (`commands::backup_inspect`), and a second reader would be a second place for the
 /// length and hex checks to drift.
 pub(crate) fn read_private_key_from_file(key_path: &str) -> Result<[u8; 32], String> {
+    crate::commands::paths::check_path(key_path, crate::commands::paths::Access::Read)?;
     let key_hex =
         std::fs::read_to_string(key_path).map_err(|e| format!("Failed to read key file: {}", e))?;
     let mut key_bytes_vec = hex::decode(key_hex.trim())

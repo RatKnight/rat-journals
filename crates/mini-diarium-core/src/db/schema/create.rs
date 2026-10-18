@@ -53,7 +53,29 @@ pub(crate) fn open_connection_in_memory() -> Result<Connection, String> {
 /// and must be configured before use.
 pub(crate) fn configure_connection(conn: &Connection) -> Result<(), String> {
     conn.pragma_update(None, "foreign_keys", true)
-        .map_err(|e| format!("Failed to enable foreign_keys: {}", e))
+        .map_err(|e| format!("Failed to enable foreign_keys: {}", e))?;
+    // Overwrite deleted content with zeros instead of leaving it in free pages until the
+    // next VACUUM. Content is encrypted either way; this also clears metadata such as
+    // dates of deleted entries and stale wrapped keys of removed unlock methods.
+    conn.pragma_update(None, "secure_delete", true)
+        .map_err(|e| format!("Failed to enable secure_delete: {}", e))
+}
+
+#[cfg(test)]
+mod configure_tests {
+    use super::*;
+
+    #[test]
+    fn connections_enable_foreign_keys_and_secure_delete() {
+        let conn = open_connection_in_memory().unwrap();
+        let fk: i64 = conn
+            .query_row("PRAGMA foreign_keys", [], |r| r.get(0))
+            .unwrap();
+        let sd: i64 = conn
+            .query_row("PRAGMA secure_delete", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!((fk, sd), (1, 1));
+    }
 }
 
 /// Creates a new encrypted diary database (schema v5)

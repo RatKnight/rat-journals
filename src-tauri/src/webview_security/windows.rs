@@ -76,17 +76,7 @@ pub fn install_webresource_requested_handler(win: &tauri::WebviewWindow) {
                     // string owned by the WebView2 runtime.
                     let uri_str = uri_ptr.to_string().unwrap_or_default();
                     let is_http = uri_str.starts_with("http://") || uri_str.starts_with("https://");
-                    let allow_local_http = uri_str.starts_with("http://localhost")
-                        || uri_str.starts_with("http://127.0.0.1")
-                        || uri_str.starts_with("http://tauri.localhost")
-                        || uri_str.starts_with("http://ipc.localhost")
-                        || uri_str.starts_with("https://localhost")
-                        || uri_str.starts_with("https://127.0.0.1")
-                        || uri_str.starts_with("https://tauri.localhost")
-                        || uri_str.starts_with("https://ipc.localhost");
-                    let allow = uri_str.starts_with("tauri://")
-                        || uri_str.starts_with("ipc://")
-                        || allow_local_http;
+                    let allow = super::is_allowed_app_url(&uri_str);
 
                     if is_http && !allow {
                         warn!(

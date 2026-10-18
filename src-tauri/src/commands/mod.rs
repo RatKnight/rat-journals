@@ -12,6 +12,7 @@ pub mod images;
 pub mod import;
 pub mod menu;
 pub mod navigation;
+pub mod paths;
 pub mod platform;
 pub mod plugin;
 pub mod search;

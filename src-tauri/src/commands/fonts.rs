@@ -210,6 +210,7 @@ pub fn import_custom_font(
     state: State<DiaryState>,
 ) -> Result<(), String> {
     let family = family.trim().to_string();
+    super::paths::check_path(&path, super::paths::Access::Read)?;
     let bytes = std::fs::read(&path).map_err(|e| format!("Cannot read font file: {e}"))?;
     validate_font_input(&family, &weight, &bytes)?;
     let now = chrono::Utc::now().to_rfc3339();

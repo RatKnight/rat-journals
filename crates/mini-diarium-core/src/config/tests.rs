@@ -636,3 +636,22 @@ fn test_relative_last_vault_dir_is_ignored() {
     assert!(load_last_vault_dir(&dir).is_none());
     cleanup(&dir);
 }
+
+#[test]
+fn test_save_config_is_atomic_and_leaves_no_temp_files() {
+    let dir = temp_dir("atomic_save");
+    let vault = std::env::temp_dir().join("V");
+    save_last_vault_dir(&dir, Some(&vault)).unwrap();
+    save_last_vault_dir(&dir, Some(&vault)).unwrap(); // overwrite an existing config
+    let names: Vec<String> = fs::read_dir(&dir)
+        .unwrap()
+        .flatten()
+        .map(|e| e.file_name().to_string_lossy().to_string())
+        .collect();
+    assert_eq!(names, vec![CONFIG_FILE.to_string()]);
+    assert_eq!(load_last_vault_dir(&dir), Some(vault));
+
+    // A failed write (folder missing) reports an error and does not panic.
+    assert!(save_last_vault_dir(&dir.join("missing"), None).is_err());
+    cleanup(&dir);
+}
