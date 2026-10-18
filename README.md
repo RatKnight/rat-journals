@@ -22,6 +22,7 @@ Rat Journal keeps your journal in a single encrypted file on your own computer. 
 - **Key files (optional)**: a key file holds 32 random bytes. Its slot locks the master key with AES-256 under an HKDF-SHA256 key derived from the file, and stores no public key.
 - **Quantum-resistant**: everything that protects a journal at rest is symmetric or a hash (AES-256, Argon2id, HKDF/HMAC-SHA256), so a future quantum computer gains only a modest speed-up. A password is still only as strong as you make it.
 - **Older journals upgrade themselves**: a journal written in an older key format is moved to the current one on its next unlock, and its master key is replaced. Delete backups made before that upgrade; they still use the old key.
+- **Clock-change detection**: each journal and vault remembers the latest time it was open, sealed with its key, and warns after unlocking if the computer's clock has been set earlier.
 - **No network access**: a strict content security policy and WebView-level blocking keep the app offline.
 
 What it does **not** protect against: someone using your computer while the journal is unlocked, or malware already running on it. Turn on auto-lock (Preferences → Security) and use full-disk encryption (BitLocker).
@@ -37,7 +38,7 @@ Full details: [SECURITY.md](SECURITY.md).
 - Password and/or key-file unlock, or a local-only journal that opens without a password on this device
 - Automatic verified backups, with per-entry restore
 - Import from Day One (JSON/TXT) and jrnl (JSON); export to JSON, Markdown, or PDF
-- Themes, statistics, auto-lock, lock when Windows locks
+- Themes (Light, Dark, Black, Violet), statistics, auto-lock for the journal and separately for the vault, lock when Windows locks
 
 ## Install (Windows)
 

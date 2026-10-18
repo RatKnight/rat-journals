@@ -55,9 +55,12 @@ The index object (kind 2) decrypts to UTF-8 JSON:
       "sha256": "…",
       "mime": "application/pdf"
     }
-  ]
+  ],
+  "clock_high_water": 1792350407
 }
 ```
+
+`clock_high_water` (optional) is the latest Unix time the vault has been open. Opening it with the clock more than 10 minutes earlier shows a warning. Readers that don't know the field ignore it.
 
 ## Writes
 
