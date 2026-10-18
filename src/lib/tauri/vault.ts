@@ -39,6 +39,12 @@ export interface VaultFolderInfo {
   slots: VaultSlotInfo[];
 }
 
+/** The vault folder opened last time, ready to unlock. */
+export interface VaultLastFolder {
+  path: string;
+  slots: VaultSlotInfo[];
+}
+
 export interface VaultAddResult {
   added: VaultFile[];
   failed: { name: string; error: string }[];
@@ -46,6 +52,11 @@ export interface VaultAddResult {
 
 /** Largest file the in-app preview loads (matches the backend's MAX_PREVIEW_BYTES). */
 export const VAULT_MAX_PREVIEW_BYTES = 200 * 1024 * 1024;
+
+/** The vault folder opened last time, or null if none was saved or it is gone. */
+export async function vaultLastFolder(): Promise<VaultLastFolder | null> {
+  return await invoke('vault_last_folder');
+}
 
 export async function vaultCheckFolder(path: string): Promise<VaultFolderInfo> {
   return await invoke('vault_check_folder', { path });

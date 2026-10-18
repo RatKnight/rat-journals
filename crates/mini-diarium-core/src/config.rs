@@ -49,6 +49,9 @@ struct AppConfig {
     diary_dir: Option<String>,
     journals: Option<Vec<JournalConfig>>,
     active_journal_id: Option<String>,
+    /// The vault folder most recently created or unlocked, offered first next time.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    last_vault_dir: Option<String>,
 }
 
 /// Generates a random 16-char hex string for use as a journal ID.
@@ -312,6 +315,25 @@ pub fn save_active_journal_id(app_data_dir: &Path, id: &str) -> Result<(), Strin
         }
     }
 
+    save_config(app_data_dir, &config)
+}
+
+/// Returns the vault folder most recently created or unlocked, if one was saved.
+pub fn load_last_vault_dir(app_data_dir: &Path) -> Option<PathBuf> {
+    load_config(app_data_dir)
+        .last_vault_dir
+        .map(PathBuf::from)
+        .filter(|p| p.is_absolute())
+}
+
+/// Remembers the vault folder that was just created or unlocked. Pass `None` to forget it.
+/// Only the location is stored, never a credential.
+pub fn save_last_vault_dir(app_data_dir: &Path, dir: Option<&Path>) -> Result<(), String> {
+    let mut config = load_config(app_data_dir);
+    config.last_vault_dir = match dir {
+        Some(d) => Some(d.to_str().ok_or("Path is not valid UTF-8")?.to_string()),
+        None => None,
+    };
     save_config(app_data_dir, &config)
 }
 

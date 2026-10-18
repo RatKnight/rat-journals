@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- **The vault dialog remembers your vault.** After a vault has been created or unlocked once, the Vault button goes straight to its unlock screen (password field ready, key-file button if it has one). "Choose a different folder" still opens the folder picker. Only the folder location is remembered (in the app's settings file), never a password or key; if the folder is gone or not mounted, the picker is shown as before.
+
 ## 26.0.2 (2026-10-18)
 
 ### Security

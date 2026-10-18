@@ -237,3 +237,36 @@ fn dropped_bytes_are_added_and_capped() {
     let too_big = vec![0u8; MAX_DROP_BYTES + 1];
     assert!(add_bytes_inner(&state, "big.bin", None, &too_big).is_err());
 }
+
+#[test]
+fn the_last_opened_vault_is_remembered() {
+    let (fixture, state, _, _) = make_state("vault_last_folder");
+    std::fs::create_dir_all(&state.app_data_dir).unwrap();
+    assert!(last_folder_inner(&state.app_data_dir).is_none());
+
+    let path = vault_path(&fixture);
+    create_inner(&state, &path, Some("pw".into()), None).unwrap();
+    close_vault(&state);
+    let last = last_folder_inner(&state.app_data_dir).expect("remembered after create");
+    assert_eq!(last.path, path);
+    assert_eq!(last.slots.len(), 1);
+    assert_eq!(last.slots[0].slot_type, "password");
+
+    // A wrong password does not change what is remembered; unlocking another vault does.
+    let other = fixture
+        .path()
+        .join("Other Vault")
+        .to_string_lossy()
+        .to_string();
+    create_inner(&state, &other, Some("pw".into()), None).unwrap();
+    close_vault(&state);
+    assert!(unlock_password_inner(&state, &path, "nope").is_err());
+    assert_eq!(last_folder_inner(&state.app_data_dir).unwrap().path, other);
+    unlock_password_inner(&state, &path, "pw").unwrap();
+    assert_eq!(last_folder_inner(&state.app_data_dir).unwrap().path, path);
+
+    // A remembered folder that no longer holds a vault (deleted, unmounted) is not offered.
+    close_vault(&state);
+    std::fs::remove_dir_all(&path).unwrap();
+    assert!(last_folder_inner(&state.app_data_dir).is_none());
+}

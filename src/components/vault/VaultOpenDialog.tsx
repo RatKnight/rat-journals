@@ -1,4 +1,4 @@
-import { createSignal, Show, Switch, Match } from 'solid-js';
+import { createEffect, createSignal, Show, Switch, Match, on } from 'solid-js';
 import { Dialog } from '@kobalte/core/dialog';
 import { FolderOpen, KeyRound } from 'lucide-solid';
 import * as tauri from '../../lib/tauri';
@@ -32,6 +32,32 @@ export default function VaultOpenDialog() {
     setBusy(false);
   };
 
+  const showUnlock = (path: string, slots: tauri.VaultSlotInfo[]) => {
+    setFolder(path);
+    setHasPassword(slots.some((s) => s.slot_type === 'password'));
+    setHasKeyFile(slots.some((s) => s.slot_type === 'keyfile'));
+    setStep('unlock');
+  };
+
+  // Each time the dialog opens, go straight to unlocking the vault opened last time (if
+  // it is still there). "Choose a different folder" goes back to the folder picker.
+  createEffect(
+    on(isVaultDialogOpen, (isOpen) => {
+      if (!isOpen) return;
+      void tauri
+        .vaultLastFolder()
+        .then((last) => {
+          // Only if the user has not already picked something while this loaded.
+          if (last && isVaultDialogOpen() && step() === 'choose' && !folder()) {
+            showUnlock(last.path, last.slots);
+          }
+        })
+        .catch(() => {
+          // Nothing remembered: the folder picker is shown as usual.
+        });
+    }),
+  );
+
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen && busy()) return;
     if (!isOpen) reset();
@@ -44,12 +70,10 @@ export default function VaultOpenDialog() {
     if (!picked || typeof picked !== 'string') return;
     try {
       const info = await tauri.vaultCheckFolder(picked);
-      setFolder(picked);
       if (info.is_vault) {
-        setHasPassword(info.slots.some((s) => s.slot_type === 'password'));
-        setHasKeyFile(info.slots.some((s) => s.slot_type === 'keyfile'));
-        setStep('unlock');
+        showUnlock(picked, info.slots);
       } else {
+        setFolder(picked);
         setStep('create');
       }
     } catch (err) {

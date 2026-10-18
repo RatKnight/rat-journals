@@ -599,3 +599,40 @@ fn test_db_filename_error_is_not_in_the_filesystem_bucket() {
     // mapTauriError maps "Failed to …" to a permissions message, which would be wrong here.
     assert!(!err.starts_with("Failed to"));
 }
+
+#[test]
+fn test_last_vault_dir_roundtrip_and_preserves_journals() {
+    let dir = temp_dir("last_vault_dir");
+    assert!(load_last_vault_dir(&dir).is_none());
+
+    let journal = JournalConfig {
+        id: "j1".to_string(),
+        name: "Mine".to_string(),
+        path: std::env::temp_dir().to_string_lossy().to_string(),
+        auto_key: None,
+        db_filename: None,
+        require_all_auth: None,
+    };
+    save_journals(&dir, std::slice::from_ref(&journal), "j1").unwrap();
+
+    let vault = std::env::temp_dir().join("My Vault");
+    save_last_vault_dir(&dir, Some(&vault)).unwrap();
+    assert_eq!(load_last_vault_dir(&dir), Some(vault));
+    assert_eq!(load_journals(&dir).len(), 1, "other settings are kept");
+
+    save_last_vault_dir(&dir, None).unwrap();
+    assert!(load_last_vault_dir(&dir).is_none());
+    cleanup(&dir);
+}
+
+#[test]
+fn test_relative_last_vault_dir_is_ignored() {
+    let dir = temp_dir("last_vault_relative");
+    fs::write(
+        dir.join(CONFIG_FILE),
+        r#"{"last_vault_dir":"relative/vault"}"#,
+    )
+    .unwrap();
+    assert!(load_last_vault_dir(&dir).is_none());
+    cleanup(&dir);
+}

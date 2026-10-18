@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { invoke } from '@tauri-apps/api/core';
 import {
   vaultCheckFolder,
+  vaultLastFolder,
   vaultCreate,
   vaultUnlockPassword,
   vaultUnlockKeyFile,
@@ -116,6 +117,7 @@ describe('vault command wrappers (IPC contract)', () => {
     ['vaultLock', () => vaultLock(), 'vault_lock'],
     ['vaultList', () => vaultList(), 'vault_list'],
     ['vaultVerify', () => vaultVerify(), 'vault_verify'],
+    ['vaultLastFolder', () => vaultLastFolder(), 'vault_last_folder'],
   ])('%s → %s (no arguments)', async (_name, call, command) => {
     await call();
     expect(mockInvoke).toHaveBeenCalledWith(command);

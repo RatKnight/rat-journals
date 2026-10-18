@@ -318,6 +318,7 @@ pub fn run() {
             commands::auth::take_security_notice,
             // Vault
             commands::vault::vault_check_folder,
+            commands::vault::vault_last_folder,
             commands::vault::vault_create,
             commands::vault::vault_unlock_password,
             commands::vault::vault_unlock_key_file,

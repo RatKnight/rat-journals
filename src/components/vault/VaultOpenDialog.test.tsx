@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   open: vi.fn(),
   save: vi.fn(),
   vaultCheckFolder: vi.fn(),
+  vaultLastFolder: vi.fn(() => Promise.resolve(null as unknown)),
   vaultUnlockPassword: vi.fn(),
   vaultCreate: vi.fn(),
   showOpenedVault: vi.fn(() => Promise.resolve()),
@@ -17,6 +18,7 @@ vi.mock('../../lib/tauri', async () => {
   return {
     ...actual,
     vaultCheckFolder: mocks.vaultCheckFolder,
+    vaultLastFolder: mocks.vaultLastFolder,
     vaultUnlockPassword: mocks.vaultUnlockPassword,
     vaultCreate: mocks.vaultCreate,
   };
@@ -34,7 +36,49 @@ const STATUS = { path: 'G:/Vault', name: 'Vault', slots: [] };
 describe('VaultOpenDialog', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.vaultLastFolder.mockResolvedValue(null);
     setIsVaultDialogOpen(true);
+  });
+
+  it('goes straight to unlocking the vault opened last time', async () => {
+    mocks.vaultLastFolder.mockResolvedValue({
+      path: 'G:/My Drive/Vault',
+      slots: [
+        { id: 1, slot_type: 'password', label: 'Password' },
+        { id: 2, slot_type: 'keyfile', label: 'USB' },
+      ],
+    });
+    mocks.vaultUnlockPassword.mockResolvedValueOnce(STATUS);
+    renderWithI18n(() => <VaultOpenDialog />);
+
+    const pw = await screen.findByLabelText('Vault password');
+    expect(screen.getByText('G:/My Drive/Vault')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Unlock with key file/ })).toBeInTheDocument();
+    expect(mocks.open).not.toHaveBeenCalled();
+
+    fireEvent.input(pw, { target: { value: 'secret' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Unlock vault' }));
+    await vi.waitFor(() =>
+      expect(mocks.vaultUnlockPassword).toHaveBeenCalledWith('G:/My Drive/Vault', 'secret'),
+    );
+  });
+
+  it('can still choose a different folder after the remembered one is shown', async () => {
+    mocks.vaultLastFolder.mockResolvedValue({
+      path: 'G:/Old',
+      slots: [{ id: 1, slot_type: 'password', label: 'Password' }],
+    });
+    renderWithI18n(() => <VaultOpenDialog />);
+    await screen.findByLabelText('Vault password');
+    fireEvent.click(screen.getByRole('button', { name: 'Choose a different folder' }));
+    expect(await screen.findByRole('button', { name: /Choose folder/ })).toBeInTheDocument();
+    expect(screen.queryByLabelText('Vault password')).toBeNull();
+  });
+
+  it('shows the folder picker when nothing is remembered', async () => {
+    renderWithI18n(() => <VaultOpenDialog />);
+    await vi.waitFor(() => expect(mocks.vaultLastFolder).toHaveBeenCalled());
+    expect(screen.getByRole('button', { name: /Choose folder/ })).toBeInTheDocument();
   });
 
   it('unlocks an existing vault with its password', async () => {

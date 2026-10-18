@@ -54,6 +54,13 @@ pub struct VaultFolderInfo {
     pub slots: Vec<VaultSlotInfo>,
 }
 
+/// The vault folder opened last time, ready to unlock.
+#[derive(Debug, Serialize)]
+pub struct VaultLastFolder {
+    pub path: String,
+    pub slots: Vec<VaultSlotInfo>,
+}
+
 /// The outcome of adding several files: what was added and what failed.
 #[derive(Debug, Serialize)]
 pub struct VaultAddResult {
@@ -199,6 +206,12 @@ fn install(state: &DiaryState, vault: Vault) -> Result<VaultStatus, String> {
     });
     state.vault_close_requested.store(false, Ordering::SeqCst);
     info!("Vault opened");
+    // Offered first the next time the vault dialog opens. Never fatal.
+    if let Err(e) =
+        crate::config::save_last_vault_dir(&state.app_data_dir, Some(Path::new(&status.path)))
+    {
+        warn!("Could not remember the vault folder: {}", e);
+    }
     Ok(status)
 }
 
@@ -243,6 +256,20 @@ pub(crate) fn check_folder_inner(path: &str) -> Result<VaultFolderInfo, String> 
     Ok(VaultFolderInfo {
         is_vault: true,
         slots: vault::peek_slots(dir)?,
+    })
+}
+
+/// The remembered vault folder, if it still holds a readable vault (for example a
+/// Google Drive folder that is mounted). Otherwise `None`, and the dialog asks for a folder.
+pub(crate) fn last_folder_inner(app_data_dir: &Path) -> Option<VaultLastFolder> {
+    let dir = crate::config::load_last_vault_dir(app_data_dir)?;
+    if !vault::is_vault(&dir) {
+        return None;
+    }
+    let slots = vault::peek_slots(&dir).ok()?;
+    Some(VaultLastFolder {
+        path: dir.to_string_lossy().to_string(),
+        slots,
     })
 }
 
@@ -546,6 +573,12 @@ pub(crate) fn remove_slot_inner(
 #[tauri::command]
 pub fn vault_check_folder(path: String) -> Result<VaultFolderInfo, String> {
     check_folder_inner(&path)
+}
+
+/// The vault folder opened last time, if it is still there.
+#[tauri::command]
+pub fn vault_last_folder(state: State<DiaryState>) -> Option<VaultLastFolder> {
+    last_folder_inner(&state.app_data_dir)
 }
 
 /// Creates a vault in an empty folder and opens it. `key_file_path`, when given, is where
