@@ -12,11 +12,27 @@ const [vaultStatus, setVaultStatus] = createSignal<VaultStatus | null>(null);
 const [vaultListing, setVaultListing] = createSignal<VaultListing>(EMPTY);
 /** The "Open or create a vault" dialog. */
 const [isVaultDialogOpen, setIsVaultDialogOpen] = createSignal(false);
+/** Whether the vault (rather than the journal) is the view in front, while one is open. */
+const [vaultInFront, setVaultInFront] = createSignal(true);
 
 export { vaultStatus, vaultListing, isVaultDialogOpen, setIsVaultDialogOpen };
 
-/** True while a vault is unlocked (its window is shown). */
+/** True while a vault is unlocked. */
 export const isVaultOpen = () => vaultStatus() !== null;
+
+/** True when the vault window is the view on screen (open and not switched away from). */
+export const isVaultShown = () => isVaultOpen() && vaultInFront();
+
+/** Shows the journal side; an open vault stays unlocked in the background. */
+export function showJournalView(): void {
+  setVaultInFront(false);
+}
+
+/** Shows the open vault, or asks for one to open. */
+export function showVaultView(): void {
+  if (isVaultOpen()) setVaultInFront(true);
+  else setIsVaultDialogOpen(true);
+}
 
 /** Clears everything the frontend holds about the vault. */
 export function resetVaultState(): void {
@@ -39,6 +55,7 @@ export async function refreshVault(): Promise<void> {
 /** Called after a successful create or unlock. */
 export async function showOpenedVault(status: VaultStatus): Promise<void> {
   setVaultStatus(status);
+  setVaultInFront(true);
   setIsVaultDialogOpen(false);
   await refreshVault();
 }

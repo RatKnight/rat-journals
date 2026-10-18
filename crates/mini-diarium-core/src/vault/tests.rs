@@ -500,3 +500,52 @@ fn not_a_vault_and_newer_versions_are_refused() {
         .unwrap_err()
         .contains("newer version"));
 }
+
+#[test]
+fn bulk_delete_move_and_save_copies() {
+    let t = tmp();
+    let dir = vault_dir(&t);
+    let mut v = Vault::create(&dir, Some("pw"), None).unwrap();
+    v.create_folder("Medical").unwrap();
+    let a = add(&mut v, "a.pdf", None, b"aaa");
+    let b = add(&mut v, "a.pdf", None, b"bbb");
+    let c = add(&mut v, "c.txt", None, b"ccc");
+
+    // An unknown id rejects the whole batch.
+    assert!(v
+        .move_files(&[a.id.clone(), "0".repeat(32)], Some("Medical"))
+        .is_err());
+    v.move_files(&[a.id.clone(), b.id.clone()], Some("Medical"))
+        .unwrap();
+    assert_eq!(
+        v.files()
+            .iter()
+            .filter(|f| f.folder.as_deref() == Some("Medical"))
+            .count(),
+        2
+    );
+
+    // Same-named files are saved side by side, never overwritten.
+    let out = t.path().join("out");
+    fs::create_dir_all(&out).unwrap();
+    fs::write(out.join("c.txt"), b"existing").unwrap();
+    let written = v
+        .save_copies(&[a.id.clone(), b.id.clone(), c.id.clone()], &out)
+        .unwrap();
+    let names: Vec<String> = written
+        .iter()
+        .map(|p| p.file_name().unwrap().to_string_lossy().to_string())
+        .collect();
+    assert_eq!(names, vec!["a.pdf", "a (2).pdf", "c (2).txt"]);
+    assert_eq!(fs::read(out.join("c.txt")).unwrap(), b"existing");
+    assert_eq!(fs::read(out.join("a (2).pdf")).unwrap(), b"bbb");
+
+    assert!(v.delete_files(&[a.id.clone(), "0".repeat(32)]).is_err());
+    assert_eq!(v.files().len(), 3);
+    v.delete_files(&[a.id.clone(), c.id.clone()]).unwrap();
+    assert_eq!(v.files().len(), 1);
+    assert!(!v.blob_path(&a.id).exists());
+    drop(v);
+    let v = Vault::open_with_password(&dir, "pw").unwrap();
+    assert_eq!(v.files()[0].id, b.id);
+}

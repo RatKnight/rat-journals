@@ -670,6 +670,68 @@ impl Vault {
         Ok(())
     }
 
+    /// Deletes several stored files with one index write. Every id must exist; nothing is
+    /// deleted otherwise. Blobs are removed after the index no longer refers to them.
+    pub fn delete_files(&mut self, ids: &[String]) -> Result<(), String> {
+        if ids
+            .iter()
+            .any(|id| !self.index.files.iter().any(|f| &f.id == id))
+        {
+            return Err("That file is not in this vault".to_string());
+        }
+        let before = self.index.clone();
+        let removed: Vec<VaultFile> = self
+            .index
+            .files
+            .iter()
+            .filter(|f| ids.contains(&f.id))
+            .cloned()
+            .collect();
+        self.index.files.retain(|f| !ids.contains(&f.id));
+        if let Err(e) = self.save_index() {
+            self.index = before;
+            return Err(e);
+        }
+        for f in removed {
+            let _ = fs::remove_file(self.blob_path(&f.id));
+        }
+        Ok(())
+    }
+
+    /// Moves several stored files into a folder (or out of all folders) with one index write.
+    pub fn move_files(&mut self, ids: &[String], folder: Option<&str>) -> Result<(), String> {
+        let folder = self.check_folder(folder)?;
+        if ids
+            .iter()
+            .any(|id| !self.index.files.iter().any(|f| &f.id == id))
+        {
+            return Err("That file is not in this vault".to_string());
+        }
+        let before = self.index.clone();
+        for f in self.index.files.iter_mut().filter(|f| ids.contains(&f.id)) {
+            f.folder = folder.clone();
+        }
+        if let Err(e) = self.save_index() {
+            self.index = before;
+            return Err(e);
+        }
+        Ok(())
+    }
+
+    /// Decrypts several files into `dir`, never overwriting: a name that already exists gets
+    /// " (2)", " (3)", … before its extension. Returns the paths written. Stops at the first
+    /// failure (files already written stay).
+    pub fn save_copies(&self, ids: &[String], dir: &Path) -> Result<Vec<PathBuf>, String> {
+        let mut written = Vec::new();
+        for id in ids {
+            let entry = self.entry(id)?;
+            let dest = unique_path(dir, &entry.name);
+            self.save_copy(id, &dest)?;
+            written.push(dest);
+        }
+        Ok(written)
+    }
+
     /// Creates a folder.
     pub fn create_folder(&mut self, name: &str) -> Result<(), String> {
         let name = validate_name(name, "folder")?;
@@ -966,6 +1028,43 @@ impl Vault {
         }
         Ok(removed)
     }
+}
+
+/// `dir/name`, or `dir/stem (n).ext` for the first `n` that does not exist yet. The name is
+/// reduced to a plain file name valid on every OS first.
+fn unique_path(dir: &Path, name: &str) -> PathBuf {
+    let cleaned: String = name
+        .chars()
+        .map(|c| match c {
+            '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|' => '_',
+            c if c.is_control() => '_',
+            c => c,
+        })
+        .collect();
+    let cleaned = cleaned.trim().trim_end_matches('.').to_string();
+    let name = if cleaned.is_empty() {
+        "file".to_string()
+    } else {
+        cleaned
+    };
+    let first = dir.join(&name);
+    if !first.exists() {
+        return first;
+    }
+    let p = Path::new(&name);
+    let stem = p
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or(&name)
+        .to_string();
+    let ext = p.extension().and_then(|e| e.to_str());
+    (2..)
+        .map(|n| match ext {
+            Some(ext) => dir.join(format!("{stem} ({n}).{ext}")),
+            None => dir.join(format!("{stem} ({n})")),
+        })
+        .find(|candidate| !candidate.exists())
+        .expect("an unused name exists")
 }
 
 fn password_slot(

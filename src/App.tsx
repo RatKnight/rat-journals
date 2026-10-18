@@ -11,10 +11,11 @@ import JournalPicker from './components/auth/JournalPicker';
 import PasswordCreation from './components/auth/PasswordCreation';
 import PasswordPrompt from './components/auth/PasswordPrompt';
 import MainLayout from './components/layout/MainLayout';
+import AppRail from './components/layout/AppRail';
 import AboutOverlay from './components/overlays/AboutOverlay';
 import VaultOpenDialog from './components/vault/VaultOpenDialog';
 import VaultWindow from './components/vault/VaultWindow';
-import { isVaultOpen, lockVault, setupVaultEventListeners } from './state/vault';
+import { isVaultOpen, isVaultShown, lockVault, setupVaultEventListeners } from './state/vault';
 
 const log = createLogger('App');
 
@@ -104,47 +105,53 @@ function App() {
   });
 
   return (
-    <>
-      <Switch>
-        <Match when={authState() === 'checking'}>
-          <div class="flex h-full items-center justify-center bg-secondary">
-            <div class="text-center">
-              <div class="mb-4 h-12 w-12 animate-spin rounded-full border-4 spinner-border border-t-transparent mx-auto" />
-              <p class="text-secondary">{t('layout.loading')}</p>
-            </div>
-          </div>
-        </Match>
-
-        <Match when={authState() === 'journal-select'}>
-          <JournalPicker />
-        </Match>
-
-        <Match when={authState() === 'no-journal'}>
-          <PasswordCreation />
-        </Match>
-
-        <Match when={authState() === 'locked'}>
-          <PasswordPrompt />
-        </Match>
-
-        <Match when={authState() === 'unlocked' || authState() === 'locking'}>
-          <MainLayout />
-        </Match>
-      </Switch>
-
-      {/* Lock backdrop — fades in over the mounted MainLayout, then locked state unmounts it */}
-      <Show when={authState() === 'locking'}>
-        <div class="lock-backdrop" aria-hidden="true" />
+    <div class="flex h-full">
+      <Show when={authState() !== 'checking'}>
+        <AppRail />
       </Show>
+      <div class="relative h-full min-w-0 flex-1">
+        <Switch>
+          <Match when={authState() === 'checking'}>
+            <div class="flex h-full items-center justify-center bg-secondary">
+              <div class="text-center">
+                <div class="mb-4 h-12 w-12 animate-spin rounded-full border-4 spinner-border border-t-transparent mx-auto" />
+                <p class="text-secondary">{t('layout.loading')}</p>
+              </div>
+            </div>
+          </Match>
+
+          <Match when={authState() === 'journal-select'}>
+            <JournalPicker />
+          </Match>
+
+          <Match when={authState() === 'no-journal'}>
+            <PasswordCreation />
+          </Match>
+
+          <Match when={authState() === 'locked'}>
+            <PasswordPrompt />
+          </Match>
+
+          <Match when={authState() === 'unlocked' || authState() === 'locking'}>
+            <MainLayout />
+          </Match>
+        </Switch>
+
+        {/* Lock backdrop — fades in over the mounted MainLayout, then locked state unmounts it */}
+        <Show when={authState() === 'locking'}>
+          <div class="lock-backdrop" aria-hidden="true" />
+        </Show>
+
+        {/* The vault is independent of the journal: it covers the journal side while it is the
+          view in front, and stays unlocked in the background when the rail switches away. */}
+        <Show when={isVaultShown()}>
+          <VaultWindow />
+        </Show>
+      </div>
 
       <AboutOverlay isOpen={isAboutOpen()} onClose={() => setIsAboutOpen(false)} />
-
-      {/* The vault is independent of the journal: it opens over whatever screen is showing. */}
       <VaultOpenDialog />
-      <Show when={isVaultOpen()}>
-        <VaultWindow />
-      </Show>
-    </>
+    </div>
   );
 }
 

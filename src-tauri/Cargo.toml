@@ -1,6 +1,6 @@
 [package]
 name = "mini-diarium"
-version = "26.0.4"
+version = "26.0.5"
 description = "A modern, encrypted, local-first desktop journaling application"
 authors = ["Rat Journal"]
 license = "MIT"
@@ -103,6 +103,7 @@ harness = false
 [target.'cfg(target_os = "windows")'.dependencies]
 windows-sys = { version = "0.61", features = [
   "Win32_Foundation",
+  "Win32_System_DataExchange",
   "Win32_System_LibraryLoader",
   "Win32_System_RemoteDesktop",
   "Win32_UI_Shell",

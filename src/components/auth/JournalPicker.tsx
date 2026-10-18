@@ -13,7 +13,7 @@ import { isFlatpak, loadPlatformInfo } from '../../state/platform';
 import { checkJournalPath, getDefaultJournalDir } from '../../lib/tauri';
 import { mapTauriError } from '../../lib/errors';
 import { Vault } from 'lucide-solid';
-import { setIsVaultDialogOpen } from '../../state/vault';
+import { showVaultView } from '../../state/vault';
 import { joinDialogPath, splitDialogPath } from '../../lib/native-path';
 import { useI18n } from '../../i18n';
 
@@ -540,7 +540,7 @@ export default function JournalPicker() {
             <button
               type="button"
               data-testid="open-vault-button"
-              onClick={() => setIsVaultDialogOpen(true)}
+              onClick={showVaultView}
               class="inline-flex w-full items-center justify-center gap-2 rounded-md interactive-primary px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <Vault size={18} />

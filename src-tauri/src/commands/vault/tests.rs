@@ -270,3 +270,48 @@ fn the_last_opened_vault_is_remembered() {
     std::fs::remove_dir_all(&path).unwrap();
     assert!(last_folder_inner(&state.app_data_dir).is_none());
 }
+
+#[test]
+fn bulk_commands_delete_move_and_save_copies() {
+    let (fixture, state, _, _) = make_state("vault_bulk");
+    let path = vault_path(&fixture);
+    create_inner(&state, &path, Some("pw".into()), None).unwrap();
+    let a = write(&fixture, "a.txt", b"a");
+    let b = write(&fixture, "b.bat", b"b");
+    add_files_inner(&state, &[a, b], None).unwrap();
+    with_vault(&state, |o| o.vault.create_folder("Docs")).unwrap();
+    let ids: Vec<String> = list_inner(&state)
+        .unwrap()
+        .files
+        .into_iter()
+        .map(|f| f.id)
+        .collect();
+
+    move_files_inner(&state, &ids, Some("Docs")).unwrap();
+    assert!(list_inner(&state)
+        .unwrap()
+        .files
+        .iter()
+        .all(|f| f.folder.as_deref() == Some("Docs")));
+
+    // A runnable name is refused before anything is written.
+    let out = fixture.path().join("out");
+    std::fs::create_dir_all(&out).unwrap();
+    let out_s = out.to_string_lossy().to_string();
+    assert!(save_copies_inner(&state, &ids, &out_s)
+        .unwrap_err()
+        .contains("b.bat"));
+    assert_eq!(std::fs::read_dir(&out).unwrap().count(), 0);
+    let txt: Vec<String> = list_inner(&state)
+        .unwrap()
+        .files
+        .into_iter()
+        .filter(|f| f.name == "a.txt")
+        .map(|f| f.id)
+        .collect();
+    assert_eq!(save_copies_inner(&state, &txt, &out_s).unwrap(), 1);
+    assert!(save_copies_inner(&state, &txt, r"\\server\share").is_err());
+
+    delete_files_inner(&state, &ids).unwrap();
+    assert!(list_inner(&state).unwrap().files.is_empty());
+}

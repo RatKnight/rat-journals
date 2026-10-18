@@ -144,6 +144,26 @@ export async function vaultDeleteFile(id: string): Promise<void> {
   await invoke('vault_delete_file', { id });
 }
 
+/** Deletes several files with one index write; all ids must exist. */
+export async function vaultDeleteFiles(ids: string[]): Promise<void> {
+  await invoke('vault_delete_files', { ids });
+}
+
+/** Moves several files into a folder (`null` = no folder). */
+export async function vaultMoveFiles(ids: string[], folder: string | null): Promise<void> {
+  await invoke('vault_move_files', { ids, folder });
+}
+
+/** Decrypts files into the folder `dir`, never overwriting; returns how many were saved. */
+export async function vaultSaveCopies(ids: string[], dir: string): Promise<number> {
+  return await invoke('vault_save_copies', { ids, dir });
+}
+
+/** Encrypts the files copied in File Explorer (read from the clipboard by the backend). */
+export async function vaultPasteFiles(folder: string | null): Promise<VaultAddResult> {
+  return await invoke('vault_paste_files', { folder });
+}
+
 export async function vaultCreateFolder(name: string): Promise<void> {
   await invoke('vault_create_folder', { name });
 }

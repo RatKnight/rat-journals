@@ -38,6 +38,14 @@
       "title": "Rat Journal",
       "closeMenu": "Chiudi menu",
       "goToToday": "Vai a oggi"
+    },
+    "rail": {
+      "label": "Main navigation",
+      "journal": "Journal",
+      "vault": "Vault",
+      "vaultOpen": "Vault is unlocked",
+      "lock": "Lock",
+      "lockAll": "Lock the journal and the vault"
     }
   },
   "timeline": {
@@ -854,6 +862,16 @@
     "verifyOk": "Every file decrypted intact.",
     "verifyDamaged": "Damaged or modified: {{ names }}",
     "rotateHint": "Changing the password or removing a method re-encrypts the vault with a fresh key, so the old credential stops opening it — even an old copy kept by a cloud provider. You will be asked to select any other registered key files.",
-    "selectKeyFile": "Select the key file “{{label}}”"
+    "selectKeyFile": "Select the key file “{{label}}”",
+    "paste": "Paste",
+    "pasteHint": "Paste files copied in File Explorer (Ctrl+V)",
+    "selectAll": "Select all",
+    "selectFile": "Select {{ name }}",
+    "selectedCount": "{{ count }} selected",
+    "saveCopies": "Save copies…",
+    "saveCopiesTitle": "Choose a folder for the decrypted copies",
+    "savedCount": "Saved {{ count }} decrypted copies",
+    "deleteSelectedConfirm": "Delete {{ count }} files from the vault? This cannot be undone.",
+    "clearSelection": "Clear selection"
   }
 }

@@ -44,6 +44,9 @@ const mockVault = vi.hoisted(() => ({
 
 vi.mock('./state/vault', () => ({
   isVaultOpen: () => mockVault.open,
+  isVaultShown: () => mockVault.open,
+  showJournalView: vi.fn(),
+  showVaultView: vi.fn(),
   lockVault: mockVault.lockVault,
   setupVaultEventListeners: vi.fn(() => Promise.resolve(() => {})),
   isVaultDialogOpen: () => false,

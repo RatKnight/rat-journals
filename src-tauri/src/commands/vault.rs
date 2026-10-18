@@ -504,6 +504,55 @@ fn match_key_files(
 /// (re-encrypting the whole vault), so every remaining key file must be presented via
 /// `key_file_paths`; the old password stops working even against old header copies.
 /// Adding a first password to a key-file-only vault revokes nothing and does not rotate.
+pub(crate) fn delete_files_inner(state: &DiaryState, ids: &[String]) -> Result<(), String> {
+    with_vault(state, |o| o.vault.delete_files(ids))
+}
+
+pub(crate) fn move_files_inner(
+    state: &DiaryState,
+    ids: &[String],
+    folder: Option<&str>,
+) -> Result<(), String> {
+    with_vault(state, |o| o.vault.move_files(ids, folder))
+}
+
+/// Decrypts files into the folder `dir` (chosen in a folder dialog) without overwriting
+/// anything there. Returns how many were saved.
+pub(crate) fn save_copies_inner(
+    state: &DiaryState,
+    ids: &[String],
+    dir: &str,
+) -> Result<usize, String> {
+    let dir = super::paths::check_path(dir, super::paths::Access::Read)?;
+    if !dir.is_dir() {
+        return Err("Choose a folder to save the copies in".to_string());
+    }
+    // Every name written gets the same checks as a single "Save a copy".
+    with_vault(state, |o| {
+        for f in o.vault.files().iter().filter(|f| ids.contains(&f.id)) {
+            super::paths::check_path(
+                &dir.join(&f.name).to_string_lossy(),
+                super::paths::Access::WriteUserNamed,
+            )
+            .map_err(|e| format!("{}: {}", f.name, e))?;
+        }
+        o.vault.save_copies(ids, &dir).map(|w| w.len())
+    })
+}
+
+/// Encrypts the files copied in the system file manager into the vault. The paths come
+/// from the OS clipboard here in the backend, never from the WebView.
+pub(crate) fn paste_files_inner(
+    state: &DiaryState,
+    folder: Option<&str>,
+) -> Result<VaultAddResult, String> {
+    let paths = crate::clipboard_files::copied_files()?;
+    if paths.is_empty() {
+        return Err("Copy some files first (for example in File Explorer), then paste".to_string());
+    }
+    add_files_inner(state, &paths, folder)
+}
+
 pub(crate) fn change_password_inner(
     state: &DiaryState,
     current: Option<&str>,
@@ -801,6 +850,51 @@ pub async fn vault_remove_unlock_method(
             current_password.as_deref(),
             key_file_paths.as_deref().unwrap_or_default(),
         )
+    })
+    .await
+}
+
+#[tauri::command]
+pub async fn vault_delete_files(ids: Vec<String>, app: AppHandle) -> Result<(), String> {
+    run_blocking(app, move |app| {
+        delete_files_inner(&app.state::<DiaryState>(), &ids)
+    })
+    .await
+}
+
+#[tauri::command]
+pub async fn vault_move_files(
+    ids: Vec<String>,
+    folder: Option<String>,
+    app: AppHandle,
+) -> Result<(), String> {
+    run_blocking(app, move |app| {
+        move_files_inner(&app.state::<DiaryState>(), &ids, folder.as_deref())
+    })
+    .await
+}
+
+/// Decrypts the files into `dir` (a folder chosen in a dialog), never overwriting.
+#[tauri::command]
+pub async fn vault_save_copies(
+    ids: Vec<String>,
+    dir: String,
+    app: AppHandle,
+) -> Result<usize, String> {
+    run_blocking(app, move |app| {
+        save_copies_inner(&app.state::<DiaryState>(), &ids, &dir)
+    })
+    .await
+}
+
+/// Encrypts the files on the clipboard (copied in File Explorer) into the vault.
+#[tauri::command]
+pub async fn vault_paste_files(
+    folder: Option<String>,
+    app: AppHandle,
+) -> Result<VaultAddResult, String> {
+    run_blocking(app, move |app| {
+        paste_files_inner(&app.state::<DiaryState>(), folder.as_deref())
     })
     .await
 }

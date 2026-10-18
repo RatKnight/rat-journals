@@ -1,5 +1,12 @@
 # Changelog
 
+## 26.0.5 (2026-10-18)
+
+### Added
+- **A navigation bar on the left** switches between the journal and the vault, with a Lock button that locks everything. Switching to the journal keeps an open vault unlocked in the background (a green dot shows it); auto-lock still closes it.
+- **Select several vault files**: checkboxes, a select-all box, Ctrl-click, Shift-click ranges, Ctrl+A, and Esc to clear. The selection bar saves copies (into a chosen folder, never overwriting), moves, or deletes them all at once.
+- **Paste into the vault**: copy files in File Explorer, then use Paste (or Ctrl+V) in the vault to encrypt them in. Windows only; on Linux use Add files or drag and drop.
+
 ## 26.0.4 (2026-10-18)
 
 ### Security

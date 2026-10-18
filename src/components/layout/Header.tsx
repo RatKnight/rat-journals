@@ -1,15 +1,5 @@
 import { Show } from 'solid-js';
-import {
-  Menu,
-  Lock,
-  Info,
-  List,
-  PenLine,
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  Vault,
-} from 'lucide-solid';
+import { Menu, Lock, Info, List, PenLine, Search, ChevronLeft, ChevronRight } from 'lucide-solid';
 import {
   selectedDate,
   setIsAboutOpen,
@@ -24,7 +14,6 @@ import { authState, lockJournal } from '../../state/auth';
 import { preferences } from '../../state/preferences';
 import { useI18n } from '../../i18n';
 import HeaderMoreMenu from './HeaderMoreMenu';
-import { setIsVaultDialogOpen } from '../../state/vault';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -122,16 +111,6 @@ export default function Header(props: HeaderProps) {
           <Show when={mainView() === 'timeline'} fallback={<List size={20} />}>
             <PenLine size={20} />
           </Show>
-        </button>
-        <button
-          type="button"
-          onClick={() => setIsVaultDialogOpen(true)}
-          data-testid="header-vault-button"
-          class="inline-flex items-center gap-1.5 rounded-md border border-primary px-3 py-1.5 text-sm font-medium text-secondary hover:bg-hover transition-colors"
-          title={t('layout.header.openVault')}
-        >
-          <Vault size={18} aria-hidden="true" />
-          {t('layout.header.menuVault')}
         </button>
         <button
           data-tour-target="about"
