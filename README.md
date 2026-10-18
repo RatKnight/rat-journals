@@ -115,6 +115,10 @@ bun run test:e2e:local          # end-to-end, drives the built app (needs: cargo
 
 Statistics, Import, and Export are in the ⋮ menu.
 
+## Credits
+
+Rat Journal is based on [Mini Diarium](https://github.com/fjrevoredo/mini-diarium) by Francisco J. Revoredo, used under the MIT license. Thank you for building it. Rat Journal adds its own security changes, the encrypted file vault, and a new name and logo; it is not affiliated with or endorsed by the original project, so please report problems with Rat Journal here rather than there.
+
 ## License
 
 MIT. See [LICENSE](LICENSE). Provided as is, without warranty of any kind.
