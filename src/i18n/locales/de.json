@@ -332,7 +332,9 @@
       "escLock": "Tagebuch sperren",
       "escHint": "Escape beendet die Anwendung oder sperrt das Tagebuch, je nach dieser Einstellung. Solange ein Dialog geöffnet ist, hat Escape keine Wirkung.",
       "languageLabel": "Sprache",
-      "languageHint": "Wähle die Anzeigesprache."
+      "languageHint": "Wähle die Anzeigesprache.",
+      "themeBlack": "Black (true dark)",
+      "themeViolet": "Violet (dark)"
     },
     "writing": {
       "firstDayLabel": "Erster Wochentag",
@@ -480,7 +482,9 @@
       "requireAllConfirmHint": "Changing this re-splits the journal key, so confirm with your password and each key file (you will be asked to select them).",
       "requireAllConfirm": "Confirm",
       "requireAllPasswordNeeded": "Enter your current password",
-      "requireAllSelectKeyFile": "Select the key file “{{label}}”"
+      "requireAllSelectKeyFile": "Select the key file “{{label}}”",
+      "vaultLockLabel": "Lock the vault after",
+      "vaultLockHint": "minutes without using it (0 = off). The journal stays open."
     },
     "data": {
       "currentLocationLabel": "Aktueller Speicherort",

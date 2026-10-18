@@ -107,4 +107,23 @@ describe('lib/theme', () => {
     expect(getActiveTheme()).toBe('light');
     expect(html().classList.contains('dark')).toBe(false);
   });
+
+  it('black and violet are dark themes with their own palette, and the palette is cleared after', () => {
+    installMatchMedia(false);
+    initializeTheme();
+    setTheme('violet');
+    expect(getActiveTheme()).toBe('dark');
+    expect(html().classList.contains('dark')).toBe(true);
+    expect(html().getAttribute('data-palette')).toBe('violet');
+    expect(localStorage.getItem('theme-preference')).toBe('violet');
+
+    setTheme('black');
+    expect(html().getAttribute('data-palette')).toBe('black');
+
+    setTheme('dark');
+    expect(html().hasAttribute('data-palette')).toBe(false);
+    setTheme('light');
+    expect(html().hasAttribute('data-palette')).toBe(false);
+    expect(html().classList.contains('dark')).toBe(false);
+  });
 });

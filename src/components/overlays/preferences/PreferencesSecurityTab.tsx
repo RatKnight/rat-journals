@@ -7,6 +7,7 @@ import {
   setPreferences,
   MIN_AUTO_LOCK_TIMEOUT,
   MAX_AUTO_LOCK_TIMEOUT,
+  MAX_VAULT_LOCK_MINUTES,
 } from '../../../state/preferences';
 import * as tauri from '../../../lib/tauri';
 import { mapTauriError } from '../../../lib/errors';
@@ -283,6 +284,30 @@ export default function PreferencesSecurityTab(props: PreferencesSecurityTabProp
               </Show>
             </div>
           </Show>
+          <div class="flex items-center gap-2">
+            <label class="text-sm text-secondary" for="vault-lock-minutes">
+              {t('prefs.security.vaultLockLabel')}
+            </label>
+            <input
+              id="vault-lock-minutes"
+              type="number"
+              min="0"
+              max={MAX_VAULT_LOCK_MINUTES}
+              step="1"
+              value={preferences().vaultLockMinutes}
+              onChange={(e) => {
+                const n = Math.round(Number(e.currentTarget.value));
+                const clamped = Number.isFinite(n)
+                  ? Math.min(MAX_VAULT_LOCK_MINUTES, Math.max(0, n))
+                  : 0;
+                e.currentTarget.value = String(clamped);
+                setPreferences({ vaultLockMinutes: clamped });
+              }}
+              class="w-20 px-2 py-1 text-sm border border-primary rounded-md bg-primary text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
+              data-testid="vault-lock-minutes"
+            />
+            <span class="text-xs text-tertiary">{t('prefs.security.vaultLockHint')}</span>
+          </div>
         </div>
       </div>
     </div>

@@ -332,7 +332,9 @@
       "escLock": "Blocca il diario",
       "escHint": "Premere Escape chiude l'applicazione o blocca il diario, in base a questa impostazione. Non ha effetto quando è aperta una finestra di dialogo.",
       "languageLabel": "Lingua",
-      "languageHint": "Seleziona la lingua di visualizzazione."
+      "languageHint": "Seleziona la lingua di visualizzazione.",
+      "themeBlack": "Black (true dark)",
+      "themeViolet": "Violet (dark)"
     },
     "writing": {
       "firstDayLabel": "Primo giorno della settimana",
@@ -480,7 +482,9 @@
       "requireAllConfirmHint": "Changing this re-splits the journal key, so confirm with your password and each key file (you will be asked to select them).",
       "requireAllConfirm": "Confirm",
       "requireAllPasswordNeeded": "Enter your current password",
-      "requireAllSelectKeyFile": "Select the key file “{{label}}”"
+      "requireAllSelectKeyFile": "Select the key file “{{label}}”",
+      "vaultLockLabel": "Lock the vault after",
+      "vaultLockHint": "minutes without using it (0 = off). The journal stays open."
     },
     "data": {
       "currentLocationLabel": "Posizione attuale",

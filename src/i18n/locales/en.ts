@@ -395,6 +395,8 @@ const en = {
       themeAuto: 'Auto (System Default)',
       themeLight: 'Light',
       themeDark: 'Dark',
+      themeBlack: 'Black (true dark)',
+      themeViolet: 'Violet (dark)',
       themeHint: 'Choose how the app should look. Auto follows your system theme.',
       escLabel: 'ESC key action',
       escNone: 'Do nothing',
@@ -555,6 +557,8 @@ const en = {
       autoLockTimeoutTooLow:
         'Minimum is {{ min }} seconds. The value will be raised when you leave the field.',
       autoLockOnFocusLossLabel: 'Lock when the window loses focus',
+      vaultLockLabel: 'Lock the vault after',
+      vaultLockHint: 'minutes without using it (0 = off). The journal stays open.',
       allFieldsRequired: 'All fields are required',
       passwordsMismatch: 'New passwords do not match',
       keypairPasswordRequired: 'Current password is required',

@@ -545,10 +545,12 @@ pub(crate) fn save_copies_inner(
 pub(crate) fn paste_files_inner(
     state: &DiaryState,
     folder: Option<&str>,
+    paths: Vec<String>,
 ) -> Result<VaultAddResult, String> {
-    let paths = crate::clipboard_files::copied_files()?;
     if paths.is_empty() {
-        return Err("Copy some files first (for example in File Explorer), then paste".to_string());
+        return Err(
+            "Copy some files first (in File Explorer or your file manager), then paste".to_string(),
+        );
     }
     add_files_inner(state, &paths, folder)
 }
@@ -894,7 +896,8 @@ pub async fn vault_paste_files(
     app: AppHandle,
 ) -> Result<VaultAddResult, String> {
     run_blocking(app, move |app| {
-        paste_files_inner(&app.state::<DiaryState>(), folder.as_deref())
+        let paths = crate::clipboard_files::copied_files(app)?;
+        paste_files_inner(&app.state::<DiaryState>(), folder.as_deref(), paths)
     })
     .await
 }

@@ -4,7 +4,10 @@ import { applyThemeOverrides } from './theme-overrides';
 
 const log = createLogger('Theme');
 
-export type ThemePreference = 'auto' | 'light' | 'dark';
+export type ThemePreference = 'auto' | 'light' | 'dark' | 'black' | 'violet';
+/** Dark palettes layered on the dark theme (`data-palette` on <html>). */
+export type DarkPalette = 'black' | 'violet';
+const PALETTES: readonly ThemePreference[] = ['black', 'violet'];
 export type ResolvedTheme = 'light' | 'dark';
 
 const THEME_STORAGE_KEY = 'theme-preference';
@@ -22,7 +25,13 @@ const [activeTheme, setActiveTheme] = createSignal<ResolvedTheme>('light');
 function loadThemePreference(): ThemePreference {
   try {
     const stored = localStorage.getItem(THEME_STORAGE_KEY);
-    if (stored === 'auto' || stored === 'light' || stored === 'dark') {
+    if (
+      stored === 'auto' ||
+      stored === 'light' ||
+      stored === 'dark' ||
+      stored === 'black' ||
+      stored === 'violet'
+    ) {
       return stored;
     }
   } catch (e) {
@@ -60,7 +69,8 @@ function resolveTheme(preference: ThemePreference): ResolvedTheme {
   if (preference === 'auto') {
     return getOsTheme();
   }
-  return preference;
+  // Black and violet are dark themes with their own palette.
+  return preference === 'light' ? 'light' : 'dark';
 }
 
 /**
@@ -80,6 +90,10 @@ function applyTheme(theme: ResolvedTheme): void {
 
   // Also set data attribute for easier CSS targeting
   html.setAttribute('data-theme', theme);
+
+  const pref = themePreference();
+  if (theme === 'dark' && PALETTES.includes(pref)) html.setAttribute('data-palette', pref);
+  else html.removeAttribute('data-palette');
 
   // Apply user-defined token overrides on top of the built-in theme
   applyThemeOverrides(theme);

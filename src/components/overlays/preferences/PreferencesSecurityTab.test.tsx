@@ -68,6 +68,7 @@ vi.mock('../../../state/preferences', () => ({
   setPreferences: mockSetPreferences,
   MIN_AUTO_LOCK_TIMEOUT: 5,
   MAX_AUTO_LOCK_TIMEOUT: 999,
+  MAX_VAULT_LOCK_MINUTES: 1440,
 }));
 
 function renderTab() {
@@ -270,7 +271,7 @@ describe('PreferencesSecurityTab — auto-lock immediate persistence', () => {
     });
     renderTab();
 
-    const timeoutInput = screen.getByRole('spinbutton') as HTMLInputElement;
+    const timeoutInput = screen.getAllByRole('spinbutton')[0] as HTMLInputElement;
     fireEvent.input(timeoutInput, { target: { value: '120' } });
 
     expect(mockSetPreferences).toHaveBeenCalledWith(
@@ -286,7 +287,7 @@ describe('PreferencesSecurityTab — auto-lock immediate persistence', () => {
     });
     renderTab();
 
-    const timeoutInput = screen.getByRole('spinbutton') as HTMLInputElement;
+    const timeoutInput = screen.getAllByRole('spinbutton')[0] as HTMLInputElement;
     fireEvent.input(timeoutInput, { target: { value: '1000' } });
     fireEvent.blur(timeoutInput, { target: { value: '1000' } });
 
@@ -303,7 +304,7 @@ describe('PreferencesSecurityTab — auto-lock immediate persistence', () => {
     });
     renderTab();
 
-    const timeoutInput = screen.getByRole('spinbutton') as HTMLInputElement;
+    const timeoutInput = screen.getAllByRole('spinbutton')[0] as HTMLInputElement;
     fireEvent.input(timeoutInput, { target: { value: '2' } });
     fireEvent.blur(timeoutInput, { target: { value: '2' } });
 
@@ -320,7 +321,7 @@ describe('PreferencesSecurityTab — auto-lock immediate persistence', () => {
     });
     renderTab();
 
-    const timeoutInput = screen.getByRole('spinbutton') as HTMLInputElement;
+    const timeoutInput = screen.getAllByRole('spinbutton')[0] as HTMLInputElement;
     fireEvent.input(timeoutInput, { target: { value: '2' } });
     expect(screen.getByRole('alert')).toBeInTheDocument();
 

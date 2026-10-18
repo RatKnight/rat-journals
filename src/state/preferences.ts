@@ -40,6 +40,8 @@ export interface ToolbarItem {
 export const MIN_AUTO_LOCK_TIMEOUT = 5;
 /** Maximum autoLockTimeout in seconds, matching the input's upper bound in the preferences UI. */
 export const MAX_AUTO_LOCK_TIMEOUT = 999;
+/** Largest vault inactivity lock, in minutes (one day). */
+export const MAX_VAULT_LOCK_MINUTES = 1440;
 
 export const DEFAULT_TOOLBAR_ITEMS: ToolbarItem[] = [
   { key: 'headings', enabled: true },
@@ -72,6 +74,8 @@ export interface Preferences {
   autoLockEnabled: boolean;
   autoLockTimeout: number; // seconds, 5–999
   autoLockOnFocusLoss: boolean;
+  /** Minutes without using the vault before it locks on its own; 0 = off. */
+  vaultLockMinutes: number;
   toolbarItems: ToolbarItem[];
   editorFontSize: number; // px, 12–24
   editorFontFamily: string | null; // null means system default
@@ -93,6 +97,7 @@ const DEFAULT_PREFERENCES: Preferences = {
   autoLockEnabled: false,
   autoLockTimeout: 300,
   autoLockOnFocusLoss: false,
+  vaultLockMinutes: 0,
   toolbarItems: DEFAULT_TOOLBAR_ITEMS,
   editorFontSize: 16,
   editorFontFamily: null,
@@ -139,6 +144,13 @@ function loadPreferences(): Preferences {
         parsed.autoLockTimeout = Math.min(
           MAX_AUTO_LOCK_TIMEOUT,
           Math.max(MIN_AUTO_LOCK_TIMEOUT, parsed.autoLockTimeout),
+        );
+      }
+
+      if (typeof parsed.vaultLockMinutes === 'number') {
+        parsed.vaultLockMinutes = Math.min(
+          MAX_VAULT_LOCK_MINUTES,
+          Math.max(0, Math.round(parsed.vaultLockMinutes)),
         );
       }
 

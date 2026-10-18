@@ -332,7 +332,9 @@
       "escLock": "जर्नल लॉक करें",
       "escHint": "इस सेटिंग के अनुसार, Escape दबाने से ऐप बंद होता है या जर्नल लॉक होता है। कोई डायलॉग खुला होने पर इसका कोई असर नहीं होता।",
       "languageLabel": "भाषा",
-      "languageHint": "प्रदर्शन भाषा चुनें।"
+      "languageHint": "प्रदर्शन भाषा चुनें।",
+      "themeBlack": "Black (true dark)",
+      "themeViolet": "Violet (dark)"
     },
     "writing": {
       "firstDayLabel": "सप्ताह का पहला दिन",
@@ -480,7 +482,9 @@
       "requireAllConfirmHint": "Changing this re-splits the journal key, so confirm with your password and each key file (you will be asked to select them).",
       "requireAllConfirm": "Confirm",
       "requireAllPasswordNeeded": "Enter your current password",
-      "requireAllSelectKeyFile": "Select the key file “{{label}}”"
+      "requireAllSelectKeyFile": "Select the key file “{{label}}”",
+      "vaultLockLabel": "Lock the vault after",
+      "vaultLockHint": "minutes without using it (0 = off). The journal stays open."
     },
     "data": {
       "currentLocationLabel": "वर्तमान स्थान",

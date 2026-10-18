@@ -34,6 +34,8 @@ export default function PreferencesGeneralTab(_props: TabProps) {
           <option value="auto">{t('prefs.general.themeAuto')}</option>
           <option value="light">{t('prefs.general.themeLight')}</option>
           <option value="dark">{t('prefs.general.themeDark')}</option>
+          <option value="black">{t('prefs.general.themeBlack')}</option>
+          <option value="violet">{t('prefs.general.themeViolet')}</option>
         </select>
         <p class="mt-2 text-xs text-tertiary leading-relaxed">{t('prefs.general.themeHint')}</p>
       </div>

@@ -332,7 +332,9 @@
       "escLock": "Verrouiller le journal",
       "escHint": "Appuyer sur ÉCHAP quitte l'application ou verrouille le journal, selon ce réglage. Sans effet lorsqu'un dialogue est ouvert.",
       "languageLabel": "Langue",
-      "languageHint": "Sélectionnez la langue d'affichage."
+      "languageHint": "Sélectionnez la langue d'affichage.",
+      "themeBlack": "Black (true dark)",
+      "themeViolet": "Violet (dark)"
     },
     "writing": {
       "firstDayLabel": "Premier jour de la semaine",
@@ -480,7 +482,9 @@
       "requireAllConfirmHint": "Changing this re-splits the journal key, so confirm with your password and each key file (you will be asked to select them).",
       "requireAllConfirm": "Confirm",
       "requireAllPasswordNeeded": "Enter your current password",
-      "requireAllSelectKeyFile": "Select the key file “{{label}}”"
+      "requireAllSelectKeyFile": "Select the key file “{{label}}”",
+      "vaultLockLabel": "Lock the vault after",
+      "vaultLockHint": "minutes without using it (0 = off). The journal stays open."
     },
     "data": {
       "currentLocationLabel": "Emplacement actuel",

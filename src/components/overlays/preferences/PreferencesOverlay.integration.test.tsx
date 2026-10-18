@@ -104,7 +104,7 @@ describe('PreferencesOverlay — immediate persistence lifecycle', () => {
     let stored = JSON.parse(localStorage.getItem('preferences') ?? '{}');
     expect(stored.autoLockEnabled).toBe(true);
 
-    const timeoutInput = screen.getByRole('spinbutton') as HTMLInputElement;
+    const timeoutInput = screen.getAllByRole('spinbutton')[0] as HTMLInputElement;
     fireEvent.input(timeoutInput, { target: { value: '120' } });
     fireEvent.blur(timeoutInput, { target: { value: '120' } });
 

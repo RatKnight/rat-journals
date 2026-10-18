@@ -1,5 +1,12 @@
 # Changelog
 
+## 26.0.7 (2026-10-18)
+
+### Added
+- **Black and Violet themes** (Preferences → General → Theme): a near-black dark theme and a deep purple one, alongside Light, Dark, and Auto.
+- **The vault can lock on its own** after a set number of minutes without using it (Preferences → Security; 0 = off). The journal stays open, and time spent in the journal doesn't count as using the vault.
+- **Paste into the vault on Linux**: files copied in the file manager can now be pasted in (Paste or Ctrl+V), as on Windows.
+
 ## 26.0.6 (2026-10-18)
 
 ### Security and reliability (from an external review)

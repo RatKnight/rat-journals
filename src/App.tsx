@@ -3,6 +3,7 @@ import { authState, initializeAuth, lockJournal, setupAuthEventListeners } from 
 import { initializeTheme } from './lib/theme';
 import { createLogger } from './lib/logger';
 import { createFocusLossAutoLock } from './lib/focus-lock';
+import { createVaultIdleLock } from './lib/vault-idle-lock';
 import { preferences } from './state/preferences';
 import { setLocale, useI18n } from './i18n';
 import { setSpellcheckEnabled, updateMenuLocale } from './lib/tauri';
@@ -69,6 +70,13 @@ function App() {
       }
       ACTIVITY_EVENTS.forEach((e) => document.removeEventListener(e, handleActivity));
     });
+  });
+
+  createVaultIdleLock({
+    minutes: () => preferences().vaultLockMinutes,
+    isOpen: isVaultOpen,
+    isShown: isVaultShown,
+    lock: () => void lockVault(),
   });
 
   createFocusLossAutoLock({

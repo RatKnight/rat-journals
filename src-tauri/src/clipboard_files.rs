@@ -4,7 +4,7 @@
 
 /// Paths of the files on the clipboard (`CF_HDROP`), or an empty list when it holds none.
 #[cfg(target_os = "windows")]
-pub fn copied_files() -> Result<Vec<String>, String> {
+pub fn copied_files(_app: &tauri::AppHandle) -> Result<Vec<String>, String> {
     use windows_sys::Win32::System::DataExchange::{
         CloseClipboard, GetClipboardData, IsClipboardFormatAvailable, OpenClipboard,
     };
@@ -48,10 +48,36 @@ pub fn copied_files() -> Result<Vec<String>, String> {
     }
 }
 
-#[cfg(not(target_os = "windows"))]
-pub fn copied_files() -> Result<Vec<String>, String> {
+/// Paths of the files copied in the file manager (`text/uri-list`). GTK clipboard calls must
+/// run on the main thread, so the read is handed to it and awaited here (this runs on the
+/// blocking pool, never on the main thread).
+#[cfg(target_os = "linux")]
+pub fn copied_files(app: &tauri::AppHandle) -> Result<Vec<String>, String> {
+    let (tx, rx) = std::sync::mpsc::channel();
+    app.run_on_main_thread(move || {
+        let clipboard = gtk::Clipboard::get(&gtk::gdk::SELECTION_CLIPBOARD);
+        let paths: Vec<String> = clipboard
+            .wait_for_uris()
+            .iter()
+            // Only local files: `file://` URIs with no remote host.
+            .filter_map(|uri| gtk::glib::filename_from_uri(uri).ok())
+            .filter(|(_, host)| {
+                host.as_deref()
+                    .map_or(true, |h| h.is_empty() || h == "localhost")
+            })
+            .filter_map(|(path, _)| path.to_str().map(str::to_string))
+            .collect();
+        let _ = tx.send(paths);
+    })
+    .map_err(|e| format!("Could not read the clipboard: {}", e))?;
+    rx.recv_timeout(std::time::Duration::from_secs(10))
+        .map_err(|_| "Could not read the clipboard. Try again.".to_string())
+}
+
+#[cfg(not(any(target_os = "windows", target_os = "linux")))]
+pub fn copied_files(_app: &tauri::AppHandle) -> Result<Vec<String>, String> {
     Err(
-        "Pasting copied files is only available on Windows. Use Add files or drag and drop."
+        "Pasting copied files is not available on this system. Use Add files or drag and drop."
             .to_string(),
     )
 }
