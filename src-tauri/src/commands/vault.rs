@@ -40,6 +40,8 @@ pub struct VaultStatus {
     pub slots: Vec<VaultSlotInfo>,
     /// The clock is behind the latest time this vault was open (see `core::clock`).
     pub clock_set_back: bool,
+    /// The dead man's switch period in days (0 = off).
+    pub dead_man_days: u32,
 }
 
 /// Files and folders of the open vault; files newest first.
@@ -191,7 +193,7 @@ fn with_vault<T>(
 }
 
 fn install(state: &DiaryState, mut vault: Vault) -> Result<VaultStatus, String> {
-    let clock_set_back = match vault.update_clock_mark() {
+    let clock_set_back = match vault.after_unlock() {
         Ok(check) => {
             if let Some(secs) = check.set_back_by {
                 warn!(
@@ -200,6 +202,9 @@ fn install(state: &DiaryState, mut vault: Vault) -> Result<VaultStatus, String> 
                 );
             }
             check.suspicious()
+        }
+        Err(e) if e == crate::deadman::ERR_ERASED || e == crate::deadman::ERR_CLOCK_SET_BACK => {
+            return Err(e)
         }
         Err(e) => {
             warn!("Could not record the vault's clock mark: {}", e);
@@ -248,6 +253,7 @@ fn status_of(vault: &Vault) -> VaultStatus {
             .unwrap_or_default(),
         slots: vault.slots(),
         clock_set_back: false,
+        dead_man_days: vault.dead_man().map_or(0, |dm| dm.days),
     }
 }
 
@@ -800,6 +806,13 @@ pub fn vault_move_file(
 #[tauri::command]
 pub fn vault_delete_file(id: String, state: State<DiaryState>) -> Result<(), String> {
     with_vault(&state, |o| o.vault.delete_file(&id))
+}
+
+/// Arms (days > 0) or disarms (0) the open vault's dead man's switch.
+#[tauri::command]
+pub fn vault_set_dead_man(days: u32, state: State<DiaryState>) -> Result<(), String> {
+    let days = crate::deadman::validate_days(days)?;
+    with_vault(&state, |o| o.vault.set_dead_man(days))
 }
 
 #[tauri::command]

@@ -220,6 +220,7 @@ fn add_journal_inner(
 
     let id = config::generate_journal_id();
     let journal = JournalConfig {
+        dead_man: None,
         id: id.clone(),
         name,
         path,
@@ -856,6 +857,7 @@ mod tests {
     /// Writes a config whose only journal carries `db_filename`, as if copied from another OS.
     fn save_foreign_journal(env: &TestEnv, dir: &Path, db_filename: &str, active: bool) -> String {
         let journal = JournalConfig {
+            dead_man: None,
             id: "foreignjournal01".to_string(),
             name: "Foreign".to_string(),
             path: dir.to_str().unwrap().to_string(),
@@ -994,6 +996,7 @@ mod tests {
         .unwrap();
         let mut journals = config::load_journals(&env.app_dir);
         journals.push(JournalConfig {
+            dead_man: None,
             id: "foreignjournal01".to_string(),
             name: "Foreign".to_string(),
             path: dir.to_str().unwrap().to_string(),
@@ -1029,6 +1032,7 @@ mod tests {
         .unwrap();
         let mut journals = config::load_journals(&env.app_dir);
         journals.push(JournalConfig {
+            dead_man: None,
             id: "foreignjournal01".to_string(),
             name: "Foreign".to_string(),
             path: dir.to_str().unwrap().to_string(),

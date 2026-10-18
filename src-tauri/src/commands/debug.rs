@@ -569,6 +569,7 @@ mod tests {
         // must refuse to carry.
         let journal_dir = temp_dir("debug_leaks_journal");
         let journals = vec![crate::config::JournalConfig {
+            dead_man: None,
             id: "abcdef0123456789".to_string(),
             name: "Franciscos Secret Diary".to_string(),
             path: journal_dir.canonicalize().unwrap().display().to_string(),
@@ -658,6 +659,7 @@ mod tests {
 
         let journals = vec![
             crate::config::JournalConfig {
+                dead_man: None,
                 id: "1111111111111111".to_string(),
                 name: "Default".to_string(),
                 path: app_dir.display().to_string(),
@@ -666,6 +668,7 @@ mod tests {
                 require_all_auth: None,
             },
             crate::config::JournalConfig {
+                dead_man: None,
                 id: "2222222222222222".to_string(),
                 name: "Renamed".to_string(),
                 path: app_dir.display().to_string(),

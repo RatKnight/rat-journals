@@ -606,3 +606,109 @@ fn vault_clock_mark_survives_rekey() {
     let check = v.update_clock_mark_at(1_000_000 - 3600).unwrap();
     assert_eq!(check.set_back_by, Some(3600));
 }
+
+#[test]
+fn dead_man_renews_in_time() {
+    use crate::deadman::DAY_SECS;
+
+    let t = tmp();
+    let dir = vault_dir(&t);
+    let mut v = Vault::create(&dir, Some("pw"), None).unwrap();
+    v.set_dead_man(Some(2)).unwrap();
+    let _initial_unlock = v.dead_man().unwrap().last_unlock;
+
+    // Advance time to just before renewal
+    let renew_time = v.dead_man().unwrap().last_unlock + DAY_SECS;
+    assert!(v.after_unlock_at(renew_time).is_ok());
+    assert_eq!(v.dead_man().unwrap().days, 2);
+    assert_eq!(v.dead_man().unwrap().last_unlock, renew_time);
+}
+
+#[test]
+fn dead_man_expired_erases() {
+    use crate::deadman::{DAY_SECS, ERR_ERASED};
+
+    let t = tmp();
+    let dir = vault_dir(&t);
+    let mut v = Vault::create(&dir, Some("pw"), None).unwrap();
+    v.set_dead_man(Some(1)).unwrap();
+    let initial_unlock = v.dead_man().unwrap().last_unlock;
+
+    // Advance time past expiration
+    let expired_time = initial_unlock + 2 * DAY_SECS;
+    assert_eq!(
+        v.after_unlock_at(expired_time).unwrap_err(),
+        ERR_ERASED.to_string()
+    );
+
+    // Check files are gone
+    assert!(!dir.join("rat-vvault.json").exists());
+    assert!(!dir.join("index.rjv").exists());
+
+    // Vault should not open anymore
+    assert!(Vault::open_with_password(&dir, "pw").is_err());
+}
+
+#[test]
+fn dead_man_clock_set_back_refuses() {
+    use crate::deadman::ERR_CLOCK_SET_BACK;
+
+    let t = tmp();
+    let dir = vault_dir(&t);
+    let mut v = Vault::create(&dir, Some("pw"), None).unwrap();
+    v.set_dead_man(Some(5)).unwrap();
+    let initial_unlock = v.dead_man().unwrap().last_unlock;
+
+    // Advance time a bit
+    assert!(v.after_unlock_at(initial_unlock + 100).is_ok());
+
+    // Try to go back in time - should fail
+    assert_eq!(
+        v.after_unlock_at(initial_unlock - 3600).unwrap_err(),
+        ERR_CLOCK_SET_BACK.to_string()
+    );
+
+    // Vault still opens
+    let v2 = Vault::open_with_password(&dir, "pw").unwrap();
+    assert!(v2.dead_man().is_some());
+}
+
+#[test]
+fn erase_if_expired_uses_header() {
+    use crate::deadman::DAY_SECS;
+
+    let t = tmp();
+    let dir = vault_dir(&t);
+    let mut v = Vault::create(&dir, Some("pw"), None).unwrap();
+    v.set_dead_man(Some(1)).unwrap();
+    let initial_unlock = v.dead_man().unwrap().last_unlock;
+
+    // Drop the vault
+    drop(v);
+
+    // Not expired yet - should return false and warning exists
+    assert!(!Vault::erase_if_expired(&dir, initial_unlock + DAY_SECS / 2).unwrap());
+    assert!(Vault::dead_man_warning(&dir, initial_unlock + DAY_SECS / 2).is_some());
+
+    // Expired now - should erase and return true
+    assert!(Vault::erase_if_expired(&dir, initial_unlock + 2 * DAY_SECS).unwrap());
+
+    // Header file is gone
+    assert!(!dir.join("rat-vault.json").exists());
+}
+
+#[test]
+fn dead_man_disarm() {
+    let t = tmp();
+    let dir = vault_dir(&t);
+    let mut v = Vault::create(&dir, Some("pw"), None).unwrap();
+    v.set_dead_man(Some(1)).unwrap();
+    let initial_unlock = v.dead_man().unwrap().last_unlock;
+
+    // Disarm
+    v.set_dead_man(None).unwrap();
+    assert!(v.dead_man().is_none());
+
+    // Unlocking in the future should still work
+    assert!(v.after_unlock_at(initial_unlock + 10_000_000).is_ok());
+}

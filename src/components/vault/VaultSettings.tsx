@@ -6,6 +6,7 @@ import { open, save } from '../../lib/dialog';
 import { mapTauriError } from '../../lib/errors';
 import { useI18n } from '../../i18n';
 import { refreshVaultStatus, vaultStatus } from '../../state/vault';
+import DeadManField from '../common/DeadManField';
 
 interface Props {
   open: boolean;
@@ -263,6 +264,18 @@ export default function VaultSettings(props: Props) {
               <ShieldCheck size={15} />
               {t('vault.verify')}
             </button>
+
+            <div class="mt-4">
+              <DeadManField
+                id="vault-dead-man-days"
+                label={t('deadMan.vaultLabel')}
+                days={vaultStatus()?.dead_man_days ?? 0}
+                onSave={async (days) => {
+                  await tauri.vaultSetDeadMan(days);
+                  await refreshVaultStatus();
+                }}
+              />
+            </div>
 
             <Show when={message()}>
               <p class="mt-3 text-sm text-secondary" data-testid="vault-settings-message">

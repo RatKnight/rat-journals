@@ -51,6 +51,7 @@ const authMocks = vi.hoisted(() => ({
   state: 'unlocked' as string,
   securityNotice: null as string | null,
   dismissSecurityNotice: vi.fn(),
+  deadManWarnings: [] as { kind: 'journal' | 'vault'; name: string; days_left: number }[],
 }));
 
 vi.mock('../../state/auth', async (importOriginal) => ({
@@ -59,6 +60,7 @@ vi.mock('../../state/auth', async (importOriginal) => ({
   lockJournal: authMocks.lockJournal,
   securityNotice: () => authMocks.securityNotice,
   dismissSecurityNotice: authMocks.dismissSecurityNotice,
+  deadManWarnings: () => authMocks.deadManWarnings,
 }));
 
 const mockLogError = vi.hoisted(() => vi.fn());
@@ -447,6 +449,16 @@ describe('MainLayout security notice', () => {
 
     const banner = await findByTestId('security-notice');
     expect(banner.textContent).toContain('clock');
+  });
+
+  it("warns about a vault the dead man's switch will erase soon", async () => {
+    authMocks.deadManWarnings = [{ kind: 'vault', name: 'Docs', days_left: 2 }];
+    const { findByTestId } = renderWithI18n(() => <MainLayout />);
+
+    const banner = await findByTestId('dead-man-warning');
+    expect(banner.textContent).toContain('Docs');
+    expect(banner.textContent).toContain('2');
+    authMocks.deadManWarnings = [];
   });
 
   it('shows no warning without a notice', () => {

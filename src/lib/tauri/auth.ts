@@ -13,6 +13,27 @@ export async function lockJournal(): Promise<void> {
   await invoke('lock_diary');
 }
 
+/** Dead man's switch period of the open journal in days (0 = off). */
+export async function journalDeadManDays(): Promise<number> {
+  return await invoke<number>('journal_dead_man_days');
+}
+
+/** Arms (days > 0) or disarms (0) the open journal's dead man's switch. */
+export async function setJournalDeadMan(days: number): Promise<void> {
+  await invoke('set_journal_dead_man', { days });
+}
+
+export interface DeadManWarning {
+  kind: 'journal' | 'vault';
+  name: string;
+  days_left: number;
+}
+
+/** Other journals and the remembered vault that will be erased soon unless unlocked. */
+export async function deadManWarnings(): Promise<DeadManWarning[]> {
+  return await invoke<DeadManWarning[]>('dead_man_warnings');
+}
+
 /** Takes the security notice left by the last unlock (e.g. `'key-upgrade-failed'`), or null. */
 export async function takeSecurityNotice(): Promise<string | null> {
   return (await invoke<string | null>('take_security_notice')) ?? null;

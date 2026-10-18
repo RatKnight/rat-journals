@@ -1,4 +1,4 @@
-import { onMount, onCleanup, Show } from 'solid-js';
+import { For, onMount, onCleanup, Show } from 'solid-js';
 import { listen, UnlistenFn } from '@tauri-apps/api/event';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { createLogger } from '../../lib/logger';
@@ -32,7 +32,14 @@ import {
   isAnyOverlayOpen,
 } from '../../state/ui';
 import { preferences } from '../../state/preferences';
-import { authState, lockJournal, securityNotice, dismissSecurityNotice } from '../../state/auth';
+import {
+  authState,
+  lockJournal,
+  securityNotice,
+  dismissSecurityNotice,
+  deadManWarnings,
+  dismissDeadManWarnings,
+} from '../../state/auth';
 import { useI18n } from '../../i18n';
 import { registerKeyboardShortcuts } from '../../lib/keyboard-shortcuts';
 import { isEscapeClaimed } from '../../lib/escape-claim';
@@ -114,6 +121,38 @@ export default function MainLayout() {
       <div class="flex flex-1 flex-col">
         {/* Header */}
         <Header showMenu onMenuClick={() => setIsSidebarCollapsed(!isSidebarCollapsed())} />
+
+        {/* Journals or the vault that a dead man's switch will erase soon */}
+        <Show when={deadManWarnings().length > 0}>
+          <div class="px-6 pt-2">
+            <div
+              role="alert"
+              data-testid="dead-man-warning"
+              class="rounded-md bg-warning p-3 flex items-start justify-between gap-2"
+            >
+              <div class="text-sm text-warning">
+                <For each={deadManWarnings()}>
+                  {(w) => (
+                    <p>
+                      {t(w.kind === 'vault' ? 'deadMan.warningVault' : 'deadMan.warningJournal', {
+                        name: w.name,
+                        days: w.days_left,
+                      })}
+                    </p>
+                  )}
+                </For>
+              </div>
+              <button
+                type="button"
+                onClick={() => dismissDeadManWarnings()}
+                class="text-sm text-warning hover:opacity-75 flex-shrink-0"
+                aria-label={t('common.close')}
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        </Show>
 
         {/* The encryption upgrade failed or needs all methods: the journal file is still exposed */}
         <Show when={securityNotice()}>

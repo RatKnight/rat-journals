@@ -56,11 +56,14 @@ The index object (kind 2) decrypts to UTF-8 JSON:
       "mime": "application/pdf"
     }
   ],
-  "clock_high_water": 1792350407
+  "clock_high_water": 1792350407,
+  "dead_man": { "days": 30, "last_unlock": 1792350407 }
 }
 ```
 
 `clock_high_water` (optional) is the latest Unix time the vault has been open. Opening it with the clock more than 10 minutes earlier shows a warning. Readers that don't know the field ignore it.
+
+`dead_man` (optional) arms the dead man's switch: the vault is erased when opened more than `days` days after `last_unlock` (Unix time). The header carries a plaintext copy under the same name so the app can erase an expired vault before unlocking it; the index is what an unlock trusts. Erasing removes the header first (it holds every wrapped copy of the key), then the index and the `data` folder.
 
 ## Writes
 

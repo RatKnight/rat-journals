@@ -15,6 +15,10 @@ pub struct JournalConfig {
     // TODO: deprecated — migrated to db_settings (v6). Keep for the migration window in unlock_diary.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub require_all_auth: Option<bool>,
+    /// Plaintext copy of the journal's dead man's switch, so an expired journal can be
+    /// erased at startup before anyone unlocks it (see `crate::deadman`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub dead_man: Option<crate::deadman::DeadMan>,
 }
 
 /// Frontend-facing DTO — safe to send over IPC (raw key never included)
@@ -144,6 +148,7 @@ pub fn load_journals(app_data_dir: &Path) -> Vec<JournalConfig> {
         if path.is_absolute() {
             let id = generate_journal_id();
             let journal = JournalConfig {
+                dead_man: None,
                 id: id.clone(),
                 name: "My Journal".to_string(),
                 path: dir.clone(),

@@ -38,6 +38,14 @@ export function mapTauriError(err: unknown, t: T = defaultT): string {
     return t('errors.backupTooNew');
   }
 
+  // Dead man's switch (see core::deadman).
+  if (/dead man's switch/i.test(raw)) {
+    return t('deadMan.erased');
+  }
+  if (/clock is earlier than the last time this was open/i.test(raw)) {
+    return t('deadMan.clockSetBack');
+  }
+
   // Auth errors — safe to pass through, already user-friendly
   if (/wrong password|invalid password|incorrect password/i.test(raw)) {
     return t('errors.incorrectPassword');

@@ -1,5 +1,10 @@
 # Changelog
 
+## 26.0.9 (2026-10-19)
+
+### Added
+- **Dead man's switch** (opt-in): a journal (Preferences → Security) or the vault (Vault settings) can be set to be permanently erased if it isn't unlocked within a number of days. An expired journal or vault is erased the next time Rat Journal starts or tries to open it. While it is armed, it won't open with the computer's clock set back. After unlocking a journal, a banner warns when another journal or the vault is within 3 days of being erased. It can't reach copies elsewhere, such as cloud version history or trash.
+
 ## 26.0.8 (2026-10-19)
 
 ### Added

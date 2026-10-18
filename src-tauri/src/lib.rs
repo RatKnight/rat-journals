@@ -4,7 +4,7 @@
 // reaches core only through its curated façade — the module roots re-export the stable
 // API and seal their internals (see crates/mini-diarium-core/API.md).
 pub use mini_diarium_core::{
-    auth, backup, clock, config, crypto, db, export, import, plugin, search,
+    auth, backup, clock, config, crypto, db, deadman, export, import, plugin, search,
 };
 
 mod clipboard_files;
@@ -196,6 +196,9 @@ pub fn run() {
             // Set up state
             // Decrypted vault copies left by a crash or a file still open in another app.
             commands::vault::wipe_temp_dir(&app_dir);
+            // Before anything can be unlocked: erase journals and the vault whose dead
+            // man's switch has expired.
+            commands::deadman::sweep(&app_dir);
             app.manage(DiaryState::new(db_path, backups_dir, app_dir.clone()));
 
             // Initialize plugin registry
@@ -314,6 +317,10 @@ pub fn run() {
             commands::auth::unlock_diary_auto,
             commands::auth::lock_diary,
             commands::auth::take_security_notice,
+            commands::deadman::journal_dead_man_days,
+            commands::deadman::set_journal_dead_man,
+            commands::deadman::dead_man_warnings,
+            commands::vault::vault_set_dead_man,
             // Vault
             commands::vault::vault_check_folder,
             commands::vault::vault_last_folder,

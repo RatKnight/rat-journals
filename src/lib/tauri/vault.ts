@@ -28,6 +28,8 @@ export interface VaultStatus {
   slots: VaultSlotInfo[];
   /** The clock is behind the latest time this vault was open (set on unlock only). */
   clock_set_back?: boolean;
+  /** Dead man's switch period in days (0 = off). */
+  dead_man_days?: number;
 }
 
 export interface VaultListing {
@@ -164,6 +166,11 @@ export async function vaultSaveCopies(ids: string[], dir: string): Promise<numbe
 /** Encrypts the files copied in File Explorer (read from the clipboard by the backend). */
 export async function vaultPasteFiles(folder: string | null): Promise<VaultAddResult> {
   return await invoke('vault_paste_files', { folder });
+}
+
+/** Arms (days > 0) or disarms (0) the open vault's dead man's switch. */
+export async function vaultSetDeadMan(days: number): Promise<void> {
+  await invoke('vault_set_dead_man', { days });
 }
 
 export async function vaultCreateFolder(name: string): Promise<void> {

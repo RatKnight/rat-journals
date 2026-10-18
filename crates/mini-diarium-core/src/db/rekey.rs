@@ -231,6 +231,15 @@ pub fn rotate_master_key(
         // Re-MAC the clock high-water mark for the new key (an invalid one stays invalid).
         use crate::clock::{decode_mark, encode_mark, HIGH_WATER_SETTING};
         use crate::db::queries::db_settings::{get_db_setting_conn, set_db_setting_conn};
+        if let Some(stored) = get_db_setting_conn(conn, crate::deadman::JOURNAL_SETTING) {
+            if let Some(dm) = crate::deadman::decode(old_key.as_bytes(), &stored) {
+                set_db_setting_conn(
+                    conn,
+                    crate::deadman::JOURNAL_SETTING,
+                    &crate::deadman::encode(new_key.as_bytes(), &dm),
+                )?;
+            }
+        }
         if let Some(stored) = get_db_setting_conn(conn, HIGH_WATER_SETTING) {
             if let Some(secs) = decode_mark(old_key.as_bytes(), &stored) {
                 set_db_setting_conn(
@@ -678,7 +687,9 @@ mod tests {
         let mark = crate::clock::update_journal_mark(&db)
             .unwrap()
             .effective_now;
+        crate::deadman::set_journal_dead_man(&db, Some(30)).unwrap();
         rotate_master_key(&mut db, &creds(Some("pw"), &[], None)).unwrap();
+        assert_eq!(crate::deadman::journal_dead_man(&db).unwrap().days, 30);
 
         let check = crate::clock::update_journal_mark(&db).unwrap();
         assert!(!check.suspicious());

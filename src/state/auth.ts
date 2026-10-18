@@ -47,6 +47,22 @@ export function dismissSecurityNotice(): void {
   setSecurityNotice(null);
 }
 
+const [deadManWarnings, setDeadManWarnings] = createSignal<tauri.DeadManWarning[]>([]);
+/** Journals and the vault that will be erased soon unless unlocked (shown after unlock). */
+export { deadManWarnings };
+
+async function loadDeadManWarnings(): Promise<void> {
+  try {
+    setDeadManWarnings(await tauri.deadManWarnings());
+  } catch (err) {
+    log.warn("Failed to read dead man's switch warnings:", err);
+  }
+}
+
+export function dismissDeadManWarnings(): void {
+  setDeadManWarnings([]);
+}
+
 interface JournalLockedEventPayload {
   reason?: string;
 }
@@ -73,6 +89,7 @@ function prepareUnlockedSession(): void {
   void refreshLockedDates();
   // Fire-and-forget: a failed encryption upgrade shows a warning banner, never blocks unlock.
   void loadSecurityNotice();
+  void loadDeadManWarnings();
 }
 
 // Refresh auth state using the current backend journal path without reloading journal metadata.

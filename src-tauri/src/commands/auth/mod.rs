@@ -21,13 +21,14 @@ pub const NOTICE_CLOCK_SET_BACK: &str = "clock-set-back";
 /// clock was set back or the mark was tampered with, logs it and, if `state` is given and
 /// no other notice is pending, leaves [`NOTICE_CLOCK_SET_BACK`] for the frontend.
 pub(crate) fn update_clock_mark(db: &DatabaseConnection, state: Option<&DiaryState>) {
-    let check = match crate::clock::update_journal_mark(db) {
-        Ok(check) => check,
-        Err(e) => {
-            warn!("Could not record the clock high-water mark: {}", e);
-            return;
-        }
-    };
+    match crate::clock::update_journal_mark(db) {
+        Ok(check) => report_clock(&check, state),
+        Err(e) => warn!("Could not record the clock high-water mark: {}", e),
+    }
+}
+
+/// Logs a suspicious clock check and, with `state`, leaves [`NOTICE_CLOCK_SET_BACK`].
+pub(crate) fn report_clock(check: &crate::clock::ClockCheck, state: Option<&DiaryState>) {
     if !check.suspicious() {
         return;
     }

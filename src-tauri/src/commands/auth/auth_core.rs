@@ -314,7 +314,19 @@ pub(crate) fn perform_unlock(mode: UnlockMode, state: &DiaryState) -> Result<(),
         }
     }
 
-    super::update_clock_mark(&db_conn, Some(state));
+    match crate::deadman::journal_after_unlock(&db_conn) {
+        Ok((check, dm)) => {
+            super::report_clock(&check, Some(state));
+            crate::commands::deadman::sync_config_copy(state, dm);
+        }
+        Err(e) if e == crate::deadman::ERR_ERASED => {
+            drop(db_conn);
+            crate::commands::deadman::erase_journal_files(&db_path, &backups_dir);
+            crate::commands::deadman::sync_config_copy(state, None);
+            return Err(e);
+        }
+        Err(e) => return Err(e),
+    }
 
     let mut db_state = state
         .db
@@ -829,6 +841,7 @@ mod tests {
         std::fs::create_dir_all(&state.app_data_dir).unwrap();
         let db_path = state.db_path.lock().unwrap().clone();
         let journal = crate::config::JournalConfig {
+            dead_man: None,
             id: "auto-test".to_string(),
             name: "Auto test".to_string(),
             path: db_path.parent().unwrap().to_str().unwrap().to_string(),

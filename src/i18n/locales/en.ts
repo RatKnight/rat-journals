@@ -794,6 +794,20 @@ const en = {
   },
 
   /** Encrypted file vault */
+  deadMan: {
+    journalLabel: "Erase this journal if it isn't unlocked for",
+    vaultLabel: "Erase this vault if it isn't unlocked for",
+    hint: 'days (0 = off)',
+    confirmArm:
+      "If this isn't unlocked within {{days}} days, it will be permanently erased the next time Rat Journal starts or tries to open it, with no way to recover it. Copies in cloud version history or trash are not reached. Turn this on?",
+    erased:
+      "This was permanently erased because it wasn't unlocked within the time set for its dead man's switch.",
+    clockSetBack:
+      "This computer's clock is earlier than the last time this was open. Correct the date and time, then try again.",
+    warningJournal:
+      'The journal “{{name}}” will be erased in {{days}} day(s) unless you unlock it.',
+    warningVault: 'The vault “{{name}}” will be erased in {{days}} day(s) unless you unlock it.',
+  },
   vault: {
     openTitle: 'Open a vault',
     createTitle: 'Create a vault',

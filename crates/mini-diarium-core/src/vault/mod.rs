@@ -65,6 +65,10 @@ struct HeaderDoc {
     vault_id: String,
     created_at: String,
     slots: Vec<SlotRecord>,
+    /// Plaintext copy of the index's dead man's switch, so an expired vault can be erased
+    /// before anyone unlocks it. Editing it can't extend the deadline (the index decides).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    dead_man: Option<crate::deadman::DeadMan>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -87,6 +91,9 @@ struct IndexDoc {
     /// encryption under the master key, so it needs no MAC of its own.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     clock_high_water: Option<i64>,
+    /// Authoritative dead man's switch (see `crate::deadman`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    dead_man: Option<crate::deadman::DeadMan>,
 }
 
 /// An unlocked vault. Dropping it wipes the master key from memory.
@@ -280,6 +287,7 @@ impl Vault {
             vault_id: hex::encode(vault_id),
             created_at: now_rfc3339(),
             slots: Vec::new(),
+            dead_man: None,
         };
         if let Some(p) = password {
             header.slots.push(password_slot(1, "Password", p, &master)?);
@@ -375,6 +383,96 @@ impl Vault {
     }
 
     /// The vault folder.
+    /// The armed dead man's switch, if any.
+    pub fn dead_man(&self) -> Option<crate::deadman::DeadMan> {
+        self.index.dead_man
+    }
+
+    /// Arms (`Some(days)`) or disarms (`None`) the dead man's switch, counting from now.
+    pub fn set_dead_man(&mut self, days: Option<u32>) -> Result<(), String> {
+        let now = crate::clock::unix_now().max(self.index.clock_high_water.unwrap_or(0));
+        let dm = days.map(|days| crate::deadman::DeadMan {
+            days,
+            last_unlock: now,
+        });
+        self.store_dead_man(dm)
+    }
+
+    fn store_dead_man(&mut self, dm: Option<crate::deadman::DeadMan>) -> Result<(), String> {
+        let previous = std::mem::replace(&mut self.index.dead_man, dm);
+        if let Err(e) = self.save_index() {
+            self.index.dead_man = previous;
+            return Err(e);
+        }
+        self.header.dead_man = dm;
+        self.save_header()
+    }
+
+    /// Runs right after a successful unlock: checks the clock and the dead man's switch.
+    /// An expired (or tampered) vault is erased and an error returned; an armed vault
+    /// refuses to open while the clock is set back. Otherwise renews both records.
+    pub fn after_unlock(&mut self) -> Result<crate::clock::ClockCheck, String> {
+        self.after_unlock_at(crate::clock::unix_now())
+    }
+
+    /// [`Self::after_unlock`] at a given time (for tests).
+    pub fn after_unlock_at(&mut self, now: i64) -> Result<crate::clock::ClockCheck, String> {
+        use crate::deadman::{judge, Verdict, ERR_CLOCK_SET_BACK, ERR_ERASED};
+        let check = crate::clock::compare(self.index.clock_high_water, false, now);
+        match judge(self.index.dead_man.map(Some), &check) {
+            Verdict::Off => {}
+            Verdict::ClockSetBack => return Err(ERR_CLOCK_SET_BACK.to_string()),
+            Verdict::Erase => {
+                Self::erase(&self.dir)?;
+                return Err(ERR_ERASED.to_string());
+            }
+            Verdict::Renew(dm) => {
+                self.index.clock_high_water = Some(check.effective_now);
+                self.store_dead_man(Some(dm))?;
+            }
+        }
+        self.update_clock_mark_at(now)
+    }
+
+    /// Erases the vault in `dir` if its header says its dead man's switch has expired.
+    /// Used before unlocking; returns whether it erased.
+    pub fn erase_if_expired(dir: &Path, now: i64) -> Result<bool, String> {
+        let Ok(text) = fs::read_to_string(dir.join(HEADER_FILE)) else {
+            return Ok(false);
+        };
+        let Ok(header) = serde_json::from_str::<HeaderDoc>(&text) else {
+            return Ok(false);
+        };
+        match header.dead_man {
+            Some(dm) if dm.expired(now) => Self::erase(dir).map(|()| true),
+            _ => Ok(false),
+        }
+    }
+
+    /// Days-left warning from the header's plaintext copy, for a vault that isn't open.
+    pub fn dead_man_warning(dir: &Path, now: i64) -> Option<i64> {
+        let text = fs::read_to_string(dir.join(HEADER_FILE)).ok()?;
+        let header: HeaderDoc = serde_json::from_str(&text).ok()?;
+        header.dead_man?.warning(now)
+    }
+
+    /// Permanently erases the vault in `dir`: the header first (it holds every wrapped
+    /// copy of the key), then the index and every encrypted file. Other files are left.
+    pub fn erase(dir: &Path) -> Result<(), String> {
+        let header = dir.join(HEADER_FILE);
+        if header.exists() {
+            fs::remove_file(&header).map_err(|e| format!("Could not erase the vault: {}", e))?;
+        }
+        for name in [INDEX_FILE, INDEX_NEW_FILE] {
+            let _ = fs::remove_file(dir.join(name));
+        }
+        let data = dir.join(DATA_DIR);
+        if data.exists() {
+            fs::remove_dir_all(&data).map_err(|e| format!("Could not erase the vault: {}", e))?;
+        }
+        Ok(())
+    }
+
     /// Compares the clock with the vault's high-water mark and stores the new mark.
     pub fn update_clock_mark(&mut self) -> Result<crate::clock::ClockCheck, String> {
         self.update_clock_mark_at(crate::clock::unix_now())
