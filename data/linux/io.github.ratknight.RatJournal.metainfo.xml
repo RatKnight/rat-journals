@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.ratknight.RatJournal</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Rat Journal</name>
+  <summary>A private, encrypted, offline desktop journal</summary>
+  <description>
+    <p>
+      Rat Journal keeps your journal in a single encrypted file on your own computer.
+      Entries, tags, images, and attachments are encrypted with AES-256-GCM, and the app
+      never connects to the internet.
+    </p>
+  </description>
+  <launchable type="desktop-id">io.github.ratknight.RatJournal.desktop</launchable>
+  <developer id="io.github.ratknight">
+    <name>Rat Journal</name>
+  </developer>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="0.7.5" date="2026-10-17"/>
+  </releases>
+</component>

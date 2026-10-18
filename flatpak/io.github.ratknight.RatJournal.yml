@@ -1,0 +1,62 @@
+# Flatpak build for Rat Journal (personal use; not a Flathub submission).
+#
+# Build on Linux from the repository root:
+#   flatpak-builder --user --install-deps-from=flathub --install --force-clean \
+#     build-flatpak flatpak/io.github.ratknight.RatJournal.yml
+# or make a single-file bundle:
+#   flatpak-builder --user --install-deps-from=flathub --repo=flatpak-repo --force-clean \
+#     build-flatpak flatpak/io.github.ratknight.RatJournal.yml
+#   flatpak build-bundle flatpak-repo rat-journal.flatpak io.github.ratknight.RatJournal
+#
+# The *build* may download npm and crates.io packages (build-args below); the installed
+# app gets no network permission at all (no --share=network in finish-args), so the
+# kernel blocks every outbound connection from Rat Journal itself.
+id: io.github.ratknight.RatJournal
+runtime: org.gnome.Platform
+runtime-version: '50'
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+  - org.freedesktop.Sdk.Extension.node20
+command: rat-journal
+
+finish-args:
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  - --device=dri
+
+modules:
+  - name: rat-journal
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/node20/bin
+      build-args:
+        - --share=network
+      env:
+        CARGO_HOME: /run/build/rat-journal/cargo
+        # Skips the npm postinstall git-hook setup inside the build sandbox.
+        CI: 'true'
+    build-commands:
+      - npm ci --legacy-peer-deps
+      - npm run build
+      - cargo build --release --features custom-protocol --manifest-path src-tauri/Cargo.toml
+      - install -Dm755 target/release/mini-diarium /app/bin/rat-journal
+      - install -Dm644 data/linux/io.github.ratknight.RatJournal.desktop /app/share/applications/io.github.ratknight.RatJournal.desktop
+      - install -Dm644 src-tauri/icons/32x32.png /app/share/icons/hicolor/32x32/apps/io.github.ratknight.RatJournal.png
+      - install -Dm644 src-tauri/icons/128x128.png /app/share/icons/hicolor/128x128/apps/io.github.ratknight.RatJournal.png
+      - install -Dm644 src-tauri/icons/128x128@2x.png /app/share/icons/hicolor/256x256/apps/io.github.ratknight.RatJournal.png
+      - install -Dm644 public/logo-transparent.svg /app/share/icons/hicolor/scalable/apps/io.github.ratknight.RatJournal.svg
+      - install -Dm644 data/linux/io.github.ratknight.RatJournal.metainfo.xml /app/share/metainfo/io.github.ratknight.RatJournal.metainfo.xml
+      - install -Dm644 LICENSE /app/share/licenses/io.github.ratknight.RatJournal/LICENSE
+      - install -Dm644 fonts/*.ttf -t /app/share/fonts/
+    sources:
+      - type: dir
+        path: ..
+        skip:
+          - .git
+          - target
+          - node_modules
+          - build-flatpak
+          - flatpak-repo
+          - .flatpak-builder

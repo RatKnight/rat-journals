@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Rat Journal
+Comment=A private, encrypted, offline desktop journal
+Exec=rat-journal
+Icon=io.github.ratknight.RatJournal
+Type=Application
+Categories=Office;
+Keywords=journal;diary;encrypted;notes;private;
+StartupWMClass=rat-journal

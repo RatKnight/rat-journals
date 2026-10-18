@@ -88,3 +88,9 @@ flatpak/node-sources.json
 result
 
 .claude/settings.json
+
+# Flatpak build outputs
+build-flatpak/
+flatpak-repo/
+.flatpak-builder/
+*.flatpak

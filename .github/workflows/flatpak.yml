@@ -1,0 +1,49 @@
+# Builds the Rat Journal Flatpak bundle on a Linux runner. Manual only: nothing runs on
+# push. Optionally attaches the bundle to an existing GitHub release.
+name: Build Flatpak
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Existing release tag to attach the .flatpak to (empty = workflow artifact only)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  flatpak:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install flatpak-builder
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder
+          # Ubuntu 24.04 blocks the unprivileged user namespaces bubblewrap needs.
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+      - name: Build bundle
+        run: |
+          flatpak-builder --user --install-deps-from=flathub --repo=flatpak-repo \
+            --force-clean --disable-rofiles-fuse \
+            build-flatpak flatpak/io.github.ratknight.RatJournal.yml
+          flatpak build-bundle flatpak-repo Rat-Journal_x86_64.flatpak io.github.ratknight.RatJournal
+          sha256sum Rat-Journal_x86_64.flatpak
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rat-journal-flatpak
+          path: Rat-Journal_x86_64.flatpak
+
+      - name: Attach to release
+        if: inputs.release_tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: gh release upload "$RELEASE_TAG" Rat-Journal_x86_64.flatpak --clobber

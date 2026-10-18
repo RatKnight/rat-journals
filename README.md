@@ -43,6 +43,24 @@ Run `Rat Journal_<version>_x64-setup.exe` (or the `.msi`).
 - It installs for all users, so it asks for administrator permission.
 - App settings live in `%APPDATA%\local.ratjournal.app`. New journals are created in `Documents\Rat Journal` unless you pick another folder.
 
+## Install (Linux, Flatpak)
+
+Download `Rat-Journal_x86_64.flatpak` from the release, then:
+
+```bash
+flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+flatpak install --user Rat-Journal_x86_64.flatpak
+flatpak run io.github.ratknight.RatJournal
+```
+
+The first install pulls the GNOME runtime from Flathub. The installed app has no network permission at all, so the kernel blocks every outbound connection from it.
+
+To build the bundle yourself on Linux (needs `flatpak-builder`), or run the **Build Flatpak** workflow on GitHub:
+
+```bash
+flatpak-builder --user --install-deps-from=flathub --install --force-clean build-flatpak flatpak/io.github.ratknight.RatJournal.yml
+```
+
 ## Building a new .exe
 
 ### One-time setup (Windows)
