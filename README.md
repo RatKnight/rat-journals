@@ -8,6 +8,9 @@ A private, encrypted, offline desktop journal.
 
 </div>
 
+> [!NOTE]
+> **This is a personal project.** I built Rat Journal for my own use and published the source so it can be read and audited. It is not a product: there is no support, no roadmap, no promise of updates or backward compatibility, and no code signing. Issues and pull requests may go unanswered. If you want to use it anyway, you are welcome to under the MIT license — but you do so at your own risk, and you should keep your own backups.
+
 ## What it is
 
 Rat Journal keeps your journal in a single encrypted file on your own computer. It never connects to the internet: no accounts, no sync service, no telemetry, no update checks, and no links to outside websites. The only thing that opens a browser is a link you put in one of your own entries.
@@ -30,6 +33,7 @@ Full details: [SECURITY.md](SECURITY.md).
 - Rich text editor with images and file attachments
 - Several entries per day, tags, calendar and timeline views, search
 - Multiple journals (personal, work, travel)
+- An encrypted file vault: a folder (for example in Google Drive) of individually encrypted files with its own unlock, in-app preview for PDFs and images ([format](docs/VAULT_FORMAT.md))
 - Password and/or key-file unlock, or a local-only journal that opens without a password on this device
 - Automatic verified backups, with per-entry restore
 - Import from Day One (JSON/TXT) and jrnl (JSON); export to JSON, Markdown, or PDF
@@ -113,4 +117,4 @@ Statistics, Import, and Export are in the ⋮ menu.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE). Provided as is, without warranty of any kind.
