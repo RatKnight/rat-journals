@@ -19,6 +19,7 @@
   },
   "bundle": {
     "active": true,
+    "createUpdaterArtifacts": true,
     "targets": ["dmg", "app", "msi", "nsis", "appimage", "deb"],
     "icon": [
       "icons/32x32.png",
@@ -56,6 +57,17 @@
         "recommends": [
           "hunspell-en-US"
         ]
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDYxNkJENkM2Q0U5MDdBMUUKUldRZWVwRE94dFpyWVZtekNrVTlQRm1DUndhZ1pZWlFUUDNTdkd6b1V6ZmRkbTdtT0YxK1M4cXEK",
+      "endpoints": [
+        "https://github.com/RatKnight/rat-journals/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
       }
     }
   }

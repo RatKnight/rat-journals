@@ -148,7 +148,8 @@ pub fn run() {
     let is_e2e = is_e2e_mode();
     let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_dialog::init());
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build());
 
     if is_e2e {
         info!("E2E mode detected (MINI_DIARIUM_E2E=1): window-state persistence disabled");
@@ -320,6 +321,8 @@ pub fn run() {
             commands::deadman::journal_dead_man_days,
             commands::deadman::set_journal_dead_man,
             commands::deadman::dead_man_warnings,
+            commands::updater::check_for_update,
+            commands::updater::install_update,
             commands::duress::duress_status,
             commands::duress::set_duress,
             commands::duress::clear_duress,

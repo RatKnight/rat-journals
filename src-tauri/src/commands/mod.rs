@@ -21,6 +21,7 @@ pub mod search;
 pub mod spellcheck;
 pub mod stats;
 pub mod tags;
+pub mod updater;
 pub mod vault;
 
 use log::warn;

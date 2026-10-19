@@ -4,6 +4,7 @@ import { getVersion } from '@tauri-apps/api/app';
 import { useI18n } from '../../i18n';
 import { X, Compass } from 'lucide-solid';
 import { replayOnboarding } from '../../state/onboarding';
+import UpdateCheck from './UpdateCheck';
 
 interface AboutOverlayProps {
   isOpen: boolean;
@@ -64,6 +65,8 @@ export default function AboutOverlay(props: AboutOverlayProps) {
 
             {/* Description */}
             <p class="text-sm text-secondary text-center mb-6">{t('about.description')}</p>
+
+            <UpdateCheck />
 
             {/* Meta */}
             <div class="space-y-1 text-sm text-secondary border-t border-primary pt-4 mb-4">

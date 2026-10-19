@@ -904,5 +904,18 @@
     "mismatch": "The two passwords don't match.",
     "needDecoy": "Add a second journal to use as the decoy first. Its password must be the panic password.",
     "confirm": "Typing the panic password will permanently erase this journal with no way to recover it. Set it?"
+  },
+  "update": {
+    "check": "Check for updates",
+    "checking": "Checking…",
+    "current": "You have the latest version.",
+    "available": "Version {{version}} is available.",
+    "install": "Install and restart",
+    "installing": "Downloading and installing…",
+    "confirm": "Rat Journal will download version {{version}}, check its signature, lock the journal, and restart to install it. Continue?",
+    "checkFailed": "Couldn't reach GitHub to check for updates. Check your internet connection and try again.",
+    "installFailed": "The update couldn't be downloaded or installed. Nothing was changed. Try again, or download it from the GitHub releases page.",
+    "unsupported": "On Linux, update through Flatpak or download the new version from the GitHub releases page.",
+    "privacy": "Rat Journal contacts GitHub only when you click this. Updates are checked against Rat Journal's signing key before they install."
   }
 }

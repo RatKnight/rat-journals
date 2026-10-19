@@ -58,6 +58,21 @@ export async function clearDuress(): Promise<void> {
   await invoke('clear_duress');
 }
 
+export interface UpdateInfo {
+  version: string;
+  notes: string | null;
+}
+
+/** Asks GitHub for a newer release (only when the user clicks). Null when up to date. */
+export async function checkForUpdate(): Promise<UpdateInfo | null> {
+  return (await invoke<UpdateInfo | null>('check_for_update')) ?? null;
+}
+
+/** Downloads and verifies the newer release, locks the journal, installs and restarts. */
+export async function installUpdate(): Promise<void> {
+  await invoke('install_update');
+}
+
 /** Takes the security notice left by the last unlock (e.g. `'key-upgrade-failed'`), or null. */
 export async function takeSecurityNotice(): Promise<string | null> {
   return (await invoke<string | null>('take_security_notice')) ?? null;

@@ -38,6 +38,17 @@ export function mapTauriError(err: unknown, t: T = defaultT): string {
     return t('errors.backupTooNew');
   }
 
+  // Updater (see commands::updater).
+  if (/could not check for updates/i.test(raw)) {
+    return t('update.checkFailed');
+  }
+  if (/could not (download|install) the update/i.test(raw)) {
+    return t('update.installFailed');
+  }
+  if (/updates for this version come from the github releases page/i.test(raw)) {
+    return t('update.unsupported');
+  }
+
   // Dead man's switch (see core::deadman).
   if (/dead man's switch/i.test(raw)) {
     return t('deadMan.erased');
