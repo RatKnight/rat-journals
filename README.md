@@ -88,7 +88,7 @@ bun install
 bun run tauri build
 ```
 
-This builds an installer without update signatures; releases are built with the signing key set (`TAURI_SIGNING_PRIVATE_KEY`) and `--config '{"bundle":{"createUpdaterArtifacts":true}}'`, which also writes the `.sig` file the updater checks.
+This builds an installer without update signatures; releases are built with the signing key set (`TAURI_SIGNING_PRIVATE_KEY`) and `--config src-tauri/tauri.release.conf.json`, which also writes the `.sig` file the updater checks.
 
 To build again later from an existing clone, pull the latest changes first:
 
