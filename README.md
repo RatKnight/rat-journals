@@ -25,7 +25,7 @@ Rat Journal keeps your journal in a single encrypted file on your own computer. 
 - **Dead man's switch (optional)**: a journal or the vault can be set to erase itself permanently if it isn't unlocked within a number of days. It acts only when Rat Journal runs, and can't reach copies elsewhere (cloud version history, trash).
 - **Panic password (optional)**: typing it at the unlock screen erases the journal (and optionally the vault) and opens a decoy journal instead.
 - **Clock-change detection**: each journal and vault remembers the latest time it was open, sealed with its key, and warns after unlocking if the computer's clock has been set earlier.
-- **No network access**: a strict content security policy and WebView-level blocking keep the app offline.
+- **No network access, except when you ask for an update**: a strict content security policy and WebView-level blocking keep the app offline. The only network request is About → Check for updates, which asks this project's GitHub releases for a newer version when you click it. An update installs only if its signature matches the key built into the app.
 
 What it does **not** protect against: someone using your computer while the journal is unlocked, or malware already running on it. Turn on auto-lock (Preferences → Security) and use full-disk encryption (BitLocker).
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## 26.1.0 (2026-10-19)
+
+### Added
+- **Check for updates** (About, Windows): asks GitHub for a newer release only when you click it, never in the background. An update is installed only if its signature matches Rat Journal's signing key; the journal and vault are locked first, and the app restarts into the new version. On Linux, update through Flatpak or the releases page.
+
+### Changed
+- A GitHub Actions workflow runs the checks and tests on GitHub.
+
 ## 26.0.10 (2026-10-19)
 
 ### Added
