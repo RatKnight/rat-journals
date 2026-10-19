@@ -41,7 +41,7 @@ Full details: [SECURITY.md](SECURITY.md).
 - Automatic verified backups, with per-entry restore
 - Import from Day One (JSON/TXT) and jrnl (JSON); export to JSON, Markdown, or PDF
 - Themes (Light, Dark, Black, Violet), statistics, auto-lock for the journal and separately for the vault, lock when Windows locks
-- Optional dead man's switch and panic password; warnings when the computer's clock was set back
+- Optional dead man's switch (erase if not unlocked for a time, or if the clock is set back) and panic password; warnings when the computer's clock was set back
 - Check for updates from the About screen (Windows), only when you click it
 
 ## Install (Windows)

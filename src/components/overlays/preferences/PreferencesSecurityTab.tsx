@@ -18,7 +18,7 @@ import { AuthMethodsList } from './AuthMethodsList';
 import { AddPasswordForm } from './AddPasswordForm';
 import { AddKeypairForm } from './AddKeypairForm';
 import { ChangePasswordForm } from './ChangePasswordForm';
-import DeadManField from '../../common/DeadManField';
+import DeadManSettings from '../../common/DeadManSettings';
 import DuressSection from './DuressSection';
 
 const log = createLogger('Preferences');
@@ -48,7 +48,10 @@ export default function PreferencesSecurityTab(props: PreferencesSecurityTabProp
   const [requireAllPending, setRequireAllPending] = createSignal<boolean | null>(null);
   const [requireAllPassword, setRequireAllPassword] = createSignal('');
   const [requireAllBusy, setRequireAllBusy] = createSignal(false);
-  const [journalDeadManDays, setJournalDeadManDays] = createSignal(0);
+  const [journalDeadMan, setJournalDeadMan] = createSignal<tauri.DeadManRules>({
+    days: 0,
+    back_secs: 0,
+  });
 
   // Reset transient state + reload auth-related data when the overlay opens.
   createEffect(() => {
@@ -61,8 +64,8 @@ export default function PreferencesSecurityTab(props: PreferencesSecurityTabProp
       if (authState() === 'unlocked') {
         loadAuthMethods().catch((err) => log.error('Failed to reload auth methods:', err));
         tauri
-          .journalDeadManDays()
-          .then(setJournalDeadManDays)
+          .journalDeadMan()
+          .then(setJournalDeadMan)
           .catch((err) => log.warn("Failed to read the dead man's switch:", err));
         tauri
           .peekAuthSlotTypes()
@@ -316,13 +319,13 @@ export default function PreferencesSecurityTab(props: PreferencesSecurityTabProp
             <span class="text-xs text-tertiary">{t('prefs.security.vaultLockHint')}</span>
           </div>
           <Show when={authState() === 'unlocked'}>
-            <DeadManField
-              id="journal-dead-man-days"
-              label={t('deadMan.journalLabel')}
-              days={journalDeadManDays()}
-              onSave={async (days) => {
-                await tauri.setJournalDeadMan(days);
-                setJournalDeadManDays(days);
+            <DeadManSettings
+              id="journal-dead-man"
+              title={t('deadMan.titleJournal')}
+              rules={journalDeadMan()}
+              onSave={async (rules) => {
+                await tauri.setJournalDeadMan(rules);
+                setJournalDeadMan(rules);
               }}
             />
             <DuressSection />

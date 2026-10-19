@@ -6,7 +6,7 @@ import { open, save } from '../../lib/dialog';
 import { mapTauriError } from '../../lib/errors';
 import { useI18n } from '../../i18n';
 import { refreshVaultStatus, vaultStatus } from '../../state/vault';
-import DeadManField from '../common/DeadManField';
+import DeadManSettings from '../common/DeadManSettings';
 
 interface Props {
   open: boolean;
@@ -266,12 +266,12 @@ export default function VaultSettings(props: Props) {
             </button>
 
             <div class="mt-4">
-              <DeadManField
-                id="vault-dead-man-days"
-                label={t('deadMan.vaultLabel')}
-                days={vaultStatus()?.dead_man_days ?? 0}
-                onSave={async (days) => {
-                  await tauri.vaultSetDeadMan(days);
+              <DeadManSettings
+                id="vault-dead-man"
+                title={t('deadMan.titleVault')}
+                rules={vaultStatus()?.dead_man ?? { days: 0, back_secs: 0 }}
+                onSave={async (rules) => {
+                  await tauri.vaultSetDeadMan(rules);
                   await refreshVaultStatus();
                 }}
               />

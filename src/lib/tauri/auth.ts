@@ -13,14 +13,21 @@ export async function lockJournal(): Promise<void> {
   await invoke('lock_diary');
 }
 
-/** Dead man's switch period of the open journal in days (0 = off). */
-export async function journalDeadManDays(): Promise<number> {
-  return await invoke<number>('journal_dead_man_days');
+export interface DeadManRules {
+  /** "Not unlocked for" period in days; 0 = off. */
+  days: number;
+  /** "Clock set back" threshold in seconds; 0 = off. */
+  back_secs: number;
 }
 
-/** Arms (days > 0) or disarms (0) the open journal's dead man's switch. */
-export async function setJournalDeadMan(days: number): Promise<void> {
-  await invoke('set_journal_dead_man', { days });
+/** The open journal's dead man's switch rules. */
+export async function journalDeadMan(): Promise<DeadManRules> {
+  return await invoke<DeadManRules>('journal_dead_man');
+}
+
+/** Sets the open journal's dead man's switch rules (0 turns a rule off). */
+export async function setJournalDeadMan(rules: DeadManRules): Promise<void> {
+  await invoke('set_journal_dead_man', { days: rules.days, backSecs: rules.back_secs });
 }
 
 export interface DeadManWarning {

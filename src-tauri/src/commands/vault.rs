@@ -41,7 +41,7 @@ pub struct VaultStatus {
     /// The clock is behind the latest time this vault was open (see `core::clock`).
     pub clock_set_back: bool,
     /// The dead man's switch period in days (0 = off).
-    pub dead_man_days: u32,
+    pub dead_man: crate::deadman::Rules,
 }
 
 /// Files and folders of the open vault; files newest first.
@@ -253,7 +253,7 @@ fn status_of(vault: &Vault) -> VaultStatus {
             .unwrap_or_default(),
         slots: vault.slots(),
         clock_set_back: false,
-        dead_man_days: vault.dead_man().map_or(0, |dm| dm.days),
+        dead_man: vault.dead_man().map(|dm| dm.rules()).unwrap_or_default(),
     }
 }
 
@@ -808,11 +808,16 @@ pub fn vault_delete_file(id: String, state: State<DiaryState>) -> Result<(), Str
     with_vault(&state, |o| o.vault.delete_file(&id))
 }
 
-/// Arms (days > 0) or disarms (0) the open vault's dead man's switch.
+/// Sets the open vault's dead man's switch rules (0 turns a rule off).
 #[tauri::command]
-pub fn vault_set_dead_man(days: u32, state: State<DiaryState>) -> Result<(), String> {
-    let days = crate::deadman::validate_days(days)?;
-    with_vault(&state, |o| o.vault.set_dead_man(days))
+pub fn vault_set_dead_man(
+    days: u32,
+    back_secs: u64,
+    state: State<DiaryState>,
+) -> Result<(), String> {
+    let rules = crate::deadman::validate_rules(crate::deadman::Rules { days, back_secs })?
+        .unwrap_or_default();
+    with_vault(&state, |o| o.vault.set_dead_man_rules(rules))
 }
 
 #[tauri::command]

@@ -318,7 +318,7 @@ pub fn run() {
             commands::auth::unlock_diary_auto,
             commands::auth::lock_diary,
             commands::auth::take_security_notice,
-            commands::deadman::journal_dead_man_days,
+            commands::deadman::journal_dead_man,
             commands::deadman::set_journal_dead_man,
             commands::deadman::dead_man_warnings,
             commands::updater::check_for_update,

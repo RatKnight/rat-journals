@@ -51,7 +51,9 @@ pub(crate) fn sweep(app_data_dir: &Path) {
         ) else {
             continue;
         };
-        if deadman::peek_journal(&db).is_some_and(|dm| dm.expired(now)) {
+        let fires = deadman::peek_journal_full(&db)
+            .is_some_and(|(dm, mark)| dm.fires_before_unlock(now, mark.unwrap_or(0)));
+        if fires {
             erase_journal_files(&db, &backups);
         }
     }
@@ -64,27 +66,34 @@ pub(crate) fn sweep(app_data_dir: &Path) {
     }
 }
 
-/// The armed period in days (0 = off) of the open journal.
+/// The open journal's rules (0 = rule off).
 #[tauri::command]
-pub fn journal_dead_man_days(state: State<DiaryState>) -> Result<u32, String> {
+pub fn journal_dead_man(state: State<DiaryState>) -> Result<deadman::Rules, String> {
     let guard = state
         .db
         .lock()
         .map_err(|_| "Journal state lock failed".to_string())?;
     let db = guard.as_ref().ok_or("Journal is not unlocked")?;
-    Ok(deadman::journal_dead_man(db).map_or(0, |dm| dm.days))
+    Ok(deadman::journal_dead_man(db)
+        .map(|dm| dm.rules())
+        .unwrap_or_default())
 }
 
-/// Arms (days > 0) or disarms (0) the open journal's switch.
+/// Sets the open journal's rules: not unlocked for `days`, clock set back by more than
+/// `back_secs` (0 turns a rule off; both 0 disarm the switch).
 #[tauri::command]
-pub fn set_journal_dead_man(days: u32, state: State<DiaryState>) -> Result<(), String> {
-    let days = deadman::validate_days(days)?;
+pub fn set_journal_dead_man(
+    days: u32,
+    back_secs: u64,
+    state: State<DiaryState>,
+) -> Result<(), String> {
+    let rules = deadman::validate_rules(deadman::Rules { days, back_secs })?.unwrap_or_default();
     let guard = state
         .db
         .lock()
         .map_err(|_| "Journal state lock failed".to_string())?;
     let db = guard.as_ref().ok_or("Journal is not unlocked")?;
-    let dm = deadman::set_journal_dead_man(db, days)?;
+    let dm = deadman::set_journal_rules(db, rules)?;
     drop(guard);
     sync_config_copy(&state, dm);
     Ok(())
@@ -184,6 +193,7 @@ mod tests {
     }
 
     const LONG_AGO: Option<DeadMan> = Some(DeadMan {
+        back_secs: 0,
         days: 1,
         last_unlock: 0,
     });
@@ -257,5 +267,22 @@ mod tests {
             assert!(!a.join(name).exists(), "{name} survived");
         }
         assert!(!a.join("backups").join("diary").exists());
+    }
+
+    #[test]
+    fn sweep_erases_a_journal_whose_clock_was_set_back_too_far() {
+        let (_t, app, a, b) = dirs();
+        let now = crate::clock::unix_now();
+        // Clock rule only (1 hour); the file last saw a time 2 hours ahead of now.
+        let ahead = format!("2:0:{}:3600:00", now + 7200);
+        let near = format!("2:0:{}:3600:00", now + 600);
+        let journals = [
+            journal("a", &a, Some(&ahead), LONG_AGO),
+            journal("b", &b, Some(&near), LONG_AGO),
+        ];
+        crate::config::save_journals(&app, &journals, "b").unwrap();
+        sweep(&app);
+        assert!(!a.join("diary.db").exists());
+        assert!(b.join("diary.db").exists());
     }
 }

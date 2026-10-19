@@ -390,10 +390,19 @@ impl Vault {
 
     /// Arms (`Some(days)`) or disarms (`None`) the dead man's switch, counting from now.
     pub fn set_dead_man(&mut self, days: Option<u32>) -> Result<(), String> {
+        self.set_dead_man_rules(crate::deadman::Rules {
+            days: days.unwrap_or(0),
+            back_secs: 0,
+        })
+    }
+
+    /// Sets both rules (both 0 disarms), counting from now.
+    pub fn set_dead_man_rules(&mut self, rules: crate::deadman::Rules) -> Result<(), String> {
         let now = crate::clock::unix_now().max(self.index.clock_high_water.unwrap_or(0));
-        let dm = days.map(|days| crate::deadman::DeadMan {
-            days,
+        let dm = (!rules.is_off()).then_some(crate::deadman::DeadMan {
+            days: rules.days,
             last_unlock: now,
+            back_secs: rules.back_secs,
         });
         self.store_dead_man(dm)
     }
@@ -444,7 +453,9 @@ impl Vault {
             return Ok(false);
         };
         match header.dead_man {
-            Some(dm) if dm.expired(now) => Self::erase(dir).map(|()| true),
+            Some(dm) if dm.fires_before_unlock(now, dm.last_unlock) => {
+                Self::erase(dir).map(|()| true)
+            }
             _ => Ok(false),
         }
     }

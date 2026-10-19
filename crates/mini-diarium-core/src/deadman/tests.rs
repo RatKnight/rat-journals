@@ -4,6 +4,7 @@ use crate::clock::ClockCheck;
 #[test]
 fn test_deadline_expired() {
     let dm = DeadMan {
+        back_secs: 0,
         days: 1,
         last_unlock: 1_000_000,
     };
@@ -15,6 +16,7 @@ fn test_deadline_expired() {
 #[test]
 fn test_warning() {
     let dm = DeadMan {
+        back_secs: 0,
         days: 5,
         last_unlock: 1_000_000,
     };
@@ -39,6 +41,7 @@ fn test_validate_days() {
 fn test_encode_decode_round_trip() {
     let key = [7u8; 32];
     let dm = DeadMan {
+        back_secs: 0,
         days: 10,
         last_unlock: 1_000_000,
     };
@@ -51,6 +54,7 @@ fn test_decode_wrong_key() {
     let key1 = [7u8; 32];
     let key2 = [8u8; 32];
     let dm = DeadMan {
+        back_secs: 0,
         days: 10,
         last_unlock: 1_000_000,
     };
@@ -62,6 +66,7 @@ fn test_decode_wrong_key() {
 fn test_decode_tampered() {
     let key = [7u8; 32];
     let dm = DeadMan {
+        back_secs: 0,
         days: 10,
         last_unlock: 1_000_000,
     };
@@ -98,6 +103,7 @@ fn test_judge_clock_set_back() {
         tampered: false,
     };
     let dm = DeadMan {
+        back_secs: 0,
         days: 10,
         last_unlock: 1_000_000,
     };
@@ -112,6 +118,7 @@ fn test_judge_erase_expired() {
         tampered: false,
     };
     let dm = DeadMan {
+        back_secs: 0,
         days: 1,
         last_unlock: 1_000_000,
     };
@@ -126,12 +133,14 @@ fn test_judge_renew() {
         tampered: false,
     };
     let dm = DeadMan {
+        back_secs: 0,
         days: 10,
         last_unlock: 1_000_000,
     };
     assert_eq!(
         judge(Some(Some(dm)), &clock),
         Verdict::Renew(DeadMan {
+            back_secs: 0,
             days: 10,
             last_unlock: 1_000_000
         })
@@ -228,6 +237,7 @@ fn restore_keeps_the_live_switch_and_panic_password() {
 
     // What an old snapshot brings back: an expired deadline and no panic password.
     let old = DeadMan {
+        back_secs: 0,
         days: 5,
         last_unlock: 0,
     };
@@ -259,4 +269,139 @@ fn peek_reads_the_record_without_the_key() {
     let dm = set_journal_dead_man(&db, Some(9)).unwrap().unwrap();
     drop(db);
     assert_eq!(peek_journal(tmp.path()), Some(dm));
+}
+
+fn clock(effective_now: i64, set_back_by: Option<i64>) -> ClockCheck {
+    ClockCheck {
+        effective_now,
+        set_back_by,
+        tampered: false,
+    }
+}
+
+fn dm(days: u32, back_secs: u64) -> DeadMan {
+    DeadMan {
+        days,
+        last_unlock: 1_000_000,
+        back_secs,
+    }
+}
+
+#[test]
+fn clock_rule_erases_only_beyond_its_threshold() {
+    let both = dm(30, 3600);
+    // Set back 2 hours, threshold 1 hour: erase.
+    assert_eq!(
+        judge(Some(Some(both)), &clock(1_000_100, Some(7200))),
+        Verdict::Erase
+    );
+    // Set back 30 minutes: under the threshold; the "not unlocked" rule then refuses.
+    assert_eq!(
+        judge(Some(Some(both)), &clock(1_000_100, Some(1800))),
+        Verdict::ClockSetBack
+    );
+    // Clock rule alone, under its threshold: opens and renews, keeping the rule.
+    let clock_only = dm(0, 3600);
+    assert_eq!(
+        judge(Some(Some(clock_only)), &clock(1_000_100, Some(1800))),
+        Verdict::Renew(DeadMan {
+            last_unlock: 1_000_100,
+            ..clock_only
+        })
+    );
+    // Without the clock rule a set-back never erases.
+    assert_eq!(
+        judge(Some(Some(dm(30, 0))), &clock(1_000_100, Some(99_999))),
+        Verdict::ClockSetBack
+    );
+}
+
+#[test]
+fn not_unlocked_rule_off_never_expires() {
+    let clock_only = dm(0, 3600);
+    assert!(!clock_only.expired(i64::MAX / 2));
+    assert_eq!(clock_only.warning(1_000_000), None);
+    assert!(matches!(
+        judge(Some(Some(clock_only)), &clock(9_000_000_000, None)),
+        Verdict::Renew(_)
+    ));
+}
+
+#[test]
+fn record_with_clock_rule_round_trips_and_resists_edits() {
+    let key = [7u8; 32];
+    let both = dm(30, 3600);
+    let enc = encode(&key, &both);
+    assert!(enc.starts_with("2:"));
+    assert_eq!(decode(&key, &enc), Some(both));
+    let edited = enc.replacen(":3600:", ":999999:", 1);
+    assert_eq!(decode(&key, &edited), None);
+    assert_eq!(decode(&[8u8; 32], &enc), None);
+    // Records written before the clock rule still read.
+    let old = dm(30, 0);
+    let enc_old = encode(&key, &old);
+    assert!(!enc_old.starts_with("2:"));
+    assert_eq!(decode(&key, &enc_old), Some(old));
+}
+
+#[test]
+fn validate_rules_bounds() {
+    assert_eq!(validate_rules(Rules::default()), Ok(None));
+    assert!(validate_rules(Rules {
+        days: 0,
+        back_secs: MIN_BACK_SECS
+    })
+    .unwrap()
+    .is_some());
+    assert!(validate_rules(Rules {
+        days: 0,
+        back_secs: MIN_BACK_SECS - 1
+    })
+    .is_err());
+    assert!(validate_rules(Rules {
+        days: 0,
+        back_secs: MAX_BACK_SECS + 1
+    })
+    .is_err());
+    assert!(validate_rules(Rules {
+        days: MAX_DAYS + 1,
+        back_secs: 0
+    })
+    .is_err());
+}
+
+#[test]
+fn fires_before_unlock_uses_the_latest_known_time() {
+    let clock_only = dm(0, 3600);
+    // The file's clock mark says 2 hours later than now.
+    assert!(clock_only.fires_before_unlock(1_000_000, 1_007_200));
+    assert!(!clock_only.fires_before_unlock(1_000_000, 1_001_800));
+    assert!(!clock_only.fires_before_unlock(1_000_000, 0));
+}
+
+#[test]
+fn journal_clock_rule_erases_when_the_clock_goes_back_too_far() {
+    let tmp = tempfile::Builder::new().suffix(".db").tempfile().unwrap();
+    let db = crate::db::create_database(tmp.path(), "pw".to_string()).unwrap();
+    let armed = set_journal_rules(
+        &db,
+        Rules {
+            days: 0,
+            back_secs: 3600,
+        },
+    )
+    .unwrap()
+    .unwrap();
+    let t = armed.last_unlock;
+    assert!(journal_after_unlock_at(&db, t - 1800).is_ok());
+    assert_eq!(
+        journal_after_unlock_at(&db, t - 7200).err(),
+        Some(ERR_ERASED.to_string())
+    );
+    // The record keeps both rules through a renewal and a restore.
+    let kept = keep_settings(&db);
+    assert_eq!(
+        reapply_settings(&db, &kept).unwrap().unwrap().back_secs,
+        3600
+    );
 }

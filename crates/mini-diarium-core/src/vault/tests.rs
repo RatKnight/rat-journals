@@ -712,3 +712,40 @@ fn dead_man_disarm() {
     // Unlocking in the future should still work
     assert!(v.after_unlock_at(initial_unlock + 10_000_000).is_ok());
 }
+
+#[test]
+fn vault_clock_rule_erases_when_set_back_too_far() {
+    use crate::deadman::{Rules, ERR_ERASED};
+    let t = tmp();
+    let dir = vault_dir(&t);
+    let mut v = Vault::create(&dir, Some("pw"), None).unwrap();
+    v.set_dead_man_rules(Rules {
+        days: 0,
+        back_secs: 3600,
+    })
+    .unwrap();
+    let last = v.dead_man().unwrap().last_unlock;
+    assert!(v.after_unlock_at(last - 1800).is_ok());
+    assert_eq!(
+        v.after_unlock_at(last - 7200).err(),
+        Some(ERR_ERASED.to_string())
+    );
+    assert!(!dir.join("rat-vault.json").exists());
+}
+
+#[test]
+fn vault_clock_rule_is_checked_before_unlocking() {
+    use crate::deadman::Rules;
+    let t = tmp();
+    let dir = vault_dir(&t);
+    let mut v = Vault::create(&dir, Some("pw"), None).unwrap();
+    v.set_dead_man_rules(Rules {
+        days: 0,
+        back_secs: 3600,
+    })
+    .unwrap();
+    let last = v.dead_man().unwrap().last_unlock;
+    drop(v);
+    assert_eq!(Vault::erase_if_expired(&dir, last - 1800), Ok(false));
+    assert_eq!(Vault::erase_if_expired(&dir, last - 7200), Ok(true));
+}

@@ -28,8 +28,8 @@ export interface VaultStatus {
   slots: VaultSlotInfo[];
   /** The clock is behind the latest time this vault was open (set on unlock only). */
   clock_set_back?: boolean;
-  /** Dead man's switch period in days (0 = off). */
-  dead_man_days?: number;
+  /** Dead man's switch rules (0 = rule off). */
+  dead_man?: { days: number; back_secs: number };
 }
 
 export interface VaultListing {
@@ -168,9 +168,9 @@ export async function vaultPasteFiles(folder: string | null): Promise<VaultAddRe
   return await invoke('vault_paste_files', { folder });
 }
 
-/** Arms (days > 0) or disarms (0) the open vault's dead man's switch. */
-export async function vaultSetDeadMan(days: number): Promise<void> {
-  await invoke('vault_set_dead_man', { days });
+/** Sets the open vault's dead man's switch rules (0 turns a rule off). */
+export async function vaultSetDeadMan(rules: { days: number; back_secs: number }): Promise<void> {
+  await invoke('vault_set_dead_man', { days: rules.days, backSecs: rules.back_secs });
 }
 
 export async function vaultCreateFolder(name: string): Promise<void> {

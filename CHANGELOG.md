@@ -2,6 +2,9 @@
 
 ## 26.1.1 (2026-10-19)
 
+### Added
+- **Dead man's switch rules.** The switch now has two rules you turn on separately, for a journal (Preferences → Security) and for the vault (Vault settings): **erase if it isn't unlocked for** a number of days, months or years, and **erase if the computer's clock is set back** by more than a number of minutes, hours or days (at least 10 minutes). A clock set forward can't be told apart from time passing, so it just counts toward the first rule.
+
 ### Fixed (from a security review)
 - **Restoring a backup could erase the journal.** An older backup brought back its own dead man's switch deadline, so the next unlock could treat the restored journal as expired and erase it with its backups. A restore now keeps the live journal's dead man's switch (counted from the restore) and its panic password, or their absence.
 - **A journal shared between computers could be erased by mistake.** At startup the dead man's switch trusted this computer's copy of the last unlock, which is out of date if the journal was unlocked on another computer. It now reads the date from the journal file itself.
