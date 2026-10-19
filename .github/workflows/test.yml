@@ -1,10 +1,12 @@
-# Runs the checks and unit tests on GitHub instead of a local PC. Started by hand
-# (Actions → Tests → Run workflow, or `gh workflow run test.yml --ref <branch>`).
+# Runs the checks and unit tests on GitHub instead of a local PC: on every push to a
+# branch other than main, or by hand (Actions → Tests → Run workflow).
 
 name: Tests
 
 on:
   workflow_dispatch:
+  push:
+    branches-ignore: [main]
 
 permissions:
   contents: read
