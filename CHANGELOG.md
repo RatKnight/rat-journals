@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 26.1.2 (2026-10-19)
 
 ### Added
 - **Five more themes** (Preferences → General → Theme): Sepia and Mist (light), and Midnight, Forest and Ember (dark).
