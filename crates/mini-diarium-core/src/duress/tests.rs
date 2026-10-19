@@ -35,17 +35,17 @@ fn refuses_empty_or_the_real_password() {
 }
 
 #[test]
-fn unlock_tells_duress_real_and_wrong_passwords_apart() {
+fn the_file_check_tells_duress_real_and_wrong_passwords_apart() {
     let (tmp, backups, db) = journal();
     set(&db, "panic").unwrap();
     drop(db);
-    assert_eq!(
-        open_err(tmp.path(), backups.path(), "panic"),
-        Some(ERR_DURESS.to_string())
-    );
+    assert!(matches_file(tmp.path(), "panic"));
+    assert!(!matches_file(tmp.path(), "real"));
+    assert!(!matches_file(tmp.path(), "nope"));
+    // The real password still opens it; the panic password alone opens nothing.
     assert_eq!(open_err(tmp.path(), backups.path(), "real"), None);
     assert_eq!(
-        open_err(tmp.path(), backups.path(), "nope"),
+        open_err(tmp.path(), backups.path(), "panic"),
         Some("Incorrect password".to_string())
     );
 }

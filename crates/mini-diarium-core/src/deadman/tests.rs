@@ -217,3 +217,46 @@ fn journal_disarm() {
     assert!(result.is_none());
     assert!(journal_dead_man(&db).is_none());
 }
+
+#[test]
+fn restore_keeps_the_live_switch_and_panic_password() {
+    let tmp = tempfile::Builder::new().suffix(".db").tempfile().unwrap();
+    let db = crate::db::create_database(tmp.path(), "pw".to_string()).unwrap();
+    set_journal_dead_man(&db, Some(5)).unwrap();
+    crate::duress::set(&db, "panic").unwrap();
+    let kept = keep_settings(&db);
+
+    // What an old snapshot brings back: an expired deadline and no panic password.
+    let old = DeadMan {
+        days: 5,
+        last_unlock: 0,
+    };
+    crate::db::set_db_setting(&db, JOURNAL_SETTING, &encode(db.key().as_bytes(), &old)).unwrap();
+    crate::duress::clear(&db).unwrap();
+
+    let renewed = reapply_settings(&db, &kept).unwrap().unwrap();
+    assert_eq!(renewed.days, 5);
+    assert!(renewed.last_unlock > 0);
+    assert!(journal_after_unlock(&db).is_ok());
+    assert!(crate::duress::is_set(&db));
+}
+
+#[test]
+fn restore_does_not_rearm_a_switch_turned_off_since() {
+    let tmp = tempfile::Builder::new().suffix(".db").tempfile().unwrap();
+    let db = crate::db::create_database(tmp.path(), "pw".to_string()).unwrap();
+    let kept = keep_settings(&db);
+    set_journal_dead_man(&db, Some(1)).unwrap(); // as in the old snapshot
+    assert_eq!(reapply_settings(&db, &kept).unwrap(), None);
+    assert!(journal_dead_man(&db).is_none());
+}
+
+#[test]
+fn peek_reads_the_record_without_the_key() {
+    let tmp = tempfile::Builder::new().suffix(".db").tempfile().unwrap();
+    let db = crate::db::create_database(tmp.path(), "pw".to_string()).unwrap();
+    assert_eq!(peek_journal(tmp.path()), None);
+    let dm = set_journal_dead_man(&db, Some(9)).unwrap().unwrap();
+    drop(db);
+    assert_eq!(peek_journal(tmp.path()), Some(dm));
+}

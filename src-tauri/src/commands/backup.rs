@@ -325,9 +325,24 @@ pub(crate) fn restore_backup_inner(
         app_version: Some(env!("CARGO_PKG_VERSION")),
     };
 
+    // An older snapshot must not bring back an old dead man's deadline (which could erase
+    // the restored journal at the next unlock) or a panic password removed since.
+    let kept = crate::deadman::keep_settings(&db);
     let outcome = backup::restore_from_snapshot(db, &ctx, &file_name);
     *db_guard = outcome.db;
+    let mut renewed = None;
+    if outcome.error.is_none() {
+        if let Some(restored) = db_guard.as_ref() {
+            match crate::deadman::reapply_settings(restored, &kept) {
+                Ok(dm) => renewed = Some(dm),
+                Err(e) => warn!("Could not carry security settings over the restore: {}", e),
+            }
+        }
+    }
     drop(db_guard);
+    if let Some(dm) = renewed {
+        crate::commands::deadman::sync_config_copy(state, dm);
+    }
 
     match outcome.error {
         None => {

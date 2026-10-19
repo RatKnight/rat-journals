@@ -180,17 +180,28 @@ pub(crate) fn perform_unlock(mode: UnlockMode, state: &DiaryState) -> Result<(),
         return Err("No journal found. Please create one first.".to_string());
     }
 
+    // Panic password: checked from the file before anything opens it, for every unlock that
+    // includes a password (also "All methods"). See `core::duress`.
+    let typed_password = match &mode {
+        UnlockMode::Password(password) => Some(password.clone()),
+        UnlockMode::AllMethods(creds) => creds.iter().find_map(|c| match c {
+            MultiAuthCredential::Password { value } => Some(value.clone()),
+            MultiAuthCredential::Keypair { .. } => None,
+        }),
+        UnlockMode::Keypair(_) => None,
+    };
+    if let Some(password) = typed_password {
+        if mini_diarium_core::duress::matches_file(&db_path, &password) {
+            return crate::commands::duress::handle(state, password);
+        }
+    }
+
     // The credentials that were used are kept for the encryption upgrade below.
     let mut key_files: Vec<crate::auth::KeyFileMethod> = Vec::new();
     let (mut db_conn, label, rotation_password) = match mode {
         UnlockMode::Password(password) => {
             let rotation_password = Zeroizing::new(password.clone());
-            let conn = match open_database(&db_path, password.clone(), &backups_dir) {
-                Err(e) if e == mini_diarium_core::duress::ERR_DURESS => {
-                    return crate::commands::duress::handle(state, password);
-                }
-                other => other?,
-            };
+            let conn = open_database(&db_path, password, &backups_dir)?;
             migrate_require_all_auth_to_db(&conn, state);
             if crate::db::verify_require_all_auth(&conn) {
                 return Err(

@@ -8,7 +8,7 @@ None. Rat Journal collects no data of any kind.
 
 ## Network Access
 
-None. The app makes zero network requests. There is no telemetry, no analytics, no crash reporting, and no update checking. The app works fully offline and contains no HTTP client code.
+Only when you ask. There is no telemetry, no analytics, no crash reporting, and no background update checking, and the app works fully offline. The one network request is **About → Check for updates** (Windows): when you click it, the app asks this project's GitHub releases for a newer version, and if you choose to install, downloads the installer. GitHub sees your IP address and that a Rat Journal update check happened; nothing from your journal or vault is sent.
 
 ## Data Storage
 

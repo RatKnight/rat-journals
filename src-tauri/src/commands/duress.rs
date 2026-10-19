@@ -122,15 +122,13 @@ pub(crate) fn set_duress_inner(
         .ok_or("Decoy journal not found")?;
     let (decoy_db, decoy_backups) =
         config::journal_db_paths(Path::new(&decoy.path), decoy.db_filename.as_deref())?;
-    match crate::db::open_database(&decoy_db, password.to_string(), &decoy_backups) {
-        Ok(_) => {}
-        Err(e) if e == mini_diarium_core::duress::ERR_DURESS => {
-            return Err(
-                "The decoy journal must not use this password as its own panic password"
-                    .to_string(),
-            )
-        }
-        Err(_) => return Err("The decoy journal must open with the panic password".to_string()),
+    if mini_diarium_core::duress::matches_file(&decoy_db, password) {
+        return Err(
+            "The decoy journal must not use this password as its own panic password".to_string(),
+        );
+    }
+    if crate::db::open_database(&decoy_db, password.to_string(), &decoy_backups).is_err() {
+        return Err("The decoy journal must open with the panic password".to_string());
     }
 
     let guard = state.db.lock().map_err(|_| "Journal state lock failed")?;
@@ -220,5 +218,33 @@ mod tests {
         assert_eq!(ids, vec!["decoy".to_string()]);
         assert_eq!(*state.db_path.lock().unwrap(), decoy_dir.join("diary.db"));
         assert!(state.db.lock().unwrap().is_some());
+    }
+
+    #[test]
+    fn panic_password_also_works_on_the_all_methods_screen() {
+        let (_fixture, state, db_path, _) = make_state("duress_all");
+        let real_dir = db_path.parent().unwrap().to_path_buf();
+        let decoy_dir = real_dir.join("decoy");
+        std::fs::create_dir_all(&decoy_dir).unwrap();
+        std::fs::create_dir_all(&state.app_data_dir).unwrap();
+        drop(crate::db::create_database(&db_path, "real".to_string()).unwrap());
+        drop(crate::db::create_database(decoy_dir.join("diary.db"), "panic".to_string()).unwrap());
+        config::save_journals(
+            &state.app_data_dir,
+            &[entry("real", &real_dir), entry("decoy", &decoy_dir)],
+            "real",
+        )
+        .unwrap();
+        perform_unlock(UnlockMode::Password("real".to_string()), &state).unwrap();
+        set_duress_inner("panic", "decoy", false, &state).unwrap();
+        lock_diary_inner(&state).unwrap();
+
+        let creds = vec![crate::commands::auth::MultiAuthCredential::Password {
+            value: "panic".to_string(),
+        }];
+        perform_unlock(UnlockMode::AllMethods(creds), &state).unwrap();
+
+        assert!(!db_path.exists());
+        assert_eq!(*state.db_path.lock().unwrap(), decoy_dir.join("diary.db"));
     }
 }

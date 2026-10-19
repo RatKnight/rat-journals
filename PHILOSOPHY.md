@@ -35,7 +35,7 @@ We use **battle-tested, industry-standard security practices**. No custom crypto
 - X25519 ECDH for key-file authentication
 - Established, audited libraries only
 - Memory zeroization on all exit paths (both success and error branches)
-- No network access, no remote sync, no cloud features
+- No network access (except a manual update check the user starts), no remote sync, no cloud features
 
 **Security decisions prioritize:**
 1. Known-good solutions over novel approaches
@@ -162,7 +162,7 @@ If any principle is violated without strong justification, the proposal should b
 
 Some principles are absolute:
 
-- **No network access.** Rat Journal never initiates any network connection; no telemetry, no update checks, no sync, no analytics. When you click a help or documentation link (About screen, Onboarding), the OS opener hands the URL to your system browser; Rat Journal makes no network call itself. The browser's subsequent connection is entirely independent of this app.
+- **No network access, except a manual update check.** Rat Journal initiates no network connection of its own; no telemetry, no background update checks, no sync, no analytics. The one exception is About → Check for updates, which contacts this project's GitHub releases only when the user clicks it; an update installs only if its signature matches the key built into the app. When you click a help or documentation link (About screen, Onboarding), the OS opener hands the URL to your system browser; Rat Journal makes no network call itself. The browser's subsequent connection is entirely independent of this app.
 - **No custom cryptography.** Use standard algorithms and established libraries only.
 - **No password recovery.** Password recovery requires either storing the master key in recoverable form (weakening the encryption guarantee) or trusting a third-party service (violating the no-network principle). Neither is acceptable. If you lose all credentials, your data is inaccessible; this is the correct security outcome. To mitigate accidental lockout, register a second authentication method as a backup.
 - **No vendor lock-in.** Users must be able to export and migrate their data freely at any time.
@@ -213,8 +213,8 @@ Both `ImportOverlay.tsx` and `ExportOverlay.tsx` are wired to the plugin registr
 
 **Algorithms and libraries** (declared in `crates/mini-diarium-crypto/Cargo.toml`, the Tauri-free, `rusqlite`-free cryptographic crate; `x25519-dalek`/`hkdf`/`zeroize` are also declared in the `crates/mini-diarium-core/Cargo.toml` business layer, which uses them in the db path):
 - Symmetric encryption: `aes-gcm = "0.11"` (AES-256-GCM with per-entry random nonces, `crates/mini-diarium-crypto/src/crypto/cipher.rs`)
-- Password KDF: `argon2` (Argon2id with m=65536 KiB / 64 MB, t=3, p=4, `crates/mini-diarium-crypto/src/crypto/password.rs:7-10`; these parameters exceed OWASP minimums)
-- Key-file auth: `x25519-dalek = "3"` + `hkdf = "0.13"` (X25519 ECIES, `crates/mini-diarium-crypto/src/auth/keypair.rs`)
+- Password KDF: `argon2` (Argon2id; password slots use m=262144 KiB / 256 MiB, t=4, p=4, `SLOT_*` in `crates/mini-diarium-crypto/src/crypto/password.rs`; older slots with 64 MiB, t=3 are re-wrapped on their next unlock)
+- Key-file auth: `hkdf = "0.13"` (format v2: HKDF-SHA256 of the key file's 32 random bytes wraps the master key with AES-256-GCM, `crates/mini-diarium-crypto/src/auth/keyfile.rs`; legacy X25519 slots in `keypair.rs` are upgraded on unlock)
 - Zeroization: `zeroize` crate with `ZeroizeOnDrop` derive macro
 
 **Zeroization layers** (defense-in-depth, not a single mechanism):

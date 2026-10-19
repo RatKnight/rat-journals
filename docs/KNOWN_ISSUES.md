@@ -75,7 +75,7 @@ JSON and Markdown exports contain decrypted diary content in plain text. This is
 ### KI-8 — No minimum password length enforced
 **Status:** By design (user responsibility)
 
-The app accepts any non-empty password (minimum 1 character). A visual strength indicator in the password creation UI guides your choice, but no minimum is enforced. The Argon2id key derivation (64 MB memory, 3 iterations) provides strong offline-attack resistance regardless of password length, but a 1-character password remains trivially guessable in an online or physical-access scenario.
+The app accepts any non-empty password (minimum 1 character). A visual strength indicator in the password creation UI guides your choice, but no minimum is enforced. The Argon2id key derivation (256 MiB memory, 4 passes) provides strong offline-attack resistance regardless of password length, but a 1-character password remains trivially guessable in an online or physical-access scenario.
 
 **Our position:** Password strength is the user's responsibility. Rat Journal's threat model is protection of a file at rest, not authentication against an active attacker. A strength minimum without server-side enforcement would be easily circumvented and creates false confidence.
 

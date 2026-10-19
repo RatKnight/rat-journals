@@ -2,7 +2,7 @@
 
 **Rat Journal** is a personal, encrypted, offline desktop journal with a separate encrypted file vault (SolidJS + Rust/Tauri v2 + SQLite). Journal content is AES-256-GCM encrypted at rest; plaintext never touches disk. It is a renamed fork of an MIT-licensed project, maintained for one person's use (see `README.md`).
 
-**Core principles:** privacy first (no network, no telemetry, no update checks), clean architecture, TypeScript strict + Rust type safety, English only.
+**Core principles:** privacy first (no network except a manual, signed update check; no telemetry; no background checks), clean architecture, TypeScript strict + Rust type safety, English only.
 
 **Platforms built:** Windows (NSIS `.exe` + `.msi`) and Linux (Flatpak).
 

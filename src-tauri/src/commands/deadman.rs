@@ -8,24 +8,12 @@ use serde::Serialize;
 use std::path::Path;
 use tauri::State;
 
-/// Permanently erases a journal: its database (with SQLite side files) and its backups.
+/// Permanently erases a journal: destroys the key material in its database and in every
+/// backup, then deletes them (see `core::erase`).
 pub(crate) fn erase_journal_files(db_path: &Path, backups_dir: &Path) {
-    for suffix in ["", "-wal", "-shm", "-journal"] {
-        let mut name = db_path.as_os_str().to_owned();
-        name.push(suffix);
-        let path = std::path::PathBuf::from(name);
-        if path.exists() {
-            if let Err(e) = std::fs::remove_file(&path) {
-                warn!("Could not erase {}: {}", path.display(), e);
-            }
-        }
-    }
-    if backups_dir.exists() {
-        if let Err(e) = std::fs::remove_dir_all(backups_dir) {
-            warn!("Could not erase the journal's backups: {}", e);
-        }
-    }
-    info!("Erased a journal by its dead man's switch");
+    mini_diarium_core::erase::shred_journal_file(db_path);
+    mini_diarium_core::erase::shred_journal_dir(backups_dir);
+    info!("Erased a journal");
 }
 
 /// Stores the plaintext copy of the active journal's switch in config.json.
@@ -52,16 +40,19 @@ pub(crate) fn sync_config_copy(state: &DiaryState, dm: Option<DeadMan>) {
 pub(crate) fn sweep(app_data_dir: &Path) {
     let now = crate::clock::unix_now();
     for journal in crate::config::load_journals(app_data_dir) {
-        let Some(dm) = journal.dead_man else { continue };
-        if !dm.expired(now) {
+        // config.json's copy only says which journals are armed; the deadline itself is read
+        // from the journal file, which is current even if another computer unlocked it.
+        if journal.dead_man.is_none() {
             continue;
         }
-        match crate::config::journal_db_paths(
+        let Ok((db, backups)) = crate::config::journal_db_paths(
             Path::new(&journal.path),
             journal.db_filename.as_deref(),
-        ) {
-            Ok((db, backups)) => erase_journal_files(&db, &backups),
-            Err(e) => warn!("Could not locate an expired journal: {}", e),
+        ) else {
+            continue;
+        };
+        if deadman::peek_journal(&db).is_some_and(|dm| dm.expired(now)) {
+            erase_journal_files(&db, &backups);
         }
     }
     if let Some(dir) = crate::config::load_last_vault_dir(app_data_dir) {
@@ -125,7 +116,11 @@ pub(crate) fn collect_warnings(app_data_dir: &Path, now: i64) -> Vec<DeadManWarn
         .into_iter()
         .filter(|j| Some(&j.id) != active.as_ref())
         .filter_map(|j| {
-            let left = j.dead_man?.warning(now)?;
+            j.dead_man?;
+            let (db, _) =
+                crate::config::journal_db_paths(Path::new(&j.path), j.db_filename.as_deref())
+                    .ok()?;
+            let left = deadman::peek_journal(&db)?.warning(now)?;
             Some(DeadManWarning {
                 kind: "journal",
                 name: j.name,
@@ -153,18 +148,24 @@ mod tests {
     use super::*;
     use crate::config::JournalConfig;
 
-    fn journal(id: &str, path: &Path, dead_man: Option<DeadMan>) -> JournalConfig {
-        std::fs::write(path.join("diary.db"), b"x").unwrap();
-        std::fs::create_dir_all(path.join("backups").join("diary")).unwrap();
+    /// A real journal in `dir` whose file records `record` (raw, as another computer or an
+    /// older version could have left it), registered with config copy `copy`.
+    fn journal(id: &str, dir: &Path, record: Option<&str>, copy: Option<DeadMan>) -> JournalConfig {
+        let db = crate::db::create_database(dir.join("diary.db"), "pw".to_string()).unwrap();
+        if let Some(record) = record {
+            crate::db::set_db_setting(&db, deadman::JOURNAL_SETTING, record).unwrap();
+        }
+        drop(db);
+        std::fs::create_dir_all(dir.join("backups").join("diary")).unwrap();
         JournalConfig {
-            duress: None,
             id: id.to_string(),
             name: id.to_string(),
-            path: path.to_string_lossy().to_string(),
+            path: dir.to_string_lossy().to_string(),
             auto_key: None,
             db_filename: None,
             require_all_auth: None,
-            dead_man,
+            dead_man: copy,
+            duress: None,
         }
     }
 
@@ -182,27 +183,21 @@ mod tests {
         (t, app, a, b)
     }
 
+    const LONG_AGO: Option<DeadMan> = Some(DeadMan {
+        days: 1,
+        last_unlock: 0,
+    });
+
     #[test]
-    fn sweep_erases_only_expired_journals() {
+    fn sweep_trusts_the_journal_file_not_this_computers_copy() {
         let (_t, app, a, b) = dirs();
         let now = crate::clock::unix_now();
+        // Both copies here are stale and say "expired"; only `a`'s file agrees. `b` was
+        // unlocked on another computer just now.
+        let fresh = format!("1:{now}:00");
         let journals = [
-            journal(
-                "a",
-                &a,
-                Some(DeadMan {
-                    days: 1,
-                    last_unlock: 0,
-                }),
-            ),
-            journal(
-                "b",
-                &b,
-                Some(DeadMan {
-                    days: 1,
-                    last_unlock: now,
-                }),
-            ),
+            journal("a", &a, Some("1:0:00"), LONG_AGO),
+            journal("b", &b, Some(&fresh), LONG_AGO),
         ];
         crate::config::save_journals(&app, &journals, "b").unwrap();
 
@@ -215,14 +210,27 @@ mod tests {
     }
 
     #[test]
+    fn sweep_leaves_journals_not_armed_here_or_without_a_record() {
+        let (_t, app, a, b) = dirs();
+        let journals = [
+            journal("a", &a, Some("1:0:00"), None),
+            journal("b", &b, None, LONG_AGO),
+        ];
+        crate::config::save_journals(&app, &journals, "b").unwrap();
+        sweep(&app);
+        assert!(a.join("diary.db").exists());
+        assert!(b.join("diary.db").exists());
+    }
+
+    #[test]
     fn warnings_list_other_journals_near_their_deadline() {
         let (_t, app, a, b) = dirs();
         let now = 10_000_000;
-        let dm = Some(DeadMan {
-            days: 3,
-            last_unlock: now - 2 * deadman::DAY_SECS,
-        });
-        let journals = [journal("a", &a, dm), journal("b", &b, dm)];
+        let record = format!("3:{}:00", now - 2 * deadman::DAY_SECS);
+        let journals = [
+            journal("a", &a, Some(&record), LONG_AGO),
+            journal("b", &b, Some(&record), LONG_AGO),
+        ];
         crate::config::save_journals(&app, &journals, "b").unwrap();
 
         let warnings = collect_warnings(&app, now);
@@ -236,14 +244,16 @@ mod tests {
     }
 
     #[test]
-    fn erase_removes_database_side_files_and_backups() {
+    fn erasing_shreds_the_database_and_its_backups() {
         let (_t, _app, a, _b) = dirs();
-        journal("a", &a, None);
-        for side in ["diary.db-wal", "diary.db-shm"] {
-            std::fs::write(a.join(side), b"x").unwrap();
-        }
+        journal("a", &a, None, None);
+        let backup = a.join("backups").join("diary").join("snap.db");
+        std::fs::copy(a.join("diary.db"), &backup).unwrap();
+        std::fs::write(a.join("diary.db-wal"), b"x").unwrap();
+
         erase_journal_files(&a.join("diary.db"), &a.join("backups").join("diary"));
-        for name in ["diary.db", "diary.db-wal", "diary.db-shm"] {
+
+        for name in ["diary.db", "diary.db-wal"] {
             assert!(!a.join(name).exists(), "{name} survived");
         }
         assert!(!a.join("backups").join("diary").exists());

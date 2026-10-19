@@ -244,16 +244,10 @@ fn open_v3_with_password(
         Err(e) => return Err(format!("Database error: {}", e)),
     };
 
-    let method = crate::auth::password::PasswordMethod::new(password.clone());
-    let unwrapped = method.unwrap_master_key(&wrapped_key);
-    // Always checked when a duress password is set, so a real unlock and a duress unlock
-    // take the same time (see `crate::duress`).
-    let is_duress = crate::duress::matches_conn(&conn, &password);
-    let master_key_bytes = match unwrapped {
-        Ok(key) => key,
-        Err(_) if is_duress => return Err(crate::duress::ERR_DURESS.to_string()),
-        Err(_) => return Err("Incorrect password".to_string()),
-    };
+    let method = crate::auth::password::PasswordMethod::new(password);
+    let master_key_bytes = method
+        .unwrap_master_key(&wrapped_key)
+        .map_err(|_| "Incorrect password".to_string())?;
 
     let encryption_key =
         cipher::Key::from_slice(&master_key_bytes).ok_or("Invalid master key size")?;

@@ -461,7 +461,7 @@ impl Vault {
     pub fn erase(dir: &Path) -> Result<(), String> {
         let header = dir.join(HEADER_FILE);
         if header.exists() {
-            fs::remove_file(&header).map_err(|e| format!("Could not erase the vault: {}", e))?;
+            crate::erase::overwrite_and_remove(&header)?;
         }
         for name in [INDEX_FILE, INDEX_NEW_FILE] {
             let _ = fs::remove_file(dir.join(name));

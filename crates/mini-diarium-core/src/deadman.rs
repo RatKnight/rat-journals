@@ -195,5 +195,55 @@ pub fn journal_after_unlock_at(
     Ok((check, renewed))
 }
 
+/// Reads the switch stored in the journal file at `db_path` without the key, for decisions
+/// made before unlocking (the startup sweep, warnings). The MAC isn't checked: an edit can
+/// at most hasten erasure (anyone who can edit the file can delete it), and every unlock
+/// checks the MAC. Unlike config.json's copy, the file is current on every computer that
+/// shares the journal.
+pub fn peek_journal(db_path: &std::path::Path) -> Option<DeadMan> {
+    let conn = rusqlite::Connection::open_with_flags(
+        db_path,
+        rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
+    )
+    .ok()?;
+    let stored = crate::db::queries::db_settings::get_db_setting_conn(&conn, JOURNAL_SETTING)?;
+    let mut parts = stored.splitn(3, ':');
+    let days: u32 = parts.next()?.parse().ok()?;
+    let last_unlock: i64 = parts.next()?.parse().ok()?;
+    Some(DeadMan { days, last_unlock })
+}
+
+/// Security settings of the live journal that a backup restore must keep: restoring an old
+/// snapshot must neither bring back an old deadline (which could erase the restored journal
+/// at the next unlock) nor a panic password that was removed since.
+#[derive(Debug, Clone, Default)]
+pub struct KeptSettings {
+    dead_man_days: Option<u32>,
+    duress_check: Option<String>,
+}
+
+/// Reads the settings to keep from the live journal, before a restore.
+pub fn keep_settings(db: &crate::db::DatabaseConnection) -> KeptSettings {
+    KeptSettings {
+        dead_man_days: journal_dead_man(db).map(|dm| dm.days),
+        duress_check: crate::db::get_db_setting(db, crate::duress::SETTING),
+    }
+}
+
+/// Writes the kept settings onto the restored journal, counting the deadline from now.
+/// Returns the switch now in force.
+pub fn reapply_settings(
+    db: &crate::db::DatabaseConnection,
+    kept: &KeptSettings,
+) -> Result<Option<DeadMan>, String> {
+    match &kept.duress_check {
+        Some(check) => crate::db::set_db_setting(db, crate::duress::SETTING, check)?,
+        None => crate::db::delete_db_setting(db, crate::duress::SETTING)?,
+    }
+    // A restored clock mark is older than the live one; record the present.
+    crate::clock::update_journal_mark(db)?;
+    set_journal_dead_man(db, kept.dead_man_days)
+}
+
 #[cfg(test)]
 mod tests;

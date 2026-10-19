@@ -131,7 +131,7 @@ cargo bench --manifest-path src-tauri/Cargo.toml --bench cipher_bench   # Specif
 
 - **Never** log, print, or serialize passwords or encryption keys
 - **Never** store plaintext diary content in any unencrypted form on disk
-- **Never** send data over the network — no analytics, no telemetry, no update checks
+- **Never** send data over the network — no analytics, no telemetry, no background update checks. The only network code is `commands/updater.rs` (manual check against GitHub releases, signature-verified); keep it user-initiated
 - Auth: A random master key is wrapped per auth slot in `auth_slots` (schema v3). Password slots use Argon2id + AES-256-GCM wrapping; keypair slots use X25519 ECIES. The master key is never stored in plaintext.
 - The `DiaryState` holds `Mutex<Option<DatabaseConnection>>` — `None` when locked, `Some` when unlocked
 - All commands that access entries must check `db_state.as_ref().ok_or("Diary not unlocked")?`

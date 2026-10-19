@@ -6,9 +6,11 @@
 //! the same Argon2id scheme as a password slot, in `db_settings` (`duress_check`). It wraps
 //! no key, so the duress password can't open anything.
 //!
-//! Timing: when a duress password is set, every password unlock also runs the duress
-//! derivation, so a real unlock and a duress unlock cost the same before the decoy opens.
-//! Opening the decoy then adds one more derivation (about a second).
+//! The app checks it with [`matches_file`] before opening the journal, for every unlock
+//! that includes a password (also the "All methods" unlock of a journal that needs every
+//! method). When a duress password is set, that check runs one Argon2id derivation on every
+//! such unlock; a real unlock then runs its own, and a duress unlock opens the decoy with
+//! one, so both cost two derivations.
 //!
 //! Limits: copies of the journal made earlier (cloud version history, other backups) are not
 //! erased; someone who inspects the file can see that a duress check exists.
@@ -18,10 +20,6 @@ use rand_core::{OsRng, RngCore};
 
 /// `db_settings` key holding the hex-encoded check blob.
 pub const SETTING: &str = "duress_check";
-
-/// Returned by a password unlock when the duress password was typed. The app must never
-/// show it; it erases the journal and opens the decoy.
-pub const ERR_DURESS: &str = "duress-password";
 
 /// Sets (or replaces) the duress password of an open journal. Refuses one that opens the
 /// journal itself.
@@ -46,6 +44,18 @@ pub fn clear(db: &crate::db::DatabaseConnection) -> Result<(), String> {
 /// Whether the journal has a duress password.
 pub fn is_set(db: &crate::db::DatabaseConnection) -> bool {
     crate::db::get_db_setting(db, SETTING).is_some()
+}
+
+/// Whether `password` is the duress password of the journal at `db_path`. Opens the file
+/// read-only and changes nothing; false when none is set or the file can't be read.
+pub fn matches_file(db_path: &std::path::Path, password: &str) -> bool {
+    match rusqlite::Connection::open_with_flags(
+        db_path,
+        rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
+    ) {
+        Ok(conn) => matches_conn(&conn, password),
+        Err(_) => false,
+    }
 }
 
 /// Whether `password` is the duress password stored in `conn` (false when none is set).

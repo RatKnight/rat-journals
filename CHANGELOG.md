@@ -1,5 +1,17 @@
 # Changelog
 
+## 26.1.1 (2026-10-19)
+
+### Fixed (from a security review)
+- **Restoring a backup could erase the journal.** An older backup brought back its own dead man's switch deadline, so the next unlock could treat the restored journal as expired and erase it with its backups. A restore now keeps the live journal's dead man's switch (counted from the restore) and its panic password, or their absence.
+- **A journal shared between computers could be erased by mistake.** At startup the dead man's switch trusted this computer's copy of the last unlock, which is out of date if the journal was unlocked on another computer. It now reads the date from the journal file itself.
+- **The panic password didn't work on journals that need every unlock method**, or when typed on the **All methods** unlock screen. It is now checked before any unlock that includes a password.
+- **Erasing now destroys the keys first.** The dead man's switch and the panic password used to delete files only, which undelete tools can bring back. The keys inside the journal and every backup are now wiped in place first, and a vault's header is overwritten.
+- Building from source without the update signing key failed; signing is now switched on only for releases.
+
+### Changed
+- The documentation now describes the update check, the vault and the new security features, and no longer claims the app never connects to the internet.
+
 ## 26.1.0 (2026-10-19)
 
 ### Added

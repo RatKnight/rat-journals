@@ -210,7 +210,7 @@ Reversible settings apply immediately. The dialog is close-only (no Save/Cancel 
 
 | Setting | Description |
 |---------|-------------|
-| Theme | Light, dark, or follow system (auto) |
+| Theme | Light, Dark, Black, Violet, or follow system (Auto) |
 | Language | Choose app language |
 | ESC key action | Do nothing, quit the app, or lock the journal on Escape |
 | First day of week | Sunday, Monday, or auto-detect from locale |
@@ -221,6 +221,9 @@ Reversible settings apply immediately. The dialog is close-only (no Save/Cancel 
 | Toolbar items | Enable/disable and reorder optional editor toolbar controls |
 | Editor font and size | Set editor body typography |
 | Auto-Lock | Lock automatically after a configurable idle timeout |
+| Lock the vault after | Minutes without using the vault before it locks on its own (0 = off); the journal stays open |
+| Erase this journal if it isn't unlocked for | Dead man's switch, in days (0 = off); see Security features |
+| Panic password | A second password that erases this journal and opens a decoy; see Security features |
 | Theme Overrides | Advanced: override individual color tokens (see below) |
 | Custom fonts | Upload/remove editor font families |
 | Generate Debug Dump | Export a privacy-safe diagnostics JSON file (see below) |
@@ -380,6 +383,24 @@ If you place your journal directory inside a cloud-synced folder (Dropbox, OneDr
 - **Removing an authentication method does not revoke it retroactively.** A removed key file still unlocks snapshots taken while it was registered.
 - **Local-only journals need this device.** A passwordless journal's key lives in `config.json` in the app data directory, which is *not* part of the backups folder. Copying the backups folder to another machine is not enough to restore it there.
 
+## File vault
+
+The vault is a folder (for example in Google Drive) of individually encrypted files, with its own password or key file. Open it from the left rail. Add files with the buttons, by dragging them in, or by pasting files copied in File Explorer (or the Linux file manager). Select files with the checkboxes (or select all) to save copies, move, or delete them together. PDFs and images open in a preview inside the app. Vault settings manage its unlock methods, check every file, and hold the vault's dead man's switch. The vault locks with the journal, and can also lock on its own after a set number of minutes without using it (Preferences → Security).
+
+## Security features
+
+All of these are off until you turn them on.
+
+- **Clock warnings.** Each journal and the vault remember the latest time they were open. If the computer's clock is earlier than that when you unlock, a warning appears. Correct the date and time if you didn't change them.
+- **Dead man's switch.** A journal (Preferences → Security) or the vault (Vault settings) can be set to be permanently erased if it isn't unlocked within a number of days. Rat Journal erases it the next time it starts or tries to open it, and warns after you unlock a journal when another journal or the vault is within 3 days of being erased. While it's on, a journal or vault won't open with the clock set back; correct the clock first. A clock set far ahead triggers it too.
+- **Panic password.** A second password for a journal (Preferences → Security). Typing it at the unlock screen permanently erases the journal (and, if chosen, the vault) and opens a decoy journal as if it were a normal unlock. Set up the decoy first: another journal whose password is the panic password, with believable entries.
+
+Erased journals and vaults can't be recovered by Rat Journal. Copies elsewhere, such as cloud version history or trash, or backups you copied yourself, are not reached.
+
+## Updates
+
+On Windows, **About → Check for updates** asks GitHub whether a newer version exists. If you choose to install it, Rat Journal downloads it, checks its signature, locks the journal and vault, and restarts into the new version. On Linux, update through Flatpak or download the new version from the GitHub releases page.
+
 ## FAQ
 
 **I forgot my password. Can I recover my entries?**
@@ -389,7 +410,7 @@ No — unless you registered a key file as an authentication method. If you have
 Locally on your machine in an SQLite database. See Backups above for the path.
 
 **Does Rat Journal connect to the internet?**
-Never. No network requests, no analytics, no telemetry, no automatic updates.
+Only when you click **About → Check for updates** (Windows). Nothing is sent from your journal or vault, and there are no analytics, no telemetry, and no background checks.
 
 **Can I sync across devices?**
 Not directly. Rat Journal is local-only by design. You could manually copy the journal file, but simultaneous access from multiple devices is not supported.
