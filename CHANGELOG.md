@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- **Five more themes** (Preferences → General → Theme): Sepia and Mist (light), and Midnight, Forest and Ember (dark).
+- **A vault icon of its own**: a vault door with rat ears and a tail, in the left rail and on the journal picker.
+
 ## 26.1.1 (2026-10-19)
 
 ### Added

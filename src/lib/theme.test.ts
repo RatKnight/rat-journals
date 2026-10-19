@@ -126,4 +126,24 @@ describe('lib/theme', () => {
     expect(html().hasAttribute('data-palette')).toBe(false);
     expect(html().classList.contains('dark')).toBe(false);
   });
+
+  it('sepia and mist are light themes with their own palette; the new dark ones are dark', () => {
+    installMatchMedia(true);
+    initializeTheme();
+    setTheme('sepia');
+    expect(getActiveTheme()).toBe('light');
+    expect(html().classList.contains('dark')).toBe(false);
+    expect(html().getAttribute('data-palette')).toBe('sepia');
+
+    for (const palette of ['midnight', 'forest', 'ember'] as const) {
+      setTheme(palette);
+      expect(getActiveTheme()).toBe('dark');
+      expect(html().getAttribute('data-palette')).toBe(palette);
+    }
+
+    setTheme('mist');
+    expect(getActiveTheme()).toBe('light');
+    expect(html().getAttribute('data-palette')).toBe('mist');
+    expect(localStorage.getItem('theme-preference')).toBe('mist');
+  });
 });

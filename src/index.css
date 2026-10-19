@@ -164,7 +164,7 @@
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3);
 }
 
-/* ── Dark palettes (Preferences → Theme: Black / Violet) ─────────────────────────────── */
+/* ── Dark palettes (Preferences → Theme: Black, Violet, Midnight, Forest, Ember) ─────────────────────────────── */
 
 /* Black: near-black surfaces for OLED screens and dark rooms, with a cool grey accent. */
 .dark[data-palette='black'] {
@@ -231,6 +231,175 @@
   --status-info-bg: #3b1f6e;
   --status-info-border: #5b21b6;
   --status-info-text: #ddd6fe;
+}
+
+/* Midnight: deep navy surfaces with a sky-blue accent. */
+.dark[data-palette='midnight'] {
+  --bg-primary: #0f172a;
+  --bg-secondary: #0b1120;
+  --bg-tertiary: #1e293b;
+  --bg-hover: #1e293b;
+  --bg-active: #334155;
+
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --text-muted: #64748b;
+  --text-inverse: #0b1120;
+
+  --border-primary: #1e293b;
+  --border-secondary: #334155;
+  --border-focus: #38bdf8;
+
+  --interactive-primary: #38bdf8;
+  --interactive-primary-hover: #7dd3fc;
+  --interactive-secondary: #38bdf8;
+  --btn-primary-bg: #0284c7;
+  --btn-primary-bg-hover: #0369a1;
+  --btn-primary-ring: #38bdf8;
+  --btn-active-bg: #0c4a6e;
+  --btn-active-text: #e0f2fe;
+  --spinner-color: #38bdf8;
+
+  --editor-code-block-bg: #0b1120;
+  --editor-link-color: #7dd3fc;
+  --editor-selection-outline: #7dd3fc;
+}
+
+/* Forest: dark green surfaces with an emerald accent. */
+.dark[data-palette='forest'] {
+  --bg-primary: #14201a;
+  --bg-secondary: #0d1612;
+  --bg-tertiary: #1d2e25;
+  --bg-hover: #22362b;
+  --bg-active: #2c4537;
+
+  --text-primary: #ecfdf5;
+  --text-secondary: #d1fae5;
+  --text-tertiary: #a7c4b5;
+  --text-muted: #7a9a89;
+  --text-inverse: #0d1612;
+
+  --border-primary: #22362b;
+  --border-secondary: #335042;
+  --border-focus: #34d399;
+
+  --interactive-primary: #34d399;
+  --interactive-primary-hover: #6ee7b7;
+  --interactive-secondary: #34d399;
+  --btn-primary-bg: #059669;
+  --btn-primary-bg-hover: #047857;
+  --btn-primary-ring: #34d399;
+  --btn-active-bg: #064e3b;
+  --btn-active-text: #d1fae5;
+  --spinner-color: #34d399;
+
+  --editor-code-block-bg: #0d1612;
+  --editor-link-color: #6ee7b7;
+  --editor-selection-outline: #6ee7b7;
+}
+
+/* Ember: warm dark brown surfaces with an orange accent. */
+.dark[data-palette='ember'] {
+  --bg-primary: #1f1612;
+  --bg-secondary: #150f0c;
+  --bg-tertiary: #2c201a;
+  --bg-hover: #33251e;
+  --bg-active: #45322a;
+
+  --text-primary: #fff7ed;
+  --text-secondary: #fed7aa;
+  --text-tertiary: #d6b49a;
+  --text-muted: #a3836c;
+  --text-inverse: #150f0c;
+
+  --border-primary: #33251e;
+  --border-secondary: #4a372d;
+  --border-focus: #fb923c;
+
+  --interactive-primary: #fb923c;
+  --interactive-primary-hover: #fdba74;
+  --interactive-secondary: #fb923c;
+  --btn-primary-bg: #ea580c;
+  --btn-primary-bg-hover: #c2410c;
+  --btn-primary-ring: #fb923c;
+  --btn-active-bg: #7c2d12;
+  --btn-active-text: #ffedd5;
+  --spinner-color: #fb923c;
+
+  --editor-code-block-bg: #150f0c;
+  --editor-link-color: #fdba74;
+  --editor-selection-outline: #fdba74;
+}
+
+/* ── Light palettes (Preferences → Theme: Sepia / Mist) ─────────────────────────────── */
+
+/* Sepia: warm paper tones with brown text. */
+html:not(.dark)[data-palette='sepia'] {
+  --bg-primary: #f8f1e3;
+  --bg-secondary: #efe5d0;
+  --bg-tertiary: #e6d9bf;
+  --bg-hover: #e9dcc3;
+  --bg-active: #dccdb0;
+
+  --text-primary: #3b2f22;
+  --text-secondary: #5c4a36;
+  --text-tertiary: #7d6a55;
+  --text-muted: #9c8a74;
+  --text-inverse: #f8f1e3;
+
+  --border-primary: #dccdb0;
+  --border-secondary: #cbb995;
+  --border-focus: #9a5b2b;
+
+  --interactive-primary: #9a5b2b;
+  --interactive-primary-hover: #7a4520;
+  --interactive-secondary: #9a5b2b;
+  --btn-primary-bg: #8b4f24;
+  --btn-primary-bg-hover: #6f3d1b;
+  --btn-primary-ring: #b07040;
+  --btn-active-bg: #ead7bd;
+  --btn-active-text: #5c3a1c;
+  --spinner-color: #9a5b2b;
+
+  --editor-body-text: #3b2f22;
+  --editor-heading-text: #2e2419;
+  --editor-code-block-bg: #efe5d0;
+  --editor-link-color: #8b4f24;
+  --editor-selection-outline: #9a5b2b;
+}
+
+/* Mist: cool blue-grey surfaces with a steel-blue accent. */
+html:not(.dark)[data-palette='mist'] {
+  --bg-primary: #f3f6f9;
+  --bg-secondary: #e8eef4;
+  --bg-tertiary: #dde5ee;
+  --bg-hover: #e2e9f1;
+  --bg-active: #cfdae6;
+
+  --text-primary: #1f2a37;
+  --text-secondary: #3b4a5c;
+  --text-tertiary: #5b6b7d;
+  --text-muted: #8494a6;
+  --text-inverse: #f3f6f9;
+
+  --border-primary: #d3dde8;
+  --border-secondary: #bccad8;
+  --border-focus: #2b6cb0;
+
+  --interactive-primary: #2b6cb0;
+  --interactive-primary-hover: #245a93;
+  --interactive-secondary: #2b6cb0;
+  --btn-primary-bg: #2b6cb0;
+  --btn-primary-bg-hover: #245a93;
+  --btn-primary-ring: #4a8ad0;
+  --btn-active-bg: #dbe7f5;
+  --btn-active-text: #1e4e80;
+  --spinner-color: #2b6cb0;
+
+  --editor-code-block-bg: #e8eef4;
+  --editor-link-color: #245a93;
+  --editor-selection-outline: #2b6cb0;
 }
 
 body {

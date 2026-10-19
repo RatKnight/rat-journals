@@ -1,5 +1,6 @@
 import { Show } from 'solid-js';
-import { BookOpen, Lock, Vault } from 'lucide-solid';
+import { BookOpen, Lock } from 'lucide-solid';
+import RatVaultIcon from '../icons/RatVaultIcon';
 import { useI18n } from '../../i18n';
 import { authState, lockJournal } from '../../state/auth';
 import {
@@ -55,7 +56,7 @@ export default function AppRail() {
         title={isVaultOpen() ? undefined : t('layout.header.openVault')}
         data-testid="rail-vault"
       >
-        <Vault size={20} aria-hidden="true" />
+        <RatVaultIcon size={20} aria-hidden="true" />
         {t('layout.rail.vault')}
         <Show when={isVaultOpen() && !isVaultShown()}>
           {/* The vault is unlocked in the background. */}

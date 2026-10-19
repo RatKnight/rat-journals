@@ -334,7 +334,12 @@
       "languageLabel": "Lingua",
       "languageHint": "Seleziona la lingua di visualizzazione.",
       "themeBlack": "Black (true dark)",
-      "themeViolet": "Violet (dark)"
+      "themeViolet": "Violet (dark)",
+      "themeSepia": "Sepia (light)",
+      "themeMist": "Mist (light)",
+      "themeMidnight": "Midnight (dark)",
+      "themeForest": "Forest (dark)",
+      "themeEmber": "Ember (dark)"
     },
     "writing": {
       "firstDayLabel": "Primo giorno della settimana",

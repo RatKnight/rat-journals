@@ -210,7 +210,7 @@ Reversible settings apply immediately. The dialog is close-only (no Save/Cancel 
 
 | Setting | Description |
 |---------|-------------|
-| Theme | Light, Dark, Black, Violet, or follow system (Auto) |
+| Theme | Light, Sepia, Mist, Dark, Black, Violet, Midnight, Forest, Ember, or follow system (Auto) |
 | Language | Choose app language |
 | ESC key action | Do nothing, quit the app, or lock the journal on Escape |
 | First day of week | Sunday, Monday, or auto-detect from locale |
