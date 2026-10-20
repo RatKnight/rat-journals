@@ -192,6 +192,23 @@ fn with_vault<T>(
     result
 }
 
+/// For the hourly dead man's switch check: renews the open vault's deadline (it is in use).
+/// Returns whether a vault is open, or may be (busy).
+pub(crate) fn renew_open_vault(state: &DiaryState) -> bool {
+    let Ok(mut guard) = state.vault.try_lock() else {
+        return true;
+    };
+    let Some(open) = guard.as_mut() else {
+        return false;
+    };
+    if let Some(dm) = open.vault.dead_man() {
+        if let Err(e) = open.vault.set_dead_man_rules(dm.rules()) {
+            warn!("Could not renew the open vault's dead man's switch: {}", e);
+        }
+    }
+    true
+}
+
 fn install(state: &DiaryState, mut vault: Vault) -> Result<VaultStatus, String> {
     let clock_set_back = match vault.after_unlock() {
         Ok(check) => {
@@ -203,9 +220,11 @@ fn install(state: &DiaryState, mut vault: Vault) -> Result<VaultStatus, String> 
             }
             check.suspicious()
         }
-        Err(e) if e == crate::deadman::ERR_ERASED || e == crate::deadman::ERR_CLOCK_SET_BACK => {
-            return Err(e)
+        Err(e) if e == crate::deadman::ERR_ERASED => {
+            crate::commands::deadman::forget_vault(&state.app_data_dir);
+            return Err(e);
         }
+        Err(e) if e == crate::deadman::ERR_CLOCK_SET_BACK => return Err(e),
         Err(e) => {
             warn!("Could not record the vault's clock mark: {}", e);
             false

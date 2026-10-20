@@ -186,6 +186,10 @@ pub fn run() {
                 );
             }
 
+            // Before anything can be unlocked or selected: erase journals and the vault
+            // whose dead man's switch has fired.
+            commands::deadman::sweep(&app_dir);
+
             // E2E test isolation (MINI_DIARIUM_DATA_DIR) bypasses journal config entirely.
             let (diary_dir, db_path, backups_dir) = commands::auth::startup_journal_paths(
                 &app_dir,
@@ -197,10 +201,8 @@ pub fn run() {
             // Set up state
             // Decrypted vault copies left by a crash or a file still open in another app.
             commands::vault::wipe_temp_dir(&app_dir);
-            // Before anything can be unlocked: erase journals and the vault whose dead
-            // man's switch has expired.
-            commands::deadman::sweep(&app_dir);
             app.manage(DiaryState::new(db_path, backups_dir, app_dir.clone()));
+            commands::deadman::start_ticker(app.handle().clone());
 
             // Initialize plugin registry
             let plugins_dir = app_dir.join("plugins");

@@ -839,7 +839,7 @@ const en = {
     titleJournal: "Dead man's switch for this journal",
     titleVault: "Dead man's switch for this vault",
     explain:
-      "Permanently erases it when a rule below fires, the next time Rat Journal starts or tries to open it. It can't be recovered, and copies elsewhere (cloud version history, trash) are not reached.",
+      "Permanently erases it when a rule below fires: Rat Journal checks when it starts, when it opens it, and every hour while it runs. It can't be recovered, and copies elsewhere (cloud version history, trash) are not reached.",
     periodLabel: "Erase if it isn't unlocked for",
     clockLabel: 'Erase if the clock is set back more than',
     clockHint:

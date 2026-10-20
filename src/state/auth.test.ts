@@ -106,6 +106,19 @@ describe('state/auth', () => {
     await vi.waitFor(() => expect(securityNotice()).toBe('clock-set-back'));
   });
 
+  it('reloads the journal list when an unlock erased the journal', async () => {
+    mocks.unlockJournal.mockRejectedValueOnce("This was erased by its dead man's switch");
+    await expect(unlockJournal('pw')).rejects.toThrow();
+    expect(mocks.loadJournals).toHaveBeenCalled();
+  });
+
+  it('does not reload the journal list for a wrong password', async () => {
+    mocks.loadJournals.mockClear();
+    mocks.unlockJournal.mockRejectedValueOnce('Incorrect password');
+    await expect(unlockJournal('pw')).rejects.toThrow();
+    expect(mocks.loadJournals).not.toHaveBeenCalled();
+  });
+
   it('unlockJournal shows no security notice for an unknown or absent code', async () => {
     mocks.unlockJournal.mockResolvedValue(undefined);
     mocks.takeSecurityNotice.mockResolvedValue('something-else');

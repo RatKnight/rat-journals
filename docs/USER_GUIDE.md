@@ -396,7 +396,7 @@ All of these are off until you turn them on.
   - **Erase if it isn't unlocked for** a number of days, months or years. Rat Journal warns after you unlock a journal when another journal or the vault is within 3 days of this.
   - **Erase if the clock is set back more than** a number of minutes, hours or days (at least 10 minutes), compared with the latest time it was open.
 
-  Rat Journal erases it the next time it starts or tries to open it. While the first rule is on, a smaller set-back makes it refuse to open until you correct the clock. A clock set forward can't be told apart from time passing, so a clock set far ahead (even by mistake) counts toward the first rule.
+  Rat Journal checks when it starts, when it opens one, and every hour while it runs; one that is unlocked at the time counts as in use. An erased journal disappears from the journal list. While the first rule is on, a smaller set-back makes it refuse to open until you correct the clock. A clock set forward can't be told apart from time passing, so a clock set far ahead (even by mistake) counts toward the first rule.
 - **Panic password.** A second password for a journal (Preferences → Security). Typing it at the unlock screen permanently erases the journal (and, if chosen, the vault) and opens a decoy journal as if it were a normal unlock. Set up the decoy first: another journal whose password is the panic password, with believable entries.
 
 Erased journals and vaults can't be recovered by Rat Journal. Copies elsewhere, such as cloud version history or trash, or backups you copied yourself, are not reached.

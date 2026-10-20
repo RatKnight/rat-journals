@@ -338,7 +338,14 @@ pub(crate) fn perform_unlock(mode: UnlockMode, state: &DiaryState) -> Result<(),
         Err(e) if e == crate::deadman::ERR_ERASED => {
             drop(db_conn);
             crate::commands::deadman::erase_journal_files(&db_path, &backups_dir);
-            crate::commands::deadman::sync_config_copy(state, None);
+            // Drop it from the list and point the app at a journal that still exists.
+            if let Some(erased) = crate::config::load_active_journal_id(&state.app_data_dir) {
+                let next =
+                    crate::commands::deadman::forget_journals(&state.app_data_dir, &[erased]);
+                if let Some(next) = next {
+                    let _ = crate::commands::auth::switch_journal_inner(next, state);
+                }
+            }
             return Err(e);
         }
         Err(e) => return Err(e),

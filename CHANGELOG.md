@@ -1,5 +1,11 @@
 # Changelog
 
+## 26.1.3 (2026-10-19)
+
+### Fixed
+- **The dead man's switch now also checks every hour while Rat Journal stays open.** Before, an app left running never erased anything until it was restarted. A journal or vault that is unlocked at the time counts as in use and its deadline is renewed.
+- **An erased journal is removed from the journal list**, and an erased vault's folder is no longer offered in the vault dialog, so neither shows it existed.
+
 ## 26.1.2 (2026-10-19)
 
 ### Added

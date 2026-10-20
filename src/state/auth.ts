@@ -175,6 +175,11 @@ export async function createJournalAutoProtected(): Promise<void> {
   }
 }
 
+/** A dead man's switch erased the journal while unlocking: refresh the list it was removed from. */
+function reloadJournalsIfErased(err: unknown): void {
+  if (/erased by its dead man's switch/i.test(String(err))) void loadJournals();
+}
+
 export async function unlockJournalAutoProtected(): Promise<void> {
   try {
     setError(null);
@@ -185,6 +190,7 @@ export async function unlockJournalAutoProtected(): Promise<void> {
     setEntryDates(dates);
     await loadAllTags();
   } catch (err) {
+    reloadJournalsIfErased(err);
     const message = mapTauriError(err);
     setError(message);
     throw new Error(message, { cause: err });
@@ -242,6 +248,7 @@ export async function unlockJournal(password: string): Promise<void> {
     setEntryDates(dates);
     await loadAllTags();
   } catch (err) {
+    reloadJournalsIfErased(err);
     const message = mapTauriError(err);
     setError(message);
     throw new Error(message, { cause: err });
@@ -260,6 +267,7 @@ export async function unlockWithKeypair(keyPath: string): Promise<void> {
     setEntryDates(dates);
     await loadAllTags();
   } catch (err) {
+    reloadJournalsIfErased(err);
     const message = mapTauriError(err);
     setError(message);
     throw new Error(message, { cause: err });
@@ -278,6 +286,7 @@ export async function unlockAllMethods(credentials: tauri.MultiAuthCredential[])
     setEntryDates(dates);
     await loadAllTags();
   } catch (err) {
+    reloadJournalsIfErased(err);
     const message = mapTauriError(err);
     setError(message);
     throw new Error(message, { cause: err });

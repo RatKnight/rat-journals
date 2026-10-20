@@ -36,9 +36,16 @@ pub(crate) fn sync_config_copy(state: &DiaryState, dm: Option<DeadMan>) {
 }
 
 /// At startup, before anything is unlocked: erases every journal and the remembered vault
-/// whose plaintext copy says its switch has expired.
+/// whose switch has fired, and removes them from the app's lists.
 pub(crate) fn sweep(app_data_dir: &Path) {
+    sweep_except(app_data_dir, None, false);
+}
+
+/// [`sweep`], leaving out the journal at `open_db` and, with `vault_open`, the remembered
+/// vault: those are open right now (see [`tick`]).
+pub(crate) fn sweep_except(app_data_dir: &Path, open_db: Option<&Path>, vault_open: bool) {
     let now = crate::clock::unix_now();
+    let mut erased = Vec::new();
     for journal in crate::config::load_journals(app_data_dir) {
         // config.json's copy only says which journals are armed; the deadline itself is read
         // from the journal file, which is current even if another computer unlocked it.
@@ -51,19 +58,97 @@ pub(crate) fn sweep(app_data_dir: &Path) {
         ) else {
             continue;
         };
+        if open_db == Some(db.as_path()) {
+            continue;
+        }
         let fires = deadman::peek_journal_full(&db)
             .is_some_and(|(dm, mark)| dm.fires_before_unlock(now, mark.unwrap_or(0)));
         if fires {
             erase_journal_files(&db, &backups);
+            erased.push(journal.id);
         }
+    }
+    forget_journals(app_data_dir, &erased);
+    if vault_open {
+        return;
     }
     if let Some(dir) = crate::config::load_last_vault_dir(app_data_dir) {
         match mini_diarium_core::vault::Vault::erase_if_expired(&dir, now) {
-            Ok(true) => info!("Erased the vault by its dead man's switch"),
+            Ok(true) => {
+                info!("Erased the vault by its dead man's switch");
+                forget_vault(app_data_dir);
+            }
             Ok(false) => {}
             Err(e) => warn!("Could not erase an expired vault: {}", e),
         }
     }
+}
+
+/// Removes erased journals from config.json, so the list doesn't show they existed. The
+/// active journal moves to the first that remains. Returns it (`None` when none remains).
+pub(crate) fn forget_journals(app_data_dir: &Path, ids: &[String]) -> Option<String> {
+    if ids.is_empty() {
+        return crate::config::load_active_journal_id(app_data_dir);
+    }
+    let mut journals = crate::config::load_journals(app_data_dir);
+    journals.retain(|j| !ids.contains(&j.id));
+    let active = crate::config::load_active_journal_id(app_data_dir)
+        .filter(|a| !ids.contains(a))
+        .or_else(|| journals.first().map(|j| j.id.clone()));
+    if let Err(e) =
+        crate::config::save_journals(app_data_dir, &journals, active.as_deref().unwrap_or(""))
+    {
+        warn!("Could not remove erased journals from the list: {}", e);
+    }
+    active
+}
+
+/// Forgets an erased vault's folder, so the vault dialog doesn't offer it.
+pub(crate) fn forget_vault(app_data_dir: &Path) {
+    if let Err(e) = crate::config::save_last_vault_dir(app_data_dir, None) {
+        warn!("Could not forget the erased vault's folder: {}", e);
+    }
+}
+
+/// How often the switch is checked while the app runs.
+const TICK: std::time::Duration = std::time::Duration::from_secs(60 * 60);
+
+/// Runs the switch while the app stays open: the journal and vault that are unlocked right
+/// now count as in use, so their deadline is renewed; everything else is swept as at
+/// startup. Without this, an app left running would never erase anything.
+pub(crate) fn tick(state: &DiaryState) {
+    let open_db = match state.db.try_lock() {
+        Ok(guard) => guard.as_ref().map(|db| {
+            renew_journal(state, db);
+        }),
+        // Busy or poisoned: it is certainly open, so leave it alone.
+        Err(_) => Some(()),
+    }
+    .and_then(|()| state.db_path.lock().ok().map(|p| p.clone()));
+    let vault_open = crate::commands::vault::renew_open_vault(state);
+    sweep_except(&state.app_data_dir, open_db.as_deref(), vault_open);
+}
+
+fn renew_journal(state: &DiaryState, db: &crate::db::DatabaseConnection) {
+    let Some(dm) = deadman::journal_dead_man(db) else {
+        return;
+    };
+    match deadman::set_journal_rules(db, dm.rules()) {
+        Ok(renewed) => sync_config_copy(state, renewed),
+        Err(e) => warn!(
+            "Could not renew the open journal's dead man's switch: {}",
+            e
+        ),
+    }
+}
+
+/// Starts the hourly [`tick`].
+pub(crate) fn start_ticker(app: tauri::AppHandle) {
+    use tauri::Manager;
+    std::thread::spawn(move || loop {
+        std::thread::sleep(TICK);
+        tick(&app.state::<DiaryState>());
+    });
 }
 
 /// The open journal's rules (0 = rule off).
@@ -217,6 +302,16 @@ mod tests {
         assert!(!a.join("backups").join("diary").exists());
         assert!(b.join("diary.db").exists());
         assert!(b.join("backups").join("diary").exists());
+        // The erased journal is gone from the list too.
+        let ids: Vec<String> = crate::config::load_journals(&app)
+            .into_iter()
+            .map(|j| j.id)
+            .collect();
+        assert_eq!(ids, vec!["b".to_string()]);
+        assert_eq!(
+            crate::config::load_active_journal_id(&app).as_deref(),
+            Some("b")
+        );
     }
 
     #[test]
@@ -284,5 +379,89 @@ mod tests {
         sweep(&app);
         assert!(!a.join("diary.db").exists());
         assert!(b.join("diary.db").exists());
+    }
+
+    fn ids(app: &Path) -> Vec<String> {
+        crate::config::load_journals(app)
+            .into_iter()
+            .map(|j| j.id)
+            .collect()
+    }
+
+    #[test]
+    fn hourly_tick_spares_the_open_journal_and_sweeps_the_rest() {
+        use crate::commands::auth::test_helpers::make_state;
+        let (_fixture, state, db_path, _) = make_state("deadman_tick");
+        let open_dir = db_path.parent().unwrap().to_path_buf();
+        let other = open_dir.join("other");
+        std::fs::create_dir_all(&other).unwrap();
+        std::fs::create_dir_all(&state.app_data_dir).unwrap();
+        // Both records say "expired"; the open one is in use and must survive.
+        let journals = [
+            journal("open", &open_dir, Some("1:0:00"), LONG_AGO),
+            journal("other", &other, Some("1:0:00"), LONG_AGO),
+        ];
+        crate::config::save_journals(&state.app_data_dir, &journals, "open").unwrap();
+        *state.db.lock().unwrap() =
+            Some(crate::db::open_database(&db_path, "pw".to_string(), &open_dir).unwrap());
+
+        tick(&state);
+
+        assert!(db_path.exists());
+        assert!(!other.join("diary.db").exists());
+        assert_eq!(ids(&state.app_data_dir), vec!["open".to_string()]);
+    }
+
+    #[test]
+    fn hourly_tick_renews_the_open_journals_deadline() {
+        use crate::commands::auth::test_helpers::make_state;
+        let (_fixture, state, db_path, _) = make_state("deadman_renew");
+        let dir = db_path.parent().unwrap().to_path_buf();
+        std::fs::create_dir_all(&state.app_data_dir).unwrap();
+        let journals = [journal("open", &dir, None, None)];
+        crate::config::save_journals(&state.app_data_dir, &journals, "open").unwrap();
+        let db = crate::db::open_database(&db_path, "pw".to_string(), &dir).unwrap();
+        deadman::set_journal_rules(
+            &db,
+            deadman::Rules {
+                days: 3,
+                back_secs: 0,
+            },
+        )
+        .unwrap();
+        // Pretend it was unlocked long ago: a valid record, renewed by the tick.
+        *state.db.lock().unwrap() = Some(db);
+
+        tick(&state);
+
+        let renewed = deadman::peek_journal(&db_path).unwrap();
+        assert_eq!(renewed.days, 3);
+        assert!(renewed.last_unlock >= crate::clock::unix_now() - 5);
+        let copy = crate::config::load_journals(&state.app_data_dir)[0].dead_man;
+        assert_eq!(copy, Some(renewed));
+    }
+
+    #[test]
+    fn an_unlock_that_erases_removes_the_journal_from_the_list() {
+        use crate::commands::auth::test_helpers::make_state;
+        use crate::commands::auth::{perform_unlock, UnlockMode};
+        let (_fixture, state, db_path, _) = make_state("deadman_unlock_erase");
+        let dir = db_path.parent().unwrap().to_path_buf();
+        let other = dir.join("other");
+        std::fs::create_dir_all(&other).unwrap();
+        std::fs::create_dir_all(&state.app_data_dir).unwrap();
+        // A record whose MAC fails counts as expired at unlock.
+        let journals = [
+            journal("doomed", &dir, Some("1:0:00"), None),
+            journal("other", &other, None, None),
+        ];
+        crate::config::save_journals(&state.app_data_dir, &journals, "doomed").unwrap();
+
+        let result = perform_unlock(UnlockMode::Password("pw".to_string()), &state);
+
+        assert_eq!(result.err(), Some(deadman::ERR_ERASED.to_string()));
+        assert!(!db_path.exists());
+        assert_eq!(ids(&state.app_data_dir), vec!["other".to_string()]);
+        assert_eq!(*state.db_path.lock().unwrap(), other.join("diary.db"));
     }
 }

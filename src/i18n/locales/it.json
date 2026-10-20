@@ -888,7 +888,7 @@
   "deadMan": {
     "titleJournal": "Dead man's switch for this journal",
     "titleVault": "Dead man's switch for this vault",
-    "explain": "Permanently erases it when a rule below fires, the next time Rat Journal starts or tries to open it. It can't be recovered, and copies elsewhere (cloud version history, trash) are not reached.",
+    "explain": "Permanently erases it when a rule below fires: Rat Journal checks when it starts, when it opens it, and every hour while it runs. It can't be recovered, and copies elsewhere (cloud version history, trash) are not reached.",
     "periodLabel": "Erase if it isn't unlocked for",
     "clockLabel": "Erase if the clock is set back more than",
     "clockHint": "Compared with the latest time it was open; at least 10 minutes. A clock set forward can't be told apart from time passing, so it just counts toward the first rule. While the first rule is on, a smaller set-back makes it refuse to open until the clock is fixed.",
